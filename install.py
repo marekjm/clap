@@ -10,5 +10,5 @@ for path in sys.path:
         install_location = "/".join(path)
         break
 
-print("./modules/pyproperties.py -> {0}".format(install_location))
-shutil.copy("./modules/pyproperties.py", install_location)
+print("./clap.py -> {0}".format(install_location))
+shutil.copy("./clap.py", install_location)

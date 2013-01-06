@@ -5,3 +5,9 @@ TAGNAME = clap-$(VERSION)
 
 test:
 	python3 ./test.py
+	
+install:
+	python3 ./install.py
+
+uninstall:
+	python3 ./uninstall.py

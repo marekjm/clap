@@ -10,5 +10,5 @@ for path in sys.path:
         install_location = "/".join(path)
         break
 
-print("{0}/pyproperties.py".format(install_location))
-os.remove("{0}/pyproperties.py".format(install_location))
+print("{0}/clap.py".format(install_location))
+os.remove("{0}/clap.py".format(install_location))
