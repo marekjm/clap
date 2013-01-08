@@ -111,7 +111,7 @@ class ParserTest(unittest.TestCase):
         Tests if parser complains about missing switch in options that require it (only at the end).
         """
         p = clap.Parser(short="v:V:", argv=["-V", "0.0.1", "-v"])
-        self.assertRaises(clap.SwitchValueNotFoundError, p.parse)
+        self.assertRaises(clap.SwitchValueError, p.parse)
 
 
 class CheckerTest(unittest.TestCase):
@@ -120,7 +120,7 @@ class CheckerTest(unittest.TestCase):
         Tests if checker complains about missing switch in options that require it (only at the end).
         """
         p = clap.Parser(short="v:V:", argv=["-V", "0.0.1", "-v"])
-        self.assertRaises(clap.SwitchValueNotFoundError, p.check)
+        self.assertRaises(clap.SwitchValueError, p.check)
 
     def testOptionAsAValueDoesNotRaiseAnErrorWhenNotStrict(self):
         """
@@ -134,7 +134,7 @@ class CheckerTest(unittest.TestCase):
         Tests if checker complains about missing switch in options that require it (only at the end).
         """
         p = clap.Parser(short="vV:", argv=["-V", "-v"])
-        self.assertRaises(clap.SwitchValueNotFoundError, p.check, True)
+        self.assertRaises(clap.SwitchValueError, p.check, True)
 
 
 class GetoptTest(unittest.TestCase):

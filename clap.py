@@ -6,7 +6,7 @@ __version__ = "0.0.2"
 __vertuple__ = tuple( int(i) for i in __version__.split(".") )
 
 class UnexpectedOptionError(Exception): pass
-class SwitchValueNotFoundError(Exception): pass
+class SwitchValueError(Exception): pass
 class NotParsedError(Exception): pass
 class OptionNotFoundError(LookupError): pass
 
@@ -115,10 +115,10 @@ class Parser():
         """
         for i, arg in enumerate(self.argv):
             if self.isopt("{0}:".format(arg)) and i+1 == len(self.argv): 
-                raise SwitchValueNotFoundError("'{0}' option requires a value but run out of arguments".format(self.argv[i]))
+                raise SwitchValueError("'{0}' option requires a value but run out of arguments".format(self.argv[i]))
             if self.isopt("{0}:".format(arg)) and strict: 
                 if self.isopt("{0}:".format(self.argv[i+1])) or self.isopt(self.argv[i+1]): 
-                    raise SwitchValueNotFoundError("'{0}' option requires a value but an option was found".format(self.argv[i]))
+                    raise SwitchValueError("'{0}' option requires a value but an option was found".format(self.argv[i]))
         
     def _parseopts(self):
         """
@@ -135,7 +135,7 @@ class Parser():
                 value = ""
             elif self.isopt("{0}:".format(opt)):
                 i += 1
-                if len(self.argv) <= i: raise SwitchValueNotFoundError("'{0}' option requires a value but run out of arguments".format(opt))
+                if len(self.argv) <= i: raise SwitchValueError("'{0}' option requires a value but run out of arguments".format(opt))
                 else: value = self.argv[i]
             elif opt[0] == "-":
                 raise UnexpectedOptionError("unexpected option found: {0}".format(opt))

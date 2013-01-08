@@ -11,7 +11,7 @@
 
 
 * __new__:  ```UnexpectedOptionError``` added,
-* __new__:  ```SwitchValueNotFoundError``` added,
+* __new__:  ```SwitchValueError``` added,
 * __new__:  ```NotTranslatedError``` added,
 * __new__:  ```OptionNotFoundError``` added,
 
