@@ -2,7 +2,7 @@
 
 """command line arguments parser"""
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __vertuple__ = tuple( int(i) for i in __version__.split(".") )
 
 class UnexpectedOptionError(Exception): pass
@@ -15,29 +15,40 @@ class Parser():
         self.setshort(short)
         self.setlong(long)
         self.setargv(argv)
-        self.opts = []
-        self.args = []
+        self.opts, self.args = ([], [])
         self.parsed = False
     
     def setshort(self, opts):
         """
         Sets short options. Accepts string.
         """
-        self.descript_short = opts
-        self._splitshorts()
+        shorts = []
+        for i, opt in enumerate(opts):
+            try:
+                if opts[i+1] == ":": opt += ":"
+            except IndexError: 
+                pass
+            finally: 
+                if opt != ":": shorts.append("-{0}".format(opt))
+        self.descript_short = shorts
 
     def _splitshorts(self):
         """
-        This method extracts short options identifiers from string passed to Parser.
+        This method scans items passed from command line and splits any short options passed together eg. 
+        '-lhR'. It this case the '-lhR' will become '-l', '-h', '-R'. 
+        Connecting options that require a value is forbidden.
         """
-        descript = []
-        for i, opt in enumerate(self.descript_short):
-            try:
-                if self.descript_short[i+1] == ":": opt += ":"
-            except IndexError: pass
-            finally: descript.append("-{0}".format(opt))
-        while "-:" in descript: descript.remove("-:")
-        self.descript_short = descript
+        argv = []
+        for i, arg in enumerate(self.argv):
+            if self._areopts([ "-{0}".format(opt) for opt in list(arg)[1:] ], mode="s") and arg[0] == "-" and arg != "--": 
+                arg = [ "-{0}".format(opt) for opt in list(arg)[1:] ]
+            elif arg == "--":
+                argv.append("--")
+                break
+            else: 
+                arg = [arg]
+            argv.extend(arg)
+        self.argv = argv + self.argv[i+1:]
 
     def setlong(self, opts):
         """
@@ -63,15 +74,52 @@ class Parser():
         """
         return [ "--{0}".format(opt) for opt in self.descript_long ]
     
-    def isopt(self, opt):
+    def _areopts(self, opts, mode="b"):
+        """
+        Checks if given list contain only options accepted by this instance of Parser(). 
+        You have to pass it in full form eg. `--verbose` and `-v`. 
+        Value indicator (`:`) has to be explicitly given. 
+        
+        Modes are:
+         *  's' - for short options,
+         *  'l' - for long options,
+         *  'b' - for types,
+        """
+        result = True
+        for opt in opts:
+            result = self.isopt(opt, mode=mode)
+            if not result: break
+        return result
+
+    def isopt(self, opt, mode="b"):
         """
         Checks if given string is a valid option for this instance of Parser(). 
         You have to pass it in full form eg. `--verbose` and `-v`. 
-        Value indicator (`:`) has to be explicitly given.
+        Value indicator (`:`) has to be explicitly given. 
+        
+        Modes are:
+         *  's' - for short options,
+         *  'l' - for long options,
+         *  'b' - for types,
         """
-        return opt in self.descript_short or opt[2:] in self.descript_long
+        if mode == "s": result = opt in self.descript_short
+        elif mode == "l": result = opt[2:] in self.descript_long
+        else: result = self.isopt(opt, mode="s") or self.isopt(opt, mode="l")
+        return result
 
 
+    def check(self, strict=False):
+        """
+        Scans for problems in passed arguments. 
+         *  missing values for options which require it.
+        """
+        for i, arg in enumerate(self.argv):
+            if self.isopt("{0}:".format(arg)) and i+1 == len(self.argv): 
+                raise SwitchValueNotFoundError("'{0}' option requires a value but run out of arguments".format(self.argv[i]))
+            if self.isopt("{0}:".format(arg)) and strict: 
+                if self.isopt("{0}:".format(self.argv[i+1])) or self.isopt(self.argv[i+1]): 
+                    raise SwitchValueNotFoundError("'{0}' option requires a value but an option was found".format(self.argv[i]))
+        
     def _parseopts(self):
         """
         Parses options from the command line and assigns values to them if needed.
@@ -80,17 +128,17 @@ class Parser():
         i = 0
         while i < len(self.argv):
             opt = self.argv[i]
-            if self.isopt(opt):
+            if opt == "--":
+                i += 1
+                break
+            elif self.isopt(opt):
                 value = ""
             elif self.isopt("{0}:".format(opt)):
                 i += 1
-                if self.isopt(self.argv[i]): raise SwitchValueNotFoundError("'{0}' option requires a value but found an option at index {1}".format(opt, i))
-                value = self.argv[i]
-            elif opt == "--":
-                i += 1
-                break
+                if len(self.argv) <= i: raise SwitchValueNotFoundError("'{0}' option requires a value but run out of arguments".format(opt))
+                else: value = self.argv[i]
             elif opt[0] == "-":
-                raise UnexpectedOptionError("unexpected option found: '{0}'".format(opt))
+                raise UnexpectedOptionError("unexpected option found: {0}".format(opt))
             else:
                 break
             opts.append( (opt, value) )
@@ -108,6 +156,32 @@ class Parser():
         self.args = self.argv[n:]
         self.parsed = True
     
+    def listaccepted(self):
+        """
+        Returns list of options by this instance of Parser().
+        """
+        opts = []
+        for opt in self.descript_short: opts.append(opt)
+        for opt in self.descript_long: opts.append( "--{0}".format(opt) )
+        while "--" in opts: opts.remove("--")
+        return opts
+
+    def waspassed(self, opt):
+        """
+        Checks if the given option was passed.
+        Returns boolean value.
+        """
+        return opt in self.getpassed()
+        
+    def getpassed(self):
+        """
+        Returns list of options passed to this instance of Parser().
+        """
+        if not self.parsed: raise NotParsedError("getpassed() used on object with unparsed options")
+        opts = []
+        opts = [ opt for opt, value in self.opts ]
+        return opts
+
     def getopt(self, opt):
         """
         Returns options value or empty string if the option does not accept values.
@@ -120,32 +194,6 @@ class Parser():
                 break
         if value == None: raise OptionNotFoundError("'{0}' not found in passed options".format(opt))
         return value
-
-    def waspassed(self, opt):
-        """
-        Checks if the given option was passed.
-        Returns boolean value.
-        """
-        return opt in self.listpassed()
-        
-    def listpassed(self):
-        """
-        Returns list of options passed to this instance of Parser().
-        """
-        if not self.parsed: raise NotParsedError("listpassed() used on object with unparsed options")
-        opts = []
-        opts = [ opt for opt, value in self.opts ]
-        return opts
-
-    def listaccepted(self):
-        """
-        Returns list of options by this instance of Parser().
-        """
-        opts = []
-        for opt in self.descript_short: opts.append(opt)
-        for opt in self.descript_long: opts.append( "--{0}".format(opt) )
-        while "--" in opts: opts.remove("--")
-        return opts
 
     def getargs(self):
         """
