@@ -1,0 +1,18 @@
+#### Passing options to `clap`
+###### _version: `0.0.2`_
+
+###### [Index](index.mdown)
+----
+
+
+0.  `clap` understand short options passed together eg. `foo -xvf` instead of `foo -x -v -f`
+1.  when option reuires an argument you **have to** insert a space between the options and the argument -- `foo -o log` and not `foo -olog`
+2.  `--` tells `clap` that there are only arguments after -- `foo -o log -- --verbose`,
+3.  long options **have to** be preceded by two hyphens `--option`,
+4.  when parser finds something that is not an option it terminates parsing and treats everything after that *something* as arguments,
+
+
+----
+
+SEE ALSO:  
+&nbsp;

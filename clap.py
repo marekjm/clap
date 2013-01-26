@@ -2,6 +2,8 @@
 
 """command line arguments parser"""
 
+import sys
+
 __version__ = "0.0.2"
 __vertuple__ = tuple( int(i) for i in __version__.split(".") )
 
@@ -9,6 +11,19 @@ class UnexpectedOptionError(Exception): pass
 class SwitchValueError(Exception): pass
 class NotParsedError(Exception): pass
 class OptionNotFoundError(LookupError): pass
+
+def _main():
+    parser = Parser(short="v", long=["version", "help"], argv=sys.argv[1:])
+    try:
+        parser.parse()
+        if parser.waspassed("-v") or parser.waspassed("--version"): print("clap (Command Line Arguments Parser) {0}".format(__version__))
+        if parser.waspassed("--help"): 
+            print("OPTIONS:\n\t--version  print version and exit\n\t--help     print this message\n")
+            print("Author: Marek Marecki (triviuss@gmail.com)")
+    except UnexpectedOptionError as e: 
+        print("**clap: error: doesn't know what to do with '{0}'".format(str(e).split(": ")[-1]))
+    finally:
+        pass
 
 class Parser():
     def __init__(self, short="", long=[], argv=[]):
@@ -107,7 +122,6 @@ class Parser():
         else: result = self.isopt(opt, mode="s") or self.isopt(opt, mode="l")
         return result
 
-
     def check(self, strict=False):
         """
         Scans for problems in passed arguments. 
@@ -178,9 +192,7 @@ class Parser():
         Returns list of options passed to this instance of Parser().
         """
         if not self.parsed: raise NotParsedError("getpassed() used on object with unparsed options")
-        opts = []
-        opts = [ opt for opt, value in self.opts ]
-        return opts
+        return [ opt for opt, value in self.opts ]
 
     def getopt(self, opt):
         """
@@ -200,3 +212,6 @@ class Parser():
         Returns list of arguments passed from command line.
         """
         return self.args
+
+
+if __name__ == "__main__": _main()
