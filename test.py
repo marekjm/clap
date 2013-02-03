@@ -114,29 +114,6 @@ class ParserTest(unittest.TestCase):
         self.assertRaises(clap.SwitchValueError, p.parse)
 
 
-class CheckerTest(unittest.TestCase):
-    def testMissingArgumentAtTheEndRaisesError(self):
-        """
-        Tests if checker complains about missing switch in options that require it (only at the end).
-        """
-        p = clap.Parser(short="v:V:", argv=["-V", "0.0.1", "-v"])
-        self.assertRaises(clap.SwitchValueError, p.check)
-
-    def testOptionAsAValueDoesNotRaiseAnErrorWhenNotStrict(self):
-        """
-        Tests if checker complains about missing switch in options that require it (only at the end).
-        """
-        p = clap.Parser(short="vV:", argv=["-V", "-v"])
-        p.check(False)
-
-    def testOptionAsAValueDoesRaiseAnErrorWhenStrict(self):
-        """
-        Tests if checker complains about missing switch in options that require it (only at the end).
-        """
-        p = clap.Parser(short="vV:", argv=["-V", "-v"])
-        self.assertRaises(clap.SwitchValueError, p.check, True)
-
-
 class GetoptTest(unittest.TestCase):
     def testGetopt(self):
         p = clap.Parser(short="vV:", argv=["-v", "-V", "0.0.1"])
@@ -250,5 +227,16 @@ class WaspassedTest(unittest.TestCase):
         self.assertEqual(False, p.waspassed("-V"))
         self.assertEqual(False, p.waspassed("--force"))
         self.assertEqual(False, p.waspassed("-o"))
+
+    def testIfOptionWasPassedMultiple(self):
+        p = clap.Parser(short="V:o:f",long=["verbose:", "output:", "force"])
+        p.setargv(["--verbose", "3", "-f", "--output", "foo.txt"])
+        p.parse()
+        
+        self.assertEqual(True, p.waspassed("--verbose", "-V"))
+        self.assertEqual(True, p.waspassed("-f", "--force"))
+
+        self.assertEqual(False, p.waspassed("-V", "-o"))
+
 
 if __name__ == "__main__": unittest.main()
