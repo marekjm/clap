@@ -154,6 +154,7 @@ class Parser():
         """
         #   _parseopts() returns index at which it stopped parsing options 
         #   this means that after this index there are only arguments
+        self._splitshorts()
         n = self._parseopts()
         self.args = self.argv[n:]
         self.parsed = True

@@ -34,7 +34,6 @@ class ParserTest(unittest.TestCase):
         Tests the general ability to understand short options passed together. 
         """
         p = clap.Parser(short="vfV:", argv=["-vf", "-V", "0.0.1"])
-        p._splitshorts()
         p.parse()
         self.assertEqual([("-v", ""), ("-f", ""), ("-V", "0.0.1")], p.opts)
 
@@ -43,7 +42,6 @@ class ParserTest(unittest.TestCase):
         Tests if _splitshorts() will correctly scan and parse short options mixed with long ones. 
         """
         p = clap.Parser(short="vfV:op", long=["verbose"], argv=["-vf", "--verbose", "-V", "0.0.1", "-po"])
-        p._splitshorts()
         p.parse()
         self.assertEqual([("-v", ""), ("-f", ""), ("--verbose", ""), ("-V", "0.0.1"), ("-p", ""), ("-o", "")], p.opts)
 
@@ -52,7 +50,6 @@ class ParserTest(unittest.TestCase):
         Tests if _splitshorts() will not take argumets as options.
         """
         p = clap.Parser(short="vfV:op", long=["verbose"], argv=["-vf", "--verbose", "-V", "0.0.1", "-po", "foo", "bar"])
-        p._splitshorts()
         p.parse()
         self.assertEqual([("-v", ""), ("-f", ""), ("--verbose", ""), ("-V", "0.0.1"), ("-p", ""), ("-o", "")], p.opts)
         self.assertEqual(["foo", "bar"], p.args)
@@ -62,7 +59,6 @@ class ParserTest(unittest.TestCase):
         Tests if _splitshorts() will not scan options-like strings (even valid) after finding a `break` sign. 
         """
         p = clap.Parser(short="vfV:op", long=["verbose"], argv=["-vf", "--verbose", "-V", "0.0.1", "--", "-po"])
-        p._splitshorts()
         p.parse()
         self.assertEqual([("-v", ""), ("-f", ""), ("--verbose", ""), ("-V", "0.0.1")], p.opts)
         self.assertEqual(["-po"], p.args)
@@ -73,7 +69,6 @@ class ParserTest(unittest.TestCase):
         More complex test from the `ParserTest.testParseWithConnectedShortOptsWithBreak()` test.
         """
         p = clap.Parser(short="vfV:op", long=["verbose"], argv=["-vf", "--verbose", "-V", "0.0.1", "-po", "--", "-po"])
-        p._splitshorts()
         p.parse()
         self.assertEqual([("-v", ""), ("-f", ""), ("--verbose", ""), ("-V", "0.0.1"), ("-p", ""), ("-o", "")], p.opts)
         self.assertEqual(["-po"], p.args)
