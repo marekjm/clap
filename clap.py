@@ -12,18 +12,14 @@ class SwitchValueError(Exception): pass
 class NotParsedError(Exception): pass
 class OptionNotFoundError(LookupError): pass
 
-def _main():
-    parser = Parser(short="v", long=["version", "help"], argv=sys.argv[1:])
-    try:
-        parser.parse()
-        if parser.waspassed("-v") or parser.waspassed("--version"): print("clap (Command Line Arguments Parser) {0}".format(__version__))
-        if parser.waspassed("--help"): 
-            print("OPTIONS:\n\t--version  print version and exit\n\t--help     print this message\n")
-            print("Author: Marek Marecki (triviuss@gmail.com)")
-    except UnexpectedOptionError as e: 
-        print("**clap: error: don't know what to do with '{0}'".format(str(e).split(": ")[-1]))
-    finally:
+class undefined():
+    """
+    Class describing `undefined` type which is required for 
+    Parser().
+    """
+    def __init__(self):
         pass
+
 
 class Parser():
     def __init__(self, short="", long=[], argv=[]):
@@ -40,15 +36,18 @@ class Parser():
         Connecting options that require a value is forbidden.
         """
         argv = []
+        n = 0
         for i, arg in enumerate(self.argv):
             if self._areopts([ "-{0}".format(opt) for opt in list(arg)[1:] ], mode="s") and arg[0] == "-" and arg != "--": 
                 arg = [ "-{0}".format(opt) for opt in list(arg)[1:] ]
             elif arg == "--":
                 argv.append("--")
+                n = i
                 break
             else: 
                 arg = [arg]
             argv.extend(arg)
+            n = i
         self.argv = argv + self.argv[i+1:]
 
     def _areopts(self, opts, mode="b"):
@@ -207,6 +206,3 @@ class Parser():
         Returns list of arguments passed from command line.
         """
         return self.args
-
-
-if __name__ == "__main__": _main()
