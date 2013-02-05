@@ -44,7 +44,7 @@ class Parser():
                 argv.append("--")
                 n = i
                 break
-            else: 
+            else:
                 arg = [arg]
             argv.extend(arg)
             n = i
@@ -103,7 +103,7 @@ class Parser():
                 if opts[i+1] == ":": opt += ":"
             except IndexError: 
                 pass
-            finally: 
+            finally:
                 if opt != ":": shorts.append("-{0}".format(opt))
         self.descript_short = shorts
 
@@ -206,3 +206,87 @@ class Parser():
         Returns list of arguments passed from command line.
         """
         return self.args
+
+
+class NewParser():
+    """
+    Class utilizing methods used for parsing input from command line.
+    """
+    
+    def __init__(self, short="", long=[], argv=[]):
+        self._argv = argv
+        self._short, self._long = (short, long)
+        self._options, self._arguments = ([], [])
+    
+    def _formatshorts(self):
+        """
+        Method responsible for formatting short options list given to parser.
+        """
+        short, i = ([], 0)
+        while i < len(self._short):
+            option, n = ("-{0}", 1)
+            try:
+                if self._short[i+1] == ":":
+                    n += 1
+                    option += ":"
+            except IndexError: 
+                pass
+            finally:
+                short.append(option.format(self._short[i]))
+            i += n
+        self._short = short
+    
+    def _formatlongs(self):
+        """
+        Method responsible for formatting long options list given to parser.
+        """
+        self._long = [ "--{0}".format(opt) for opt in self._long ]
+    
+    def format(self):
+        """
+        Formats options lists given to Parser().
+        Has to be called before parse().
+        """
+        self._formatshorts()
+        self._formatlongs()
+        
+    def purge(self):
+        """
+        Cleans parser.
+        """
+        self._argv = []
+        self._short, self._long = ("", [])
+        self._options, self._arguments = ([], [])
+
+    def _isopt(self, option, mode="b"):
+        """
+        Returns True if given option is accepted by thi instance of NewParser().
+        Modes are:
+        'b' - for both types of options,
+        's' - for short options,
+        'l' - for long options,
+        """
+        if mode == "s": result = option in self._short
+        elif mode == "l": result = option in self._long
+        else: result = option in self._short or option in self._long
+        return result
+    
+    def addshort(self, option):
+        """
+        Appends option to list of recognized short options.
+        """
+        option = "-{0}".format(option)
+        if self._isopt(option): self._short.remove(option)
+        elif self._isopt("{0}:".format(option)): self._short.remove("{0}:".format(option))
+        elif self._isopt(option[:-1]): self._short.remove(option[:-1])
+        self._short.append(option)
+
+
+class Interface():
+    """
+    Clients should use this class as it provides an interface 
+    to the internal methods and logic.
+    """
+    
+    def __init__(self):
+        pass
