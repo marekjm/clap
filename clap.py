@@ -5,21 +5,11 @@
 import sys
 
 __version__ = "0.0.2"
-__vertuple__ = tuple( int(i) for i in __version__.split(".") )
 
 class UnexpectedOptionError(Exception): pass
 class SwitchValueError(Exception): pass
 class NotParsedError(Exception): pass
 class OptionNotFoundError(LookupError): pass
-
-class undefined():
-    """
-    Class describing `undefined` type which is required for 
-    Parser().
-    """
-    def __init__(self):
-        pass
-
 
 class Parser():
     def __init__(self, short="", long=[], argv=[]):
@@ -242,22 +232,6 @@ class NewParser():
         """
         self._long = [ "--{0}".format(opt) for opt in self._long ]
     
-    def format(self):
-        """
-        Formats options lists given to Parser().
-        Has to be called before parse().
-        """
-        self._formatshorts()
-        self._formatlongs()
-        
-    def purge(self):
-        """
-        Cleans parser.
-        """
-        self._argv = []
-        self._short, self._long = ("", [])
-        self._options, self._arguments = ([], [])
-
     def _isopt(self, option, mode="b"):
         """
         Returns True if given option is accepted by thi instance of NewParser().
@@ -271,14 +245,35 @@ class NewParser():
         else: result = option in self._short or option in self._long
         return result
     
+    def format(self):
+        """
+        Formats options lists given to Parser().
+        Has to be called before parse().
+        """
+        self._formatshorts()
+        self._formatlongs()
+        
+    def purge(self):
+        """
+        Resets *every* variable to empty state.
+        """
+        self._argv = []
+        self._short, self._long = ("", [])
+        self._options, self._arguments = ([], [])
+
+    def clean(self):
+        """
+        Cleans parser - resets everything except `_argv`.
+        """
+        self._short, self._long = ("", [])
+        self._options, self._arguments = ([], [])
+
     def addshort(self, option):
         """
         Appends option to list of recognized short options.
         """
         option = "-{0}".format(option)
-        if self._isopt(option): self._short.remove(option)
-        elif self._isopt("{0}:".format(option)): self._short.remove("{0}:".format(option))
-        elif self._isopt(option[:-1]): self._short.remove(option[:-1])
+        self.rmshort(option)
         self._short.append(option)
 
     def addlong(self, option):
@@ -286,10 +281,49 @@ class NewParser():
         Appends option to list of recognized short options.
         """
         option = "--{0}".format(option)
+        self.rmlong(option)
+        self._long.append(option)
+
+    def rmshort(self, option):
+        """
+        Removes option from list of recognized short options.
+        """
+        if self._isopt(option): self._short.remove(option)
+        elif self._isopt("{0}:".format(option)): self._short.remove("{0}:".format(option))
+        elif self._isopt(option[:-1]): self._short.remove(option[:-1])
+
+    def rmlong(self, option):
+        """
+        Removes option from list of recognized short options.
+        """
         if self._isopt(option): self._long.remove(option)
         elif self._isopt("{0}=".format(option)): self._long.remove("{0}=".format(option))
         elif self._isopt(option[:-1]): self._long.remove(option[:-1])
-        self._long.append(option)
+    
+    def parse(self):
+        """
+        Parses command line input to options and arguments.
+        """
+        options, arguments, i = ([], [], 0)
+        while i < len(self._argv):
+            option, argument = (self._argv[i], "")
+            if self._isopt(option): 
+                pass
+            elif self._isopt("{0}:".format(option)) or self._isopt("{0}=".format(option)):
+                i += 1
+                argument = self._argv[i]
+            elif option == "--":
+                arguments = self._argv[i+1:]
+                break
+            elif option[0] == "-" and option != "-":
+                raise UnexpectedOptionError("unexpected option found: {0}".format(option))
+            else:
+                arguments = self._argv[i:]
+                break
+            options.append( (option, argument) )
+            i += 1
+        self._options = options
+        self._arguments = arguments
 
 
 class Interface():
@@ -298,5 +332,13 @@ class Interface():
     to the internal methods and logic.
     """
     
-    def __init__(self):
-        pass
+    def __init__(self, short="", long=[], argv=[]):
+        self._parser, self._parsed = (NewParser(short=short, long=long, argv=argv), False)
+
+    def parse(self):
+        """
+        Parses given command line input.
+        """
+        self._parser.format()
+        self._parser.parse()
+        self._parsed = True
