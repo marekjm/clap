@@ -261,36 +261,6 @@ class ParserInitializationTests(unittest.TestCase):
         parser = clap.NewParser(short="f:b")
         parser._formatshorts()
         self.assertEqual(parser._short, ["-f:", "-b"])
-    
-    def testAddingShortOptionsWithoutArgument(self):
-        parser = clap.NewParser()
-        print( parser._short )
-        parser.format()
-        parser.addshort("f")
-        parser.addshort("b:")
-        self.assertEqual(parser._short, ["-f", "-b:"])
-
-    def testAddingShortOptionsDoNotDuplicateOptions(self):
-        parser = clap.NewParser()
-        print( parser._short )
-        parser.format()
-        parser.addshort("f")
-        parser.addshort("f")
-        self.assertEqual(parser._short, ["-f"])
-
-    def testAddingShortOptionsDoNotDuplicateOptionsWhenArgumentAdded(self):
-        parser = clap.NewParser()
-        parser.format()
-        parser.addshort("f")
-        parser.addshort("f:")
-        self.assertEqual(parser._short, ["-f:"])
-
-    def testAddingShortOptionsDoNotDuplicateOptionsWhenArgumentRemoved(self):
-        parser = clap.NewParser()
-        parser.format()
-        parser.addshort("f:")
-        parser.addshort("f")
-        self.assertEqual(parser._short, ["-f"])
 
 
 class NewParserTests(unittest.TestCase):
@@ -306,6 +276,61 @@ class NewParserTests(unittest.TestCase):
         self.assertEqual(parser._isopt("--foo="), True)
         self.assertEqual(parser._isopt("--bar"), True)
         self.assertEqual(parser._isopt("--verbose"), False)
+
+    def testAddingShortOptionsWithoutArgument(self):
+        parser = clap.NewParser()
+        parser.format()
+        parser.addshort("f")
+        parser.addshort("b:")
+        self.assertEqual(parser._short, ["-f", "-b:"])
+
+    def testAddingShortOptionsDoesNotDuplicateOptions(self):
+        parser = clap.NewParser()
+        parser.format()
+        parser.addshort("f")
+        parser.addshort("f")
+        self.assertEqual(parser._short, ["-f"])
+
+    def testAddingShortOptionsDoesNotDuplicateOptionsWhenAddingArgument(self):
+        parser = clap.NewParser()
+        parser.format()
+        parser.addshort("f")
+        parser.addshort("f:")
+        self.assertEqual(parser._short, ["-f:"])
+
+    def testAddingShortOptionsDoesNotDuplicateOptionsWhenRemovingArgument(self):
+        parser = clap.NewParser()
+        parser.format()
+        parser.addshort("f:")
+        parser.addshort("f")
+        self.assertEqual(parser._short, ["-f"])
+    
+    def testAddingLongOptions(self):
+        parser = clap.NewParser()
+        parser.format()
+        parser.addlong("foo")
+        self.assertEqual(parser._long, ["--foo"])
+
+    def testAddingLongOptionsDoesNotDuplicateOptions(self):
+        parser = clap.NewParser()
+        parser.format()
+        parser.addlong("foo")
+        parser.addlong("foo")
+        self.assertEqual(parser._long, ["--foo"])
+
+    def testAddingLongOptionsDoesNotDuplicateOptionsWhenAddingArgument(self):
+        parser = clap.NewParser()
+        parser.format()
+        parser.addlong("foo")
+        parser.addlong("foo=")
+        self.assertEqual(parser._long, ["--foo="])
+
+    def testAddingLongOptionsDoesNotDuplicateOptionsWhenRemovingArgument(self):
+        parser = clap.NewParser()
+        parser.format()
+        parser.addlong("foo")
+        parser.addlong("foo=")
+        self.assertEqual(parser._long, ["--foo="])
 
     
 if __name__ == "__main__": unittest.main()

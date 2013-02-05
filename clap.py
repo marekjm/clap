@@ -281,6 +281,16 @@ class NewParser():
         elif self._isopt(option[:-1]): self._short.remove(option[:-1])
         self._short.append(option)
 
+    def addlong(self, option):
+        """
+        Appends option to list of recognized short options.
+        """
+        option = "--{0}".format(option)
+        if self._isopt(option): self._long.remove(option)
+        elif self._isopt("{0}=".format(option)): self._long.remove("{0}=".format(option))
+        elif self._isopt(option[:-1]): self._long.remove(option[:-1])
+        self._long.append(option)
+
 
 class Interface():
     """
