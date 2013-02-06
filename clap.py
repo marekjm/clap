@@ -334,7 +334,7 @@ class NewParser():
         options, arguments, i = ([], [], 0)
         while i < len(self._argv):
             option, argument = (self._argv[i], "")
-            if self._isopt(option): 
+            if self._isopt(option):
                 pass
             elif self._isopt("{0}:".format(option)) or self._isopt("{0}=".format(option)):
                 i += 1
@@ -380,6 +380,12 @@ class Interface():
         """
         return self._options[option]
     
+    def getargs(self):
+        """
+        Returns list of arguments passed from command line.
+        """
+        return self._arguments
+
     def isopt(self, option, mode="b"):
         """
         Checks if given option is accepted in this instance.
@@ -388,7 +394,7 @@ class Interface():
     
     def waspassed(self, option, *args):
         """
-        Checks if given option is accepted in this instance.
+        Checks if given option have been passed to this interface.
         """
         args += (option,)
         result = False
@@ -397,3 +403,12 @@ class Interface():
                 result = True
                 break
         return result
+    
+    def listaccepted(self):
+        """
+        Returns sorted list of all options accepted by this interface.
+        """
+        options = []
+        for opt in self._parser._short: options.append(opt)
+        for opt in self._parser._long: options.append(opt)
+        return sorted(options)

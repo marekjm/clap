@@ -456,14 +456,6 @@ class NewParserTests(unittest.TestCase):
         parser.format()
         self.assertRaises(clap.ArgumentError, parser.parse)
     
-    @unittest.skip("unimplemented")
-    def testParseWithDuplicates(self):
-        parser = clap.NewParser(short="f:b", long=["foo=", "bar"], argv=["-f", "spam0", "-b", "--foo", "spam1", "--bar", "--foo", "spam2"])
-        parser.format()
-        parser.parse()
-        self.assertEqual(parser._options, [("-f", "spam0"), ("-b", ""), ("--bar", "")])
-        self.assertEqual(parser._arguments, [])
-
     def testParseWithBreaker(self):
         parser = clap.NewParser(short="f:b", long=["foo=", "bar"], argv=["-f", "spam0", "-b", "--", "--foo", "spam1", "--bar"])
         parser.format()
@@ -490,6 +482,12 @@ class InterfaceTests(unittest.TestCase):
         interface.parse()
         self.assertEqual(interface._options, {})
     
+    def testParseWithDuplicates(self):
+        parser = clap.Interface(short="f:b", long=["foo=", "bar"], argv=["-f", "spam0", "-b", "--foo", "spam1", "--bar", "--foo", "spam2"])
+        parser.parse()
+        self.assertEqual(parser._options, {"-f":"spam0", "-b":"", "--foo":"spam2", "--bar":""})
+        self.assertEqual(parser._arguments, [])
+
     def testOptionGetter(self):
         interface = clap.Interface(short="vV:", argv=["-v", "-V", "0.0.1"])
         interface.parse()
@@ -537,6 +535,16 @@ class InterfaceTests(unittest.TestCase):
         p = clap.Interface(short="v", long=["verbose"], argv=["-v", "--verbose", "foo"])
         p.parse()
         self.assertEqual(True, p.waspassed("-v", "--verbose"))
+
+    def testArgumentsGetter(self):
+        interface = clap.Interface(short="f:b", argv=["-f", "foo", "-b", "bar"])
+        interface.parse()
+        self.assertEqual(interface.getargs(), ["bar"])
+    
+    def testGettingListOfAcceptedOptions(self):
+        interface = clap.Interface(short="f:bo:", long=["foo=", "bar", "output="])
+        interface.parse()
+        self.assertEqual(interface.listaccepted(), ["--bar", "--foo=", "--output=", "-b", "-f:", "-o:"])
 
 
 if __name__ == "__main__": unittest.main()

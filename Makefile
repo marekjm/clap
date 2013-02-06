@@ -5,7 +5,10 @@ TAGNAME = clap-$(VERSION)
 
 test:
 	python3 -m unittest --catch --failfast --verbose test.py 
-	
+
+doc:
+	pydoc3 ./clap.py > DOC
+
 install:
 	python3 ./install.py
 

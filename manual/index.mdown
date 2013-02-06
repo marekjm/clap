@@ -4,6 +4,7 @@
 #### Basics
 
 0.  [Passing options](passing_options.mdown)
+1.  [Parser](parser.mdown)
 
 
 ----
