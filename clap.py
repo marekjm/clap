@@ -8,6 +8,13 @@ __version__ = "0.0.2"
 
 class UnexpectedOptionError(Exception): pass
 class SwitchValueError(Exception): pass
+class ArgumentError(Exception):
+    """
+    Error raised when invalid argument was given to option or
+    there was no argument when required.
+    """
+    pass
+
 class NotParsedError(Exception): pass
 class OptionNotFoundError(LookupError): pass
 
@@ -300,10 +307,30 @@ class NewParser():
         elif self._isopt("{0}=".format(option)): self._long.remove("{0}=".format(option))
         elif self._isopt(option[:-1]): self._long.remove(option[:-1])
     
+    def _splitshorts(self):
+        """
+        Splits joined short options passed from the command line.
+        '-lh' --> '-l -h'
+        """
+        argv, n = ([], 0)
+        for i, arg in enumerate(self._argv):
+            if arg[0] == "-" and arg[1] != "-": 
+                arg = [ "-{0}".format(opt) for opt in list(arg)[1:] ]
+            elif arg == "--":
+                argv.append("--")
+                n = i
+                break
+            else:
+                arg = [arg]
+            argv.extend(arg)
+            n = i
+        self._argv = argv + self._argv[n+1:]
+    
     def parse(self):
         """
         Parses command line input to options and arguments.
         """
+        self._splitshorts()
         options, arguments, i = ([], [], 0)
         while i < len(self._argv):
             option, argument = (self._argv[i], "")
@@ -311,7 +338,8 @@ class NewParser():
                 pass
             elif self._isopt("{0}:".format(option)) or self._isopt("{0}=".format(option)):
                 i += 1
-                argument = self._argv[i]
+                if i == len(self._argv): raise ArgumentError("option '{0}' requires argument".format(option))
+                else: argument = self._argv[i]
             elif option == "--":
                 arguments = self._argv[i+1:]
                 break
@@ -341,4 +369,13 @@ class Interface():
         """
         self._parser.format()
         self._parser.parse()
-        self._parsed = True
+        self._options = dict(self._parser._options)
+        self._arguments = self._parser._arguments
+    
+    def getopt(self, option):
+        """
+        Returns argument of given option or
+        empty string if option does not accept arguments. 
+        Raises KeyError when option was not passed.
+        """
+        return self._options[option]
