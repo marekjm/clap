@@ -456,6 +456,14 @@ class NewParserTests(unittest.TestCase):
         parser.format()
         self.assertRaises(clap.ArgumentError, parser.parse)
     
+    @unittest.skip("unimplemented")
+    def testParseWithDuplicates(self):
+        parser = clap.NewParser(short="f:b", long=["foo=", "bar"], argv=["-f", "spam0", "-b", "--foo", "spam1", "--bar", "--foo", "spam2"])
+        parser.format()
+        parser.parse()
+        self.assertEqual(parser._options, [("-f", "spam0"), ("-b", ""), ("--bar", "")])
+        self.assertEqual(parser._arguments, [])
+
     def testParseWithBreaker(self):
         parser = clap.NewParser(short="f:b", long=["foo=", "bar"], argv=["-f", "spam0", "-b", "--", "--foo", "spam1", "--bar"])
         parser.format()
@@ -492,6 +500,43 @@ class InterfaceTests(unittest.TestCase):
         interface = clap.Interface(short="vV:", argv=["-V", "0.0.1"])
         interface.parse()
         self.assertRaises(KeyError, interface.getopt, "-v")
+
+    def testIsoptWithEnabledModeBoth(self):
+        p = clap.Interface(short="v", long=["version="])
+        p.parse()
+        self.assertEqual(True, p.isopt("-v"))
+        self.assertEqual(False, p.isopt("-v:"))
+        
+        self.assertEqual(True, p.isopt("--version="))
+        self.assertEqual(False, p.isopt("--version"))
+
+    def testIsoptWithEnabledModeShort(self):
+        p = clap.Interface(short="v", long=["version="])
+        p.parse()
+        self.assertEqual(True, p.isopt("-v", mode="s"))
+        self.assertEqual(False, p.isopt("-v:", mode="s"))
+        
+        self.assertEqual(False, p.isopt("--version=", mode="s"))
+        self.assertEqual(False, p.isopt("--version", mode="s"))
+
+    def testIsoptWithEnabledModeLong(self):
+        p = clap.Interface(short="v", long=["version="])
+        p.parse()
+        self.assertEqual(False, p.isopt("-v", mode="l"))
+        self.assertEqual(False, p.isopt("-v:", mode="l"))
+        
+        self.assertEqual(True, p.isopt("--version=", mode="l"))
+        self.assertEqual(False, p.isopt("--version", mode="l"))
+
+    def testWasPassed(self):
+        p = clap.Interface(short="v", argv=["-v", "foo"])
+        p.parse()
+        self.assertEqual(True, p.waspassed("-v"))
+
+    def testWasPassedMultiple(self):
+        p = clap.Interface(short="v", long=["verbose"], argv=["-v", "--verbose", "foo"])
+        p.parse()
+        self.assertEqual(True, p.waspassed("-v", "--verbose"))
 
 
 if __name__ == "__main__": unittest.main()

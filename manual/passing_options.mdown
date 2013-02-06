@@ -21,6 +21,9 @@ It will internally split them because parser is by design not able to understand
 would become
 
     foo -b -a -r
+
+
+Long and short options can be mixed.
     
 
 ----

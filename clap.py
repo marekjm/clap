@@ -379,3 +379,21 @@ class Interface():
         Raises KeyError when option was not passed.
         """
         return self._options[option]
+    
+    def isopt(self, option, mode="b"):
+        """
+        Checks if given option is accepted in this instance.
+        """
+        return self._parser._isopt(option=option, mode=mode)
+    
+    def waspassed(self, option, *args):
+        """
+        Checks if given option is accepted in this instance.
+        """
+        args += (option,)
+        result = False
+        for option in args:
+            if option in self._options:
+                result = True
+                break
+        return result
