@@ -11,7 +11,7 @@
 
 
 * __new__:  ```UnexpectedOptionError``` added,
-* __new__:  ```SwitchValueNotFoundError``` added,
+* __new__:  ```SwitchValueError``` added,
 * __new__:  ```NotTranslatedError``` added,
 * __new__:  ```OptionNotFoundError``` added,
 
@@ -20,9 +20,8 @@
 * __new__:  class ```Parser()``` added,
 * __new__:  ```isopt()``` method added to ```Parser()```,
 * __new__:  ```parse()``` method added to ```Parser()```,
-* __new__:  ```translate()``` method added to ```Parser()```,
 * __new__:  ```getopt()``` method added to ```Parser()``` - returns options value or empty string if an option does not accept values,
-* __new__:  ```listpassed()``` method added to ```Parser()``` - it lists options passed to parser,
+* __new__:  ```getpassed()``` method added to ```Parser()``` - it lists options passed to parser,
 * __new__:  ```listaccepted()``` method added to ```Parser()``` - it lists options accepted by parser,
 * __new__:  ```getargs()``` method added to ```Parser()``` - returns arguments passed,
 * __new__:  ```_splitshorts()``` method added to ```Parser()```,

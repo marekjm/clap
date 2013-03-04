@@ -1,0 +1,13 @@
+#### Manual for `clap`
+###### version `0.0.2`
+
+#### Basics
+
+0.  [Passing options](passing_options.mdown)
+1.  [Parser](parser.mdown)
+
+
+----
+
+*Manual written by Marek Marecki*
+
