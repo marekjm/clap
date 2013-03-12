@@ -5,6 +5,13 @@ import clap
 
 __version__ = "0.0.2"
 
+class FormatterTests(unittest.TestCase):
+    def testSplittinEqualSignedOptions(self):
+        f = clap.Formatter(short="", long=["foo="], argv=["eggs", "--foo=bar", "-s", "pam"])
+        f.splitequalsign()
+        self.assertEqual(f.argv, ["eggs", "--foo", "bar", "-s", "pam"])
+
+
 class ParserInitializationTests(unittest.TestCase):
     def testBlankInitialization(self):
         parser = clap.Parser()
@@ -13,14 +20,16 @@ class ParserInitializationTests(unittest.TestCase):
         self.assertEqual(parser._argv, [])
         self.assertEqual(parser._options, [])
         self.assertEqual(parser._arguments, [])
+        self.assertEqual(parser._required, [])
 
     def testFullInitialization(self):
-        parser = clap.Parser(short="fb", long=["foo", "bar"], argv=["-f", "--foo", "-b", "--bar"])
+        parser = clap.Parser(short="fb", long=["foo", "bar"], required=["f", "foo"], argv=["-f", "--foo", "-b", "--bar"])
         self.assertEqual(parser._short, "fb")
         self.assertEqual(parser._long, ["foo", "bar"])
         self.assertEqual(parser._argv, ["-f", "--foo", "-b", "--bar"])
         self.assertEqual(parser._options, [])
         self.assertEqual(parser._arguments, [])
+        self.assertEqual(parser._required, ["f", "foo"])
     
     def testFromattingShortOptionsDescription(self):
         parser = clap.Parser(short="fb")
@@ -31,6 +40,10 @@ class ParserInitializationTests(unittest.TestCase):
         parser = clap.Parser(short="f:b")
         parser._formatshorts()
         self.assertEqual(parser._short, ["-f:", "-b"])
+
+    def testSupportForEqualSignForLongOptions(self):
+        p = clap.Parser(short="", long=["with"], argv=["eggs", "--with=spam"])
+        self.assertEqual(p._argv, ["eggs", "--with", "spam"])
 
     def testPurging(self):
         parser = clap.Parser(short="f:b", long=["foo=", "bar"], argv=["-f", "spam", "--bar", "spammer"])
@@ -227,6 +240,11 @@ class ParserTests(unittest.TestCase):
         parser.parse()
         self.assertEqual(parser._options, [("-b", ""), ("-z", ""), ("-f", "spam0"), ("--foo", "spam1"), ("--bar", "")])
         self.assertEqual(parser._arguments, [])
+
+    def testMissingOptionRaisesError(self):
+        p = clap.Parser(short="ba:r", required=["-a", "-r"], argv=["-b", "-a", "spam", "eggs"])
+        p.format()
+        self.assertRaises(clap.MissingOptionError, p.parse)
 
 
 class InterfaceTests(unittest.TestCase):
