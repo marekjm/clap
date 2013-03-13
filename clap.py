@@ -3,6 +3,7 @@
 """command line arguments parser"""
 
 import sys
+import re
 
 __version__ = "0.0.2"
 
@@ -20,7 +21,18 @@ class NotParsedError(Exception): pass
 class OptionNotFoundError(LookupError): pass
 
 
+def lookslikelongopt(string):
+    """
+    Decides wheter given string looks like long option or not.
+    """
+    pattern = "^--[a-z]+[a-z\-]*[a-z]+$"
+    return re.match(re.compile(pattern), string) is not None
 class Formatter():
+    """
+    This class preformats the command-line input to the form understood by the Parser. 
+    Every concept except the ones implemented in Parser() is handled here. 
+    For example Formatter() handles '--long-option=foo'.
+    """
     def __init__(self, short, long, argv):
         self.short = short
         self.long = long
@@ -31,16 +43,16 @@ class Formatter():
         Method responsible for formatting short options list given to parser.
         """
         short, i = ([], 0)
-        while i < len(self._short):
+        while i < len(self.short):
             option, n = ("-{0}", 1)
             try:
-                if self._short[i+1] == ":":
+                if self.short[i+1] == ":":
                     n += 1
                     option += ":"
             except IndexError: 
                 pass
             finally:
-                short.append(option.format(self._short[i]))
+                short.append(option.format(self.short[i]))
             i += n
         self.short = short
     
@@ -65,7 +77,8 @@ class Formatter():
             items = []
             if "=" in a:
                 a = a.split("=", 1)
-                if self._islongopt(a[0]):
+                #if self._islongopt(a[0]):
+                if lookslikelongopt(a[0]):
                     items.append(a[0])
                     items.append(a[1])
                 else:
@@ -80,7 +93,6 @@ class Parser():
     """
     Class utilizing methods used for parsing input from command line.
     """
-    
     def __init__(self, short="", long=[], required=[], argv=[]):
         formatter = Formatter(short=short, long=long, argv=argv)
         formatter._formatshorts()
@@ -114,29 +126,12 @@ class Parser():
         else: result = False
         return result
     
-    def format(self):
-        """
-        Formats options lists given to Parser().
-        Has to be called before parse().
-        """
-        formatter = Formatter(short=self.short, long=self.long, argv=[])
-        formatter._formatshorts()
-        formatter._formatlongs()
-        self._short, self._long = (formatter.short, formatter.long)
-        
     def purge(self):
         """
         Resets *every* variable to empty state.
         """
         self._argv = []
-        self._short, self._long = ("", [])
-        self._options, self._arguments = ([], [])
-
-    def clean(self):
-        """
-        Cleans parser - resets everything except `_argv`.
-        """
-        self._short, self._long = ("", [])
+        self._short, self._long = ([], [])
         self._options, self._arguments = ([], [])
 
     def addshort(self, option):
@@ -202,7 +197,7 @@ class Parser():
                 pass
             elif self._isopt("{0}:".format(option)) or self._isopt("{0}=".format(option)):
                 i += 1
-                if i == len(self._argv): raise ArgumentError("option '{0}' requires argument".format(option))
+                if i == len(self._argv): raise ArgumentError("option '{0}' requires argument but none found".format(option))
                 else: argument = self._argv[i]
             elif option == "--":
                 arguments = self._argv[i+1:]
@@ -227,13 +222,12 @@ class Interface():
     """
     
     def __init__(self, short="", long=[], argv=[]):
-        self._parser, self._parsed = (Parser(short=short, long=long, argv=argv), False)
+        self._parser, self._parsed = Parser(short=short, long=long, argv=argv), False
 
     def parse(self):
         """
         Parses given command line input.
         """
-        self._parser.format()
         self._parser.parse()
         self._options = dict(self._parser._options)
         self._arguments = self._parser._arguments
