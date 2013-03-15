@@ -12,6 +12,18 @@ class FormatterTests(unittest.TestCase):
         f.splitequalsign()
         self.assertEqual(f.argv, ["eggs", "--foo", "bar", "-s", "pam"])
 
+    def testSplittingShortOptionsWithArgumentWrappedIn(self):
+        f = clap.Formatter(short="", long=["foo"], argv=["eggs", "--foo='bar baz'", "-s", "pam"])
+        f._formatlongs()
+        f.splitequalsign()
+        self.assertEqual(f.argv, ["eggs", "--foo", "bar baz", "-s", "pam"])
+
+    def testSplittingShortOptionsWithArgumentWrappedInApostrophes(self):
+        g = clap.Formatter(short="", long=["foo"], argv=["eggs", '--foo="bar baz"', "-s", "pam"])
+        g._formatlongs()
+        g.splitequalsign()
+        self.assertEqual(g.argv, ["eggs", "--foo", "bar baz", "-s", "pam"])
+
 
 class ParserInitializationTests(unittest.TestCase):
     def testBlankInitialization(self):

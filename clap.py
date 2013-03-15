@@ -27,6 +27,8 @@ def lookslikelongopt(string):
     """
     pattern = "^--[a-z]+[a-z\-]*[a-z]+$"
     return re.match(re.compile(pattern), string) is not None
+
+
 class Formatter():
     """
     This class preformats the command-line input to the form understood by the Parser. 
@@ -77,10 +79,12 @@ class Formatter():
             items = []
             if "=" in a:
                 a = a.split("=", 1)
-                #if self._islongopt(a[0]):
                 if lookslikelongopt(a[0]):
                     items.append(a[0])
-                    items.append(a[1])
+                    value = a[1]
+                    if value[0] in ["'", '"']: value = value[1:]
+                    if value[-1] in ["'", '"']: value = value[:-1]
+                    items.append(value)
                 else:
                     items.append("=".join(a))
             else:

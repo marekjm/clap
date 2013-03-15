@@ -13,13 +13,17 @@ which will be using `clap` parser just as a backend.
 ----
 
 
-#### Options passed *together*
+#### How input is treated
 
 By design - to keep code simpler - parser do not understand options which are passed together (after one hyphen). 
-But before actual parsing the special method (`_splitshort()`) scans passed input and 
-splits short options passed together so the parser can understan them.
 
-In the process the original input will be altered to contain only options as if they had benn passed one at a time. 
+Support for more abstract ideas is done through `Formatter()` which is a class that is an additional layer 
+between the actual input and `Parser()`. It will format the command line input and process it to be understandable 
+by `Parser()`. 
+
+Every new feature is first implemented in `Formatter()` and can (but does not have to) be later moved to `Parser()`.
+
+In the process the original input will be altered to contain only options as if they had been passed one at a time. 
 So the command `ls -lhR` after altering becomes `ls -l -h -R`. The order of options is preserved. 
 
 **WARNING:** long options cannot be passed together. This will raise `UnexpectedOptionError`.

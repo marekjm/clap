@@ -14,3 +14,6 @@ install:
 
 uninstall:
 	python3 ./uninstall.py
+
+clean:
+	rm -rv ./__pycache__/

@@ -31,11 +31,9 @@ Long and short options can be mixed.
 #### Options with arguments
 
 When option requires argument it has to be divided from it by a single space. 
-Connecting argument to option with equation mark (`=`) is not supported.
+Connecting argument to option with equation mark (`=`) is supported.
 
     foo --output file.log --bar
-    
-    #   this will terminate parsing
     foo --output=file.log --bar
 
 &nbsp;
@@ -59,7 +57,6 @@ second one will become `foo -o -v file.log` and `clap` will treat `-v` as an arg
 
 
 ----
-
 
 #### Separating arguments from options
 
