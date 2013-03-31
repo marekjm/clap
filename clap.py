@@ -2,14 +2,21 @@
 
 """command line arguments parser"""
 
-import sys
 import re
+
 
 __version__ = "0.0.2"
 
+
 class UnexpectedOptionError(Exception): pass
+
+
 class MissingOptionError(Exception): pass
+
+
 class SwitchValueError(Exception): pass
+
+
 class ArgumentError(Exception):
     """
     Error raised when invalid argument was given to option or
@@ -17,8 +24,11 @@ class ArgumentError(Exception):
     """
     pass
 
+
 class NotParsedError(Exception): pass
-class OptionNotFoundError(LookupError): pass
+
+
+class OptionNotFoundError(Exception): pass
 
 
 def lookslikelongopt(string):
@@ -31,8 +41,10 @@ def lookslikelongopt(string):
 
 class Formatter():
     """
-    This class preformats the command-line input to the form understood by the Parser. 
-    Every concept except the ones implemented in Parser() is handled here. 
+    Implementation detail.
+
+    This class preformats the command-line input to the form understood by the Parser.
+    Every concept except the ones implemented in Parser() is handled here.
     For example Formatter() handles '--long-option=foo'.
     """
     def __init__(self, short, long, argv):
@@ -51,19 +63,19 @@ class Formatter():
                 if self.short[i+1] == ":":
                     n += 1
                     option += ":"
-            except IndexError: 
+            except IndexError:
                 pass
             finally:
                 short.append(option.format(self.short[i]))
             i += n
         self.short = short
-    
+
     def _formatlongs(self):
         """
         Method responsible for formatting long options list given to parser.
         """
-        self.long = [ "--{0}".format(opt) for opt in self.long ]
-    
+        self.long = ['--{0}'.format(opt) for opt in self.long]
+
     def _islongopt(self, opt):
         """
         Checks if given string is a valid long option.
@@ -91,10 +103,12 @@ class Formatter():
                 items.append(a)
             argv.extend(items)
         self.argv = argv
-    
+
 
 class Parser():
     """
+    Implementation detail.
+
     Class utilizing methods used for parsing input from command line.
     """
     def __init__(self, short="", long=[], required=[], argv=[]):
@@ -106,7 +120,7 @@ class Parser():
         self._short, self._long = (formatter.short, formatter.long)
         self._options, self._arguments = ([], [])
         self._required = required
-    
+
     def _isopt(self, option, mode="b"):
         """
         Returns True if given option is accepted by thi instance of Parser().
@@ -122,14 +136,14 @@ class Parser():
 
     def _passed(self, option):
         """
-        Returns if at least one of given options have been passed. 
+        Returns if at least one of given options have been passed.
         False otherwise.
         """
         opts = [opt for opt, value in self._options]
         if option in opts: result = True
         else: result = False
         return result
-    
+
     def purge(self):
         """
         Resets *every* variable to empty state.
@@ -169,7 +183,7 @@ class Parser():
         if self._isopt(option): self._long.remove(option)
         elif self._isopt("{0}=".format(option)): self._long.remove("{0}=".format(option))
         elif self._isopt(option[:-1]): self._long.remove(option[:-1])
-    
+
     def _splitshorts(self):
         """
         Splits joined short options passed from the command line.
@@ -177,8 +191,8 @@ class Parser():
         """
         argv, n = ([], 0)
         for i, arg in enumerate(self._argv):
-            if arg[0] == "-" and arg[1] != "-": 
-                arg = [ "-{0}".format(opt) for opt in list(arg)[1:] ]
+            if arg[0] == "-" and arg[1] != "-":
+                arg = ['-{0}'.format(opt) for opt in list(arg)[1:]]
             elif arg == "--":
                 argv.append("--")
                 n = i
@@ -188,7 +202,7 @@ class Parser():
             argv.extend(arg)
             n = i
         self._argv = argv + self._argv[n+1:]
-    
+
     def parse(self):
         """
         Parses command line input to options and arguments.
@@ -201,7 +215,8 @@ class Parser():
                 pass
             elif self._isopt("{0}:".format(option)) or self._isopt("{0}=".format(option)):
                 i += 1
-                if i == len(self._argv): raise ArgumentError("option '{0}' requires argument but none found".format(option))
+                if i == len(self._argv):
+                    raise ArgumentError("option '{0}' requires argument but none found".format(option))
                 else: argument = self._argv[i]
             elif option == "--":
                 arguments = self._argv[i+1:]
@@ -211,7 +226,7 @@ class Parser():
             else:
                 arguments = self._argv[i:]
                 break
-            options.append( (option, argument) )
+            options.append((option, argument))
             i += 1
         self._options = options
         self._arguments = arguments
@@ -221,10 +236,9 @@ class Parser():
 
 class Interface():
     """
-    Clients should use this class as it provides an interface 
+    Clients should use this class as it provides an interface
     to the internal methods and logic.
     """
-    
     def __init__(self, short="", long=[], argv=[]):
         self._parser, self._parsed = Parser(short=short, long=long, argv=argv), False
 
@@ -235,15 +249,15 @@ class Interface():
         self._parser.parse()
         self._options = dict(self._parser._options)
         self._arguments = self._parser._arguments
-    
+
     def getopt(self, option):
         """
         Returns argument of given option or
-        empty string if option does not accept arguments. 
+        empty string if option does not accept arguments.
         Raises KeyError when option was not passed.
         """
         return self._options[option]
-    
+
     def getargs(self):
         """
         Returns list of arguments passed from command line.
@@ -255,14 +269,14 @@ class Interface():
         Checks if given option is accepted in this instance.
         """
         return self._parser._isopt(option=option, mode=mode)
-    
+
     def waspassed(self, option, *args):
         """
         Checks if given option have been passed.
         """
         args += (option,)
         result = True
-        for o in args: 
+        for o in args:
             if not self._parser._passed(o):
                 result = False
                 break
