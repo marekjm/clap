@@ -6,14 +6,14 @@ NAME
 CLASSES
     builtins.Exception(builtins.BaseException)
         ArgumentError
+        MissingOptionError
         NotParsedError
+        OptionNotFoundError
         SwitchValueError
         UnexpectedOptionError
-    builtins.LookupError(builtins.Exception)
-        OptionNotFoundError
     builtins.object
+        Formatter
         Interface
-        NewParser
         Parser
     
     class ArgumentError(builtins.Exception)
@@ -86,8 +86,31 @@ CLASSES
      |  
      |  args
     
+    class Formatter(builtins.object)
+     |  Implementation detail.
+     |  
+     |  This class preformats the command-line input to the form understood by the Parser.
+     |  Every concept except the ones implemented in Parser() is handled here.
+     |  For example Formatter() handles '--long-option=foo'.
+     |  
+     |  Methods defined here:
+     |  
+     |  __init__(self, short, long, argv)
+     |  
+     |  splitequalsign(self)
+     |      Splits long options connected with their values by equal sign.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors defined here:
+     |  
+     |  __dict__
+     |      dictionary for instance variables (if defined)
+     |  
+     |  __weakref__
+     |      list of weak references to the object (if defined)
+    
     class Interface(builtins.object)
-     |  Clients should use this class as it provides an interface 
+     |  Clients should use this class as it provides an interface
      |  to the internal methods and logic.
      |  
      |  Methods defined here:
@@ -99,7 +122,7 @@ CLASSES
      |  
      |  getopt(self, option)
      |      Returns argument of given option or
-     |      empty string if option does not accept arguments. 
+     |      empty string if option does not accept arguments.
      |      Raises KeyError when option was not passed.
      |  
      |  isopt(self, option, mode='b')
@@ -112,7 +135,7 @@ CLASSES
      |      Parses given command line input.
      |  
      |  waspassed(self, option, *args)
-     |      Checks if given option have been passed to this interface.
+     |      Checks if given option have been passed.
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors defined here:
@@ -123,46 +146,72 @@ CLASSES
      |  __weakref__
      |      list of weak references to the object (if defined)
     
-    class NewParser(builtins.object)
-     |  Class utilizing methods used for parsing input from command line.
+    class MissingOptionError(builtins.Exception)
+     |  Method resolution order:
+     |      MissingOptionError
+     |      builtins.Exception
+     |      builtins.BaseException
+     |      builtins.object
      |  
-     |  Methods defined here:
-     |  
-     |  __init__(self, short='', long=[], argv=[])
-     |  
-     |  addlong(self, option)
-     |      Appends option to list of recognized short options.
-     |  
-     |  addshort(self, option)
-     |      Appends option to list of recognized short options.
-     |  
-     |  clean(self)
-     |      Cleans parser - resets everything except `_argv`.
-     |  
-     |  format(self)
-     |      Formats options lists given to Parser().
-     |      Has to be called before parse().
-     |  
-     |  parse(self)
-     |      Parses command line input to options and arguments.
-     |  
-     |  purge(self)
-     |      Resets *every* variable to empty state.
-     |  
-     |  rmlong(self, option)
-     |      Removes option from list of recognized short options.
-     |  
-     |  rmshort(self, option)
-     |      Removes option from list of recognized short options.
-     |  
-     |  ----------------------------------------------------------------------
      |  Data descriptors defined here:
-     |  
-     |  __dict__
-     |      dictionary for instance variables (if defined)
      |  
      |  __weakref__
      |      list of weak references to the object (if defined)
+     |  
+     |  ----------------------------------------------------------------------
+     |  Methods inherited from builtins.Exception:
+     |  
+     |  __init__(...)
+     |      x.__init__(...) initializes x; see help(type(x)) for signature
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data and other attributes inherited from builtins.Exception:
+     |  
+     |  __new__ = <built-in method __new__ of type object>
+     |      T.__new__(S, ...) -> a new object with type S, a subtype of T
+     |  
+     |  ----------------------------------------------------------------------
+     |  Methods inherited from builtins.BaseException:
+     |  
+     |  __delattr__(...)
+     |      x.__delattr__('name') <==> del x.name
+     |  
+     |  __getattribute__(...)
+     |      x.__getattribute__('name') <==> x.name
+     |  
+     |  __reduce__(...)
+     |  
+     |  __repr__(...)
+     |      x.__repr__() <==> repr(x)
+     |  
+     |  __setattr__(...)
+     |      x.__setattr__('name', value) <==> x.name = value
+     |  
+     |  __setstate__(...)
+     |  
+     |  __str__(...)
+     |      x.__str__() <==> str(x)
+     |  
+     |  with_traceback(...)
+     |      Exception.with_traceback(tb) --
+     |      set self.__traceback__ to tb and return self.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors inherited from builtins.BaseException:
+     |  
+     |  __cause__
+     |      exception cause
+     |  
+     |  __context__
+     |      exception context
+     |  
+     |  __dict__
+     |  
+     |  __suppress_context__
+     |  
+     |  __traceback__
+     |  
+     |  args
     
     class NotParsedError(builtins.Exception)
      |  Method resolution order:
@@ -231,10 +280,9 @@ CLASSES
      |  
      |  args
     
-    class OptionNotFoundError(builtins.LookupError)
+    class OptionNotFoundError(builtins.Exception)
      |  Method resolution order:
      |      OptionNotFoundError
-     |      builtins.LookupError
      |      builtins.Exception
      |      builtins.BaseException
      |      builtins.object
@@ -245,13 +293,13 @@ CLASSES
      |      list of weak references to the object (if defined)
      |  
      |  ----------------------------------------------------------------------
-     |  Methods inherited from builtins.LookupError:
+     |  Methods inherited from builtins.Exception:
      |  
      |  __init__(...)
      |      x.__init__(...) initializes x; see help(type(x)) for signature
      |  
      |  ----------------------------------------------------------------------
-     |  Data and other attributes inherited from builtins.LookupError:
+     |  Data and other attributes inherited from builtins.Exception:
      |  
      |  __new__ = <built-in method __new__ of type object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
@@ -300,54 +348,31 @@ CLASSES
      |  args
     
     class Parser(builtins.object)
+     |  Implementation detail.
+     |  
+     |  Class utilizing methods used for parsing input from command line.
+     |  
      |  Methods defined here:
      |  
-     |  __init__(self, short='', long=[], argv=[])
+     |  __init__(self, short='', long=[], required=[], argv=[])
      |  
-     |  getargs(self)
-     |      Returns list of arguments passed from command line.
+     |  addlong(self, option)
+     |      Appends option to list of recognized short options.
      |  
-     |  getlongs(self)
-     |      Returns list of long options accepted by this instance of Parser().
-     |  
-     |  getopt(self, opt)
-     |      Returns options value or empty string if the option does not accept values.
-     |      Raises OptionNotFoundError if option has not been found.
-     |  
-     |  getpassed(self)
-     |      Returns list of options passed to this instance of Parser().
-     |  
-     |  getshorts(self)
-     |      Returns list of short options accepted by this instance of Parser().
-     |  
-     |  isopt(self, opt, mode='b')
-     |      Checks if given string is a valid option for this instance of Parser(). 
-     |      You have to pass it in full form eg. `--verbose` and `-v`. 
-     |      Value indicator (`:`) has to be explicitly given. 
-     |      
-     |      Modes are:
-     |       *  's' - for short options,
-     |       *  'l' - for long options,
-     |       *  'b' - for both types,
-     |  
-     |  listaccepted(self)
-     |      Returns list of options by this instance of Parser().
+     |  addshort(self, option)
+     |      Appends option to list of recognized short options.
      |  
      |  parse(self)
-     |      Parses contents of `argv` and splits them into options and arguments.
+     |      Parses command line input to options and arguments.
      |  
-     |  setargv(self, argv)
-     |      Sets list of arguments from command line or custom made (eg. generated by a client program).
+     |  purge(self)
+     |      Resets *every* variable to empty state.
      |  
-     |  setlong(self, opts)
-     |      Sets long options. Accepts list of strings.
+     |  rmlong(self, option)
+     |      Removes option from list of recognized short options.
      |  
-     |  setshort(self, opts)
-     |      Sets short options. Accepts string.
-     |  
-     |  waspassed(self, opt, *args)
-     |      Checks if the given option was passed.
-     |      Returns `True` if any of given options have been passed.
+     |  rmshort(self, option)
+     |      Removes option from list of recognized short options.
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors defined here:
@@ -492,10 +517,14 @@ CLASSES
      |  
      |  args
 
+FUNCTIONS
+    lookslikelongopt(string)
+        Decides wheter given string looks like long option or not.
+
 VERSION
     0.0.2
 
 FILE
-    /home/marekjm/Development/Python3/Projects/clap/clap.py
+    /home/marek/Development/Python3/clap/clap.py
 
 
