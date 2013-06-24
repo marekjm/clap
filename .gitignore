@@ -1,5 +1,7 @@
-scitesession
-
-run.py
+*.swp
 
 __pycache__/
+*.py[co]
+
+.*
+!.gitignore

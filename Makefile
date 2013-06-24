@@ -9,11 +9,6 @@ test:
 doc:
 	pydoc3 ./clap.py > DOC
 
-install:
-	python3 ./install.py
-
-uninstall:
-	python3 ./uninstall.py
-
 clean:
 	rm -rv ./__pycache__/
+	rm -rv ./clap/__pycache__/

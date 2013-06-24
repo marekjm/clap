@@ -7,7 +7,7 @@ __version__ = "0.0.2"
 
 class FormatterTests(unittest.TestCase):
     def testSplittinEqualSignedOptions(self):
-        f = clap.Formatter(short="", long=["foo="], argv=["eggs", "--foo=bar", "-s", "pam"])
+        f = clap.formatter.Formatter(short="", long=["foo="], argv=["eggs", "--foo=bar", "-s", "pam"])
         f._formatlongs()
         f.splitequalsign()
         self.assertEqual(f.argv, ["eggs", "--foo", "bar", "-s", "pam"])
