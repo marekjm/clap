@@ -25,7 +25,7 @@ def lookslikeopt(s):
                 )
 
 
-class Formatter():
+class Formater():
     """This object is used to format the input list in order for use
     with Parser().
     """

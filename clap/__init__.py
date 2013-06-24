@@ -1,4 +1,4 @@
-from clap import formatter
+from clap import formater
 from clap import parser
 from clap import errors
 
