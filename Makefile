@@ -10,5 +10,5 @@ doc:
 	pydoc3 ./clap.py > DOC
 
 clean:
-	rm -rv ./__pycache__/
 	rm -rv ./clap/__pycache__/
+	rm -rv ./__pycache__/

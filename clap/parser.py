@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from clap import formatter, errors
+from clap import formater, errors
 
 
 """This module contains Parser() object.
@@ -105,7 +105,7 @@ class Parser():
         """
         for i in self.argv:
             if i == '--': break
-            if formatter.lookslikeopt(i) and not self.accepts(i):
+            if formater.lookslikeopt(i) and not self.accepts(i):
                 raise errors.UnrecognizedOptionError(i)
 
     def parse(self):
