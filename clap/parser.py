@@ -95,11 +95,22 @@ class Parser():
         """Returns type of given option.
         None indicates that option takes no additional argument.
         """
+        if not self.accepts(option): raise errors.UnrecognizedOptionError(option)
         for o in self.options:
             if option == o['short'] or option == o['long']:
                 opt_type = o['type']
                 break
         return opt_type
+
+    def gethint(self, option):
+        """Returns hint for given option.
+        """
+        if not self.accepts(option): raise errors.UnrecognizedOptionError(option)
+        for o in self.options:
+            if option == o['short'] or option == o['long']:
+                hint = o['hint']
+                break
+        return hint
 
     def check(self):
         """Checks if Parser() contains any unrecognized options.
@@ -117,7 +128,10 @@ class Parser():
                 fail = True
                 if option in self.argv: fail = False
                 if alias and alias in self.argv: fail = False
-                if fail: raise errors.RequiredOptionNotFoundError('{0} ({1})'.format(option, self.type(option)))
+                if fail:
+                    message = '{0} ({1})'.format(option, self.type(option))
+                    if self.gethint(option): message += ': {0}'.format(self.gethint(option))
+                    raise errors.RequiredOptionNotFoundError(message)
 
     def parse(self):
         """Parses input.
