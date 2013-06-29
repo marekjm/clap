@@ -12,8 +12,8 @@ class Parser():
     """Used for parsing options.
     """
     argv = []
-    options = []
     parsed = {}
+    options = []
     arguments = []
 
     def __init__(self, argv=[]):
@@ -34,7 +34,7 @@ class Parser():
         self.parsed = {}
         self.arguments = []
 
-    def add(self, short='', long='', type=None, hint=''):
+    def add(self, short='', long='', type=None, required=False, hint=''):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
@@ -46,7 +46,8 @@ class Parser():
         new = {'short': short,
                'long': long,
                'type': type,
-               'hint': hint
+               'hint': hint,
+               'required': required,
                }
         self.options.append(new)
         return new
@@ -107,6 +108,16 @@ class Parser():
             if i == '--': break
             if formater.lookslikeopt(i) and not self.accepts(i):
                 raise errors.UnrecognizedOptionError(i)
+
+        for i in self.options:
+            if i['required']:
+                if i['long']: option = i['long']
+                else: option = i['short']
+                alias = self.alias(option)
+                fail = True
+                if option in self.argv: fail = False
+                if alias and alias in self.argv: fail = False
+                if fail: raise errors.RequiredOptionNotFoundError('{0} ({1})'.format(option, self.type(option)))
 
     def parse(self):
         """Parses input.
