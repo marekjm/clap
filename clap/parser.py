@@ -130,3 +130,11 @@ class Parser():
             i += 1
         self.parsed = parsed
         self.arguments = self.argv[i:]
+
+    def get(self, key):
+        """Returns option value.
+        Returns None if given option does not need an argument.
+        """
+        if type(key) is None and key in self: value = None
+        else: value = self.parsed[key]
+        return value

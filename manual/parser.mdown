@@ -1,44 +1,46 @@
 #### Parser
-###### _version: `0.0.2`_
+###### _version: `0.2.1`_
 
 ###### [Index](index.mdown)
 ----
 
-Parser in `clap` is accessible through interface layer but can be used on its own. 
-It may be slightly more difficult and you need to remeber that parser lacks some end-user-wanted methods. 
-
-But it is written in a way that makes it easy to write your own interface 
-which will be using `clap` parser just as a backend. 
+Parser is written in a way that makes it easy to write your own interface 
+around it and use `clap` parser just as a backend. 
 
 ----
 
 
 #### How input is treated
 
-By design - to keep code simpler - parser do not understand options which are passed together (after one hyphen). 
+By design - to keep code simpler - parser do not understand more complex ways of passing options like 
+passing several short options after one hyphen, long options connected with their values with equal sign. 
 
-Support for more abstract ideas is done through `Formatter()` which is a class that is an additional layer 
-between the actual input and `Parser()`. It will format the command line input and process it to be understandable 
+Support for these ideas is done through `clap.formater.Formater()` which is a class that is an additional layer 
+between the actual input and `clap.parser.Parser()`. It will format the command line input and process it to be understandable 
 by `Parser()`. 
-
-Every new feature is first implemented in `Formatter()` and can (but does not have to) be later moved to `Parser()`.
 
 In the process the original input will be altered to contain only options as if they had been passed one at a time. 
 So the command `ls -lhR` after altering becomes `ls -l -h -R`. The order of options is preserved. 
 
-**WARNING:** long options cannot be passed together. This will raise `UnexpectedOptionError`.
+**WARNING:** long options cannot be passed together. This will raise `UnrecognizedOptionError`.
 
 ----
 
 
 #### Options with arguments
 
-Some options require arguments. The common example is option `-o` or `--output`. 
-It is obvious that it needs file to which it can write. 
-
 Options with arguments are supported in `clap`. 
-To use tell parser that it will need to find argument for this option use colon (`:`) for short and 
-equation mark (`=`) for long options when giving descriptions to parser. 
+To use this feature you must specify type of argument which the option expects. 
+Type is a callback function.
+
+    ...
+    parser = clap.parser.Parser(list(formater))
+    parser.add(short='o', long='output', type=str)
+
+During parsing the argument will be grabbed and `Parser()` will try to convert it 
+to desired type.
+
+If you want 
 
 On the command line the argument must be separated from its option by a single space. 
 Assigning arguments with equation mark is not supported in `clap`. 

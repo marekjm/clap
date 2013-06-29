@@ -3,141 +3,88 @@
 import unittest
 import clap
 
-__version__ = "0.0.2"
+__version__ = '0.2.1'
 
 class FormatterTests(unittest.TestCase):
     def testSplittinEqualSignedOptions(self):
-        f = clap.formatter.Formatter(short="", long=["foo="], argv=["eggs", "--foo=bar", "-s", "pam"])
-        f._formatlongs()
-        f.splitequalsign()
-        self.assertEqual(f.argv, ["eggs", "--foo", "bar", "-s", "pam"])
+        f = clap.formater.Formater(argv=['eggs', '--foo=bar', '-s', 'pam'])
+        f.format()
+        self.assertEqual(f.formated, ['eggs', '--foo', 'bar', '-s', 'pam'])
 
     def testSplittingLongOptionsWithArgumentWrapped(self):
-        f = clap.Formatter(short="", long=["foo"], argv=["eggs", "--foo='bar baz'", "-s", "pam"])
-        f._formatlongs()
-        f.splitequalsign()
-        self.assertEqual(f.argv, ["eggs", "--foo", "bar baz", "-s", "pam"])
-
-        g = clap.Formatter(short="", long=["foo"], argv=["eggs", '--foo="bar baz"', "-s", "pam"])
-        g._formatlongs()
-        g.splitequalsign()
-        self.assertEqual(g.argv, ["eggs", "--foo", "bar baz", "-s", "pam"])
-
-
-class ParserInitializationTests(unittest.TestCase):
-    def testBlankInitialization(self):
-        parser = clap.Parser()
-        self.assertEqual(parser._short, [])
-        self.assertEqual(parser._long, [])
-        self.assertEqual(parser._argv, [])
-        self.assertEqual(parser._options, [])
-        self.assertEqual(parser._arguments, [])
-        self.assertEqual(parser._required, [])
-
-    def testFullInitialization(self):
-        parser = clap.Parser(short="fb", long=["foo", "bar"], required=["-f", "--foo"], argv=["-f", "--foo", "-b", "--bar"])
-        self.assertEqual(parser._short, ["-f", "-b"])
-        self.assertEqual(parser._long, ["--foo", "--bar"])
-        self.assertEqual(parser._argv, ["-f", "--foo", "-b", "--bar"])
-        self.assertEqual(parser._options, [])
-        self.assertEqual(parser._arguments, [])
-        self.assertEqual(parser._required, ["-f", "--foo"])
-    
-    def testFromattingShortOptionsDescription(self):
-        parser = clap.Parser(short="fb")
-        self.assertEqual(parser._short, ["-f", "-b"])
-
-    def testFromattingShortOptionsRequestingArguments(self):
-        parser = clap.Parser(short="f:b")
-        self.assertEqual(parser._short, ["-f:", "-b"])
-
-    def testSupportForEqualSignForLongOptions(self):
-        p = clap.Parser(short="", long=["with"], argv=["eggs", "--with=spam"])
-        self.assertEqual(p._argv, ["eggs", "--with", "spam"])
-
-    def testPurging(self):
-        parser = clap.Parser(short="f:b", long=["foo=", "bar"], argv=["-f", "spam", "--bar", "spammer"])
-        self.assertEqual(parser._short, ["-f:", "-b"])
-        self.assertEqual(parser._long, ["--foo=", "--bar"])
-        self.assertEqual(parser._argv, ["-f", "spam", "--bar", "spammer"])
-        self.assertEqual(parser._options, [])
-        self.assertEqual(parser._arguments, [])
-        parser.purge()
-        self.assertEqual(parser._short, [])
-        self.assertEqual(parser._long, [])
-        self.assertEqual(parser._argv, [])
-        self.assertEqual(parser._options, [])
-        self.assertEqual(parser._arguments, [])
+        f = clap.formater.Formater(argv=['eggs', '--foo=bar baz', '-s', 'pam'])
+        f.format()
+        self.assertEqual(f.formated, ['eggs', '--foo', 'bar baz', '-s', 'pam'])
 
 
 class ParserManipulationTests(unittest.TestCase):
     def testAddingShortOptionsWithoutArgument(self):
         parser = clap.Parser()
-        parser.addshort("f")
-        parser.addshort("b:")
-        self.assertEqual(parser._short, ["-f", "-b:"])
+        parser.add(short='f')
+        parser.add(short='b', type=str)
+        self.assertEqual(parser._short, ['-f', '-b:'])
 
     def testAddingShortOptionsDoesNotDuplicateOptions(self):
         parser = clap.Parser()
-        parser.addshort("f")
-        parser.addshort("f")
-        self.assertEqual(parser._short, ["-f"])
+        parser.addshort('f')
+        parser.addshort('f')
+        self.assertEqual(parser._short, ['-f'])
 
     def testAddingShortOptionsDoesNotDuplicateOptionsWhenAddingArgument(self):
         parser = clap.Parser()
-        parser.addshort("f")
-        parser.addshort("f:")
-        self.assertEqual(parser._short, ["-f:"])
+        parser.addshort('f')
+        parser.addshort('f:')
+        self.assertEqual(parser._short, ['-f:'])
 
     def testAddingShortOptionsDoesNotDuplicateOptionsWhenRemovingArgument(self):
         parser = clap.Parser()
-        parser.addshort("f:")
-        parser.addshort("f")
-        self.assertEqual(parser._short, ["-f"])
+        parser.addshort('f:')
+        parser.addshort('f')
+        self.assertEqual(parser._short, ['-f'])
     
     def testAddingLongOptions(self):
         parser = clap.Parser()
-        parser.addlong("foo")
-        self.assertEqual(parser._long, ["--foo"])
+        parser.addlong('foo')
+        self.assertEqual(parser._long, ['--foo'])
 
     def testAddingLongOptionsDoesNotDuplicateOptions(self):
         parser = clap.Parser()
-        parser.addlong("foo")
-        parser.addlong("foo")
-        self.assertEqual(parser._long, ["--foo"])
+        parser.addlong('foo')
+        parser.addlong('foo')
+        self.assertEqual(parser._long, ['--foo'])
 
     def testAddingLongOptionsDoesNotDuplicateOptionsWhenAddingArgument(self):
         parser = clap.Parser()
-        parser.addlong("foo")
-        parser.addlong("foo=")
-        self.assertEqual(parser._long, ["--foo="])
+        parser.addlong('foo')
+        parser.addlong('foo=')
+        self.assertEqual(parser._long, ['--foo='])
 
     def testAddingLongOptionsDoesNotDuplicateOptionsWhenRemovingArgument(self):
         parser = clap.Parser()
-        parser.addlong("foo")
-        parser.addlong("foo=")
-        self.assertEqual(parser._long, ["--foo="])
+        parser.addlong('foo')
+        parser.addlong('foo=')
+        self.assertEqual(parser._long, ['--foo='])
     
     def testRemovingShortOptions(self):
         parser = clap.Parser()
-        parser.addshort("f")
-        parser.rmshort("-f")
+        parser.addshort('f')
+        parser.rmshort('-f')
         self.assertEqual(parser._short, [])
 
     def testRemovingLongOptions(self):
         parser = clap.Parser()
-        parser.addlong("foo")
-        parser.rmlong("--foo")
+        parser.addlong('foo')
+        parser.rmlong('--foo')
         self.assertEqual(parser._long, [])
     
     def testPurging(self):
-        parser = clap.Parser(short="f:b", long=["foo=", "bar"], argv=["-f", "spam", "--bar", "spammer"])
+        parser = clap.Parser(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam', '--bar', 'spammer'])
         parser.parse()
-        self.assertEqual(parser._short, ["-f:", "-b"])
-        self.assertEqual(parser._long, ["--foo=", "--bar"])
-        self.assertEqual(parser._argv, ["-f", "spam", "--bar", "spammer"])
-        self.assertEqual(parser._options, [("-f", "spam"), ("--bar", "")])
-        self.assertEqual(parser._arguments, ["spammer"])
+        self.assertEqual(parser._short, ['-f:', '-b'])
+        self.assertEqual(parser._long, ['--foo=', '--bar'])
+        self.assertEqual(parser._argv, ['-f', 'spam', '--bar', 'spammer'])
+        self.assertEqual(parser._options, [('-f', 'spam'), ('--bar', '')])
+        self.assertEqual(parser._arguments, ['spammer'])
         parser.purge()
         self.assertEqual(parser._short, [])
         self.assertEqual(parser._long, [])
@@ -148,61 +95,61 @@ class ParserManipulationTests(unittest.TestCase):
 
 class ParserTests(unittest.TestCase):
     def testValidOptionChecking(self):
-        parser = clap.Parser(short="f:b", long=["foo=", "bar"])
-        self.assertEqual(parser._isopt("-f"), False)
-        self.assertEqual(parser._isopt("-f:"), True)
-        self.assertEqual(parser._isopt("-b"), True)
-        self.assertEqual(parser._isopt("-v"), False)
+        parser = clap.Parser(short='f:b', long=['foo=', 'bar'])
+        self.assertEqual(parser._isopt('-f'), False)
+        self.assertEqual(parser._isopt('-f:'), True)
+        self.assertEqual(parser._isopt('-b'), True)
+        self.assertEqual(parser._isopt('-v'), False)
 
-        self.assertEqual(parser._isopt("--foo"), False)
-        self.assertEqual(parser._isopt("--foo="), True)
-        self.assertEqual(parser._isopt("--bar"), True)
-        self.assertEqual(parser._isopt("--verbose"), False)
+        self.assertEqual(parser._isopt('--foo'), False)
+        self.assertEqual(parser._isopt('--foo='), True)
+        self.assertEqual(parser._isopt('--bar'), True)
+        self.assertEqual(parser._isopt('--verbose'), False)
 
     def testSplittingShortOptions(self):
-        parser = clap.Parser(short="f:bz", long=["foo=", "bar"], argv=["-f", "spam0", "-bz", "--bar"])
+        parser = clap.Parser(short='f:bz', long=['foo=', 'bar'], argv=['-f', 'spam0', '-bz', '--bar'])
         parser._splitshorts()
-        self.assertEqual(parser._argv, ["-f", "spam0", "-b", "-z", "--bar"])
+        self.assertEqual(parser._argv, ['-f', 'spam0', '-b', '-z', '--bar'])
     
     def testSplittingShortOptionsWhichRequireArgument(self):
-        parser = clap.Parser(short="f:bz", long=["foo=", "bar"], argv=["-bzf", "spam0", "--bar"])
+        parser = clap.Parser(short='f:bz', long=['foo=', 'bar'], argv=['-bzf', 'spam0', '--bar'])
         parser._splitshorts()
-        self.assertEqual(parser._argv, ["-b", "-z", "-f", "spam0", "--bar"])
+        self.assertEqual(parser._argv, ['-b', '-z', '-f', 'spam0', '--bar'])
     
     def testParseRaisesError(self):
-        parser = clap.Parser(short="f:b", long=["foo=", "bar"], argv=["-f", "spam0", "-v", "-b", "--foo", "spam1", "--bar"])
+        parser = clap.Parser(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam0', '-v', '-b', '--foo', 'spam1', '--bar'])
         self.assertRaises(clap.UnexpectedOptionError, parser.parse)
 
     def testParseSimple(self):
-        parser = clap.Parser(short="f:b", long=["foo=", "bar"], argv=["-f", "spam0", "-b", "--foo", "spam1", "--bar"])
+        parser = clap.Parser(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam0', '-b', '--foo', 'spam1', '--bar'])
         parser.parse()
-        self.assertEqual(parser._options, [("-f", "spam0"), ("-b", ""), ("--foo", "spam1"), ("--bar", "")])
+        self.assertEqual(parser._options, [('-f', 'spam0'), ('-b', ''), ('--foo', 'spam1'), ('--bar', '')])
         self.assertEqual(parser._arguments, [])
 
     def testParseWithArguments(self):
-        parser = clap.Parser(short="f:b", long=["foo=", "bar"], argv=["-f", "spam0", "-b", "--foo", "spam1", "--bar", "arguments"])
+        parser = clap.Parser(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam0', '-b', '--foo', 'spam1', '--bar', 'arguments'])
         parser.parse()
-        self.assertEqual(parser._options, [("-f", "spam0"), ("-b", ""), ("--foo", "spam1"), ("--bar", "")])
-        self.assertEqual(parser._arguments, ["arguments"])
+        self.assertEqual(parser._options, [('-f', 'spam0'), ('-b', ''), ('--foo', 'spam1'), ('--bar', '')])
+        self.assertEqual(parser._arguments, ['arguments'])
     
     def testParseWithMissingArgument(self):
-        parser = clap.Parser(short="f:b", long=["foo=", "bar"], argv=["-f", "spam0", "-b", "--foo"])
+        parser = clap.Parser(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam0', '-b', '--foo'])
         self.assertRaises(clap.ArgumentError, parser.parse)
     
     def testParseWithBreaker(self):
-        parser = clap.Parser(short="f:b", long=["foo=", "bar"], argv=["-f", "spam0", "-b", "--", "--foo", "spam1", "--bar"])
+        parser = clap.Parser(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam0', '-b', '--', '--foo', 'spam1', '--bar'])
         parser.parse()
-        self.assertEqual(parser._options, [("-f", "spam0"), ("-b", "")])
-        self.assertEqual(parser._arguments, ["--foo", "spam1", "--bar"])
+        self.assertEqual(parser._options, [('-f', 'spam0'), ('-b', '')])
+        self.assertEqual(parser._arguments, ['--foo', 'spam1', '--bar'])
 
     def testParseWhenOptionsAreJoined(self):
-        parser = clap.Parser(short="f:bz", long=["foo=", "bar"], argv=["-bzf", "spam0", "--foo", "spam1", "--bar"])
+        parser = clap.Parser(short='f:bz', long=['foo=', 'bar'], argv=['-bzf', 'spam0', '--foo', 'spam1', '--bar'])
         parser.parse()
-        self.assertEqual(parser._options, [("-b", ""), ("-z", ""), ("-f", "spam0"), ("--foo", "spam1"), ("--bar", "")])
+        self.assertEqual(parser._options, [('-b', ''), ('-z', ''), ('-f', 'spam0'), ('--foo', 'spam1'), ('--bar', '')])
         self.assertEqual(parser._arguments, [])
 
     def testMissingOptionRaisesError(self):
-        p = clap.Parser(short="ba:r", required=["-a", "-r"], argv=["-b", "-a", "spam", "eggs"])
+        p = clap.Parser(short='ba:r', required=['-a', '-r'], argv=['-b', '-a', 'spam', 'eggs'])
         self.assertRaises(clap.MissingOptionError, p.parse)
 
 
@@ -218,68 +165,68 @@ class InterfaceTests(unittest.TestCase):
         self.assertEqual(interface._options, {})
     
     def testParseWithDuplicates(self):
-        parser = clap.Interface(short="f:b", long=["foo=", "bar"], argv=["-f", "spam0", "-b", "--foo", "spam1", "--bar", "--foo", "spam2"])
+        parser = clap.Interface(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam0', '-b', '--foo', 'spam1', '--bar', '--foo', 'spam2'])
         parser.parse()
-        self.assertEqual(parser._options, {"-f":"spam0", "-b":"", "--foo":"spam2", "--bar":""})
+        self.assertEqual(parser._options, {'-f':'spam0', '-b':'', '--foo':'spam2', '--bar':''})
         self.assertEqual(parser._arguments, [])
 
     def testOptionGetter(self):
-        interface = clap.Interface(short="vV:", argv=["-v", "-V", "0.0.1"])
+        interface = clap.Interface(short='vV:', argv=['-v', '-V', '0.0.1'])
         interface.parse()
-        self.assertEqual("0.0.1", interface.getopt("-V"))
-        self.assertEqual("", interface.getopt("-v"))
+        self.assertEqual('0.0.1', interface.getopt('-V'))
+        self.assertEqual('', interface.getopt('-v'))
 
     def testOptionGetterRaisesKeyError(self):
-        interface = clap.Interface(short="vV:", argv=["-V", "0.0.1"])
+        interface = clap.Interface(short='vV:', argv=['-V', '0.0.1'])
         interface.parse()
-        self.assertRaises(KeyError, interface.getopt, "-v")
+        self.assertRaises(KeyError, interface.getopt, '-v')
 
     def testIsoptWithEnabledModeBoth(self):
-        p = clap.Interface(short="v", long=["version="])
+        p = clap.Interface(short='v', long=['version='])
         p.parse()
-        self.assertEqual(True, p.isopt("-v"))
-        self.assertEqual(False, p.isopt("-v:"))
+        self.assertEqual(True, p.isopt('-v'))
+        self.assertEqual(False, p.isopt('-v:'))
         
-        self.assertEqual(True, p.isopt("--version="))
-        self.assertEqual(False, p.isopt("--version"))
+        self.assertEqual(True, p.isopt('--version='))
+        self.assertEqual(False, p.isopt('--version'))
 
     def testIsoptWithEnabledModeShort(self):
-        p = clap.Interface(short="v", long=["version="])
+        p = clap.Interface(short='v', long=['version='])
         p.parse()
-        self.assertEqual(True, p.isopt("-v", mode="s"))
-        self.assertEqual(False, p.isopt("-v:", mode="s"))
+        self.assertEqual(True, p.isopt('-v', mode='s'))
+        self.assertEqual(False, p.isopt('-v:', mode='s'))
         
-        self.assertEqual(False, p.isopt("--version=", mode="s"))
-        self.assertEqual(False, p.isopt("--version", mode="s"))
+        self.assertEqual(False, p.isopt('--version=', mode='s'))
+        self.assertEqual(False, p.isopt('--version', mode='s'))
 
     def testIsoptWithEnabledModeLong(self):
-        p = clap.Interface(short="v", long=["version="])
+        p = clap.Interface(short='v', long=['version='])
         p.parse()
-        self.assertEqual(False, p.isopt("-v", mode="l"))
-        self.assertEqual(False, p.isopt("-v:", mode="l"))
+        self.assertEqual(False, p.isopt('-v', mode='l'))
+        self.assertEqual(False, p.isopt('-v:', mode='l'))
         
-        self.assertEqual(True, p.isopt("--version=", mode="l"))
-        self.assertEqual(False, p.isopt("--version", mode="l"))
+        self.assertEqual(True, p.isopt('--version=', mode='l'))
+        self.assertEqual(False, p.isopt('--version', mode='l'))
 
     def testWasPassed(self):
-        p = clap.Interface(short="v", argv=["-v", "foo"])
+        p = clap.Interface(short='v', argv=['-v', 'foo'])
         p.parse()
-        self.assertEqual(True, p.waspassed("-v"))
+        self.assertEqual(True, p.waspassed('-v'))
 
     def testWasPassedMultiple(self):
-        p = clap.Interface(short="v", long=["verbose"], argv=["-v", "--verbose", "foo"])
+        p = clap.Interface(short='v', long=['verbose'], argv=['-v', '--verbose', 'foo'])
         p.parse()
-        self.assertEqual(True, p.waspassed("-v", "--verbose"))
+        self.assertEqual(True, p.waspassed('-v', '--verbose'))
 
     def testArgumentsGetter(self):
-        interface = clap.Interface(short="f:b", argv=["-f", "foo", "-b", "bar"])
+        interface = clap.Interface(short='f:b', argv=['-f', 'foo', '-b', 'bar'])
         interface.parse()
-        self.assertEqual(interface.getargs(), ["bar"])
+        self.assertEqual(interface.getargs(), ['bar'])
     
     def testGettingListOfAcceptedOptions(self):
-        interface = clap.Interface(short="f:bo:", long=["foo=", "bar", "output="])
+        interface = clap.Interface(short='f:bo:', long=['foo=', 'bar', 'output='])
         interface.parse()
-        self.assertEqual(interface.listaccepted(), ["--bar", "--foo=", "--output=", "-b", "-f:", "-o:"])
+        self.assertEqual(interface.listaccepted(), ['--bar', '--foo=', '--output=', '-b', '-f:', '-o:'])
 
 
-if __name__ == "__main__": unittest.main()
+if __name__ == '__main__': unittest.main()
