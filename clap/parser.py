@@ -18,12 +18,22 @@ class Parser():
 
     def __init__(self, argv=[]):
         self.feed(argv)
+        self.add(long='CLAP-deep-check', type=str)
 
     def __contains__(self, option):
         """Returns True if Parser() contains given option as parsed.
         Remeber to parse() the input before you will use this feature.
         """
         return option in self.parsed
+
+    def _metahas(self, string):
+        return string in self.argv
+
+    def _metaget(self, string):
+        if self.parsed: value = self.get(string)
+        elif self.type(string) is not None: value = self.argv[self.argv.index(string)+1]
+        else: value = None
+        return value
 
     def feed(self, argv):
         """Feeds input arguments list to parser.
@@ -95,7 +105,6 @@ class Parser():
         """Returns type of given option.
         None indicates that option takes no additional argument.
         """
-        if not self.accepts(option): raise errors.UnrecognizedOptionError(option)
         for o in self.options:
             if option == o['short'] or option == o['long']:
                 opt_type = o['type']
@@ -105,21 +114,54 @@ class Parser():
     def gethint(self, option):
         """Returns hint for given option.
         """
-        if not self.accepts(option): raise errors.UnrecognizedOptionError(option)
         for o in self.options:
             if option == o['short'] or option == o['long']:
                 hint = o['hint']
                 break
         return hint
 
-    def check(self):
-        """Checks if Parser() contains any unrecognized options.
+    def help(self):
+        """Prints help for this instance of Parser().
+        """
+        for o in self.options:
+            if o['short']: option = o['short']
+            else: option = o['long']
+            message = option
+            if self.alias(option): message += ', {0}'.format(self.alias(option))
+            message += ' ({0})'.format(self.type(option))
+            if self.gethint(option): message += ': {0}'.format(self.gethint(option))
+            print(message)
+
+    def _checkunrecognized(self):
+        """Checks if input list contains any unrecognized options.
         """
         for i in self.argv:
             if i == '--': break
-            if formater.lookslikeopt(i) and not self.accepts(i):
-                raise errors.UnrecognizedOptionError(i)
+            if formater.lookslikeopt(i) and not self.accepts(i): raise errors.UnrecognizedOptionError(i)
 
+    def _checkarguments(self, deep=True):
+        """Checks if arguments given to options which require them are valid.
+        Raises `MissingArgumentError` when option which requires an argument is last item
+        in input list.
+        Raises `TypeError` when option is given argument of invalid type.
+        Raises `MissingArgumentError` when option which requires an argument is followed by 
+        another option accepted by this instance of parser.
+        **Notice:** if you want to pass option-like argument wrap it in `"` or `'` and 
+        escape first hyphen or double-escape first hyphen.
+        Last check is done only when `deep` argument is True.
+        """
+        for i, opt in enumerate(self.argv):
+            if i == '--': break
+            if formater.lookslikeopt(opt) and self.type(opt):
+                if i+1 == len(self.argv): raise errors.MissingArgumentError(opt)
+                arg = self.argv[i+1]
+                try: self.type(opt)(arg)
+                except ValueError as e: raise TypeError(e)
+                if deep and formater.lookslikeopt(arg) and self.accepts(arg): raise errors.MissingArgumentError(opt)
+
+    def _checkrequired(self):
+        """Checks if all required options are present in input list.
+        """
         for i in self.options:
             if i['required']:
                 if i['long']: option = i['long']
@@ -128,10 +170,17 @@ class Parser():
                 fail = True
                 if option in self.argv: fail = False
                 if alias and alias in self.argv: fail = False
-                if fail:
-                    message = '{0} ({1})'.format(option, self.type(option))
-                    if self.gethint(option): message += ': {0}'.format(self.gethint(option))
-                    raise errors.RequiredOptionNotFoundError(message)
+                if fail: raise errors.RequiredOptionNotFoundError(option)
+
+    def check(self, deep=True):
+        """Checks if input list is valid for this instance of Parser().
+        """
+        if self._metahas('--CLAP-deep-check'):
+            if self._metaget('--CLAP-deep-check') == 'on': deep = True
+            elif self._metaget('--CLAP-deep-check') == 'off': deep = False
+        self._checkunrecognized()
+        self._checkarguments(deep=deep)
+        self._checkrequired()
 
     def parse(self):
         """Parses input.
@@ -145,11 +194,7 @@ class Parser():
                 break
             if self.type(string) is not None:
                 i += 1
-                try:
-                    arg = self.type(string)(self.argv[i])
-                except ValueError:
-                    raise ValueError('invalid argument for option \'{0}\': expected {1} but got: {2}'
-                                     .format(string, self.type(string), self.argv[i]))
+                arg = self.type(string)(self.argv[i])
             parsed[string] = arg
             if self.alias(string): parsed[self.alias(string)] = arg
             i += 1
@@ -160,6 +205,4 @@ class Parser():
         """Returns option value.
         Returns None if given option does not need an argument.
         """
-        if type(key) is None and key in self: value = None
-        else: value = self.parsed[key]
-        return value
+        return self.parsed[key]

@@ -12,7 +12,7 @@ properly format input arguments for Parser().
 shortopt_regexp = re.compile('^-[a-zA-Z]$')
 longopt_regexp = re.compile('^--[a-zA-Z]+[a-zA-Z0-9]*(-[a-zA-Z0-9]+)*$')
 longopt_with_equal_sign_regexp = re.compile('^--[a-zA-Z]+[a-zA-Z0-9]*(-[a-zA-Z0-9]+)*=.*$')
-connected_shorts_regexp = re.compile('^-[a-zA-Z][a-zA-Z]+$')
+connected_shorts_regexp = re.compile('^-[a-zA-Z]+$')
 
 
 def lookslikeopt(s):
