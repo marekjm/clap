@@ -14,3 +14,9 @@ class MissingArgumentError(Exception):
     """Raised when option requires an argument but it is not found.
     """
     pass
+
+
+class ConflictingOptionsError(Exception):
+    """Raised when two or more conflicting options are found together.
+    """
+    pass

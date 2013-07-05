@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from clap import formater, errors
+from clap import formater, option, errors
 
 
 """This module contains Parser() object.
@@ -44,21 +44,14 @@ class Parser():
         self.parsed = {}
         self.arguments = []
 
-    def add(self, short='', long='', type=None, required=False, hint=''):
+    def add(self, short='', long='', type=None, required=False, conflicts=[], hint=''):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
         :returns: dict of new option
         """
         if not (short or long): raise TypeError('neither `short` nor `long` was specified')
-        if short: short = '-{}'.format(short)
-        if long: long = '--{}'.format(long)
-        new = {'short': short,
-               'long': long,
-               'type': type,
-               'hint': hint,
-               'required': required,
-               }
+        new = option.Option(short=short, long=long, type=type, required=required, conflicts=conflicts, hint=hint)
         self.options.append(new)
         return new
 
@@ -68,11 +61,8 @@ class Parser():
         :returns: non-negative integer indicates that some option was removed
         """
         index = -1
-        short = '-{}'.format(short)
-        long = '--{}'.format(long)
         for i, opt in enumerate(self.options):
-            if short == opt['short']: index = i
-            if long == opt['long']: index = i
+            if opt.match(short) or opt.match(long): index = i
             if index > -1: break
         if index: self.options.pop(index)
         return index
@@ -82,7 +72,7 @@ class Parser():
         """
         result = False
         for i in self.options:
-            if option == i['short'] or option == i['long']:
+            if i.match(option):
                 result = True
                 break
         return result
@@ -105,17 +95,18 @@ class Parser():
         """Returns type of given option.
         None indicates that option takes no additional argument.
         """
+        type = None
         for o in self.options:
-            if option == o['short'] or option == o['long']:
-                opt_type = o['type']
+            if o.match(option):
+                type = o.type()
                 break
-        return opt_type
+        return type
 
     def gethint(self, option):
         """Returns hint for given option.
         """
         for o in self.options:
-            if option == o['short'] or option == o['long']:
+            if o.match(option):
                 hint = o['hint']
                 break
         return hint
@@ -172,8 +163,23 @@ class Parser():
                 if alias and alias in self.argv: fail = False
                 if fail: raise errors.RequiredOptionNotFoundError(option)
 
+    def _checkconflicts(self):
+        """Check for conflicting options.
+        """
+        for i in self.options:
+            if i['long']: o = i['long']
+            else: o = i['short']
+            if i['conflicts'] and o in self.argv:
+                for c in i['conflicts']:
+                    alias = self.alias(c)
+                    conflicting = ''
+                    if c in self.argv: conflicting = c
+                    elif alias and alias in self.argv: conflicting = alias
+                    if conflicting: raise errors.ConflictingOptionsError('{0} : {1}'.format(o, conflicting))
+
     def check(self, deep=True):
         """Checks if input list is valid for this instance of Parser().
+        Run before `parse()` to check for errors in input list.
         """
         if self._metahas('--CLAP-deep-check'):
             if self._metaget('--CLAP-deep-check') == 'on': deep = True
@@ -181,6 +187,7 @@ class Parser():
         self._checkunrecognized()
         self._checkarguments(deep=deep)
         self._checkrequired()
+        self._checkconflicts()
 
     def parse(self):
         """Parses input.
