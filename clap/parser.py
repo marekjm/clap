@@ -52,6 +52,22 @@ class Parser():
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
+        :param short: short, one character name for the option ( [a-zA-Z] )
+        :type short: str
+        :param long: long multiple-character name for option ( [a-zA-Z]+[a-zA-Z0-9]*(-[a-zA-Z0-9]+)* )
+        :type short: str
+        :param type: type of argument for the option
+        :type type: str, int, float
+        :param required: whether this option is required or not
+        :type required: bool
+        :param not_with: list of options with which this option is not required (give only with `required`)
+        :param not_with: list[str]
+        :param conflicts: list of options with which this option must not be passed (this can be manipulated by user
+            using *backdoor-style* option `--CLAP-deep-check on|off`)
+        :type conflicts: list[str]
+        :param hint: hint for the option
+        :type short: str
+
         :returns: clap.option.Option
         """
         new = option.Option(short=short, long=long, type=type, required=required, not_with=not_with, conflicts=conflicts, hint=hint)
