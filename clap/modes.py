@@ -32,6 +32,7 @@ class Modes():
     def __init__(self, argv, default):
         self.argv = []
         self.modes = {}
+        self.mode = ''
         self.parser = None
         self.default = default
         self.feed(argv)
@@ -42,11 +43,15 @@ class Modes():
         """
         return option in self.parser
 
+    def __str__(self):
+        return self.mode
+
     def feed(self, argv):
         """Feeds input arguments list to parser.
         """
         self.argv = argv
         self.parser = None
+        self.mode = ''
 
     def addOption(self, short='', long='', type=None, required=False, not_with=[], conflicts=[], hint=''):
         """Adds an option to the list of options recognized by parser.
@@ -100,10 +105,10 @@ class Modes():
         else:
             mode = self.default
             index = 0
-        if mode not in self.modes:
-            raise errors.UnrecognizedModeError(mode)
+        if mode not in self.modes: raise errors.UnrecognizedModeError(mode)
         self.parser = self.modes[mode]
         self.parser.feed(self.argv[:index] + self.argv[index:])
+        self.mode = mode
         return mode
 
     def check(self):
