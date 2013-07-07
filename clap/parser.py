@@ -54,7 +54,7 @@ class Parser():
 
         :returns: clap.option.Option
         """
-        new = option.Option(short=short, long=long, type=type, required=required, not_with=[], conflicts=conflicts, hint=hint)
+        new = option.Option(short=short, long=long, type=type, required=required, not_with=not_with, conflicts=conflicts, hint=hint)
         self._append(new)
         return new
 
@@ -162,6 +162,7 @@ class Parser():
             if i['not_with']:
                 for n in i['not_with']:
                     alias = self.alias(n)
+                    print(n, alias)
                     if n in self.argv: check = False
                     if alias and alias in self.argv: check = False
                     if not check: break

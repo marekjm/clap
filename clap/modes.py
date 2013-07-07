@@ -112,11 +112,16 @@ class Modes():
         return mode
 
     def check(self):
-        """
+        """Checks input list for errors.
         """
         self.parser.check()
 
     def parse(self):
-        """
+        """Parses input list.
         """
         self.parser.parse()
+
+    def get(self, s):
+        """Returns option's argument.
+        """
+        return self.parser.get(s)
