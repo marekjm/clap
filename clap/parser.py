@@ -11,13 +11,12 @@ from clap import formater, option, errors
 class Parser():
     """Used for parsing options.
     """
-    argv = []
-    parsed = {}
-    options = []
-    arguments = []
-
     def __init__(self, argv=[]):
         self.feed(argv)
+        self.options = []
+        self.argv = []
+        self.parsed = {}
+        self.arguments = []
         self.add(long='CLAP-deep-check', type=str)
 
     def __contains__(self, option):
@@ -44,15 +43,19 @@ class Parser():
         self.parsed = {}
         self.arguments = []
 
-    def add(self, short='', long='', type=None, required=False, conflicts=[], hint=''):
+    def _append(self, option):
+        """Appends `Option()` object to options list.
+        """
+        self.options.append(option)
+
+    def add(self, short='', long='', type=None, required=False, not_with=[], conflicts=[], hint=''):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
-        :returns: dict of new option
+        :returns: clap.option.Option
         """
-        if not (short or long): raise TypeError('neither `short` nor `long` was specified')
-        new = option.Option(short=short, long=long, type=type, required=required, conflicts=conflicts, hint=hint)
-        self.options.append(new)
+        new = option.Option(short=short, long=long, type=type, required=required, not_with=[], conflicts=conflicts, hint=hint)
+        self._append(new)
         return new
 
     def remove(self, short='', long=''):
@@ -154,14 +157,22 @@ class Parser():
         """Checks if all required options are present in input list.
         """
         for i in self.options:
-            if i['required']:
-                if i['long']: option = i['long']
-                else: option = i['short']
-                alias = self.alias(option)
-                fail = True
-                if option in self.argv: fail = False
-                if alias and alias in self.argv: fail = False
-                if fail: raise errors.RequiredOptionNotFoundError(option)
+            check = True
+            if not i['required']: continue
+            if i['not_with']:
+                for n in i['not_with']:
+                    alias = self.alias(n)
+                    if n in self.argv: check = False
+                    if alias and alias in self.argv: check = False
+                    if not check: break
+            if not check: continue
+            if i['long']: option = i['long']
+            else: option = i['short']
+            alias = self.alias(option)
+            fail = True
+            if option in self.argv: fail = False
+            if alias and alias in self.argv: fail = False
+            if fail: raise errors.RequiredOptionNotFoundError(option)
 
     def _checkconflicts(self):
         """Check for conflicting options.

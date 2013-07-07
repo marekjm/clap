@@ -4,6 +4,12 @@ class UnrecognizedOptionError(Exception):
     pass
 
 
+class UnrecognizedModeError(Exception):
+    """Raised when unrecognized mode is found in input list.
+    """
+    pass
+
+
 class RequiredOptionNotFoundError(Exception):
     """Raised when required option is not found in input list.
     """

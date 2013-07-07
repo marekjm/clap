@@ -7,26 +7,18 @@
 class Option():
     """Object representing an option.
     """
-    meta = {'short': '',
-            'long': '',
-            'type': None,
-            'required': False,
-            'conflicts': [],
-            'hint': '',
-            }
-
-    def __init__(self, short='', long='', type=None, required=False, conflicts=[], hint=''):
+    def __init__(self, short='', long='', type=None, required=False, not_with=[], conflicts=[], hint=''):
         if not (short or long): raise TypeError('neither short nor long variant was specified')
         if short: short = '-' + short
         if long: long = '--' + long
-        meta = {'short': short,
-                'long': long,
-                'type': type,
-                'required': required,
-                'conflicts': conflicts,
-                'hint': hint,
-                }
-        self.meta = meta
+        self.meta = {   'short': short,
+                        'long': long,
+                        'type': type,
+                        'required': required,
+                        'not_with': not_with,
+                        'conflicts': conflicts,
+                        'hint': hint,
+                        }
 
     def __getitem__(self, key):
         return self.meta[key]
@@ -42,12 +34,9 @@ class Option():
 
     def __str__(self):
         string = ''
-        if self.meta['short']: string = short
-        if self.meta['long']: string = long
+        if self.meta['short']: string = self.meta['short']
+        if self.meta['long']: string = self.meta['long']
         return string
-
-    def __repr__(self):
-        return str(self)
 
     def match(self, s):
         """Returns True if given string matches one of option names.
