@@ -11,4 +11,3 @@ doc:
 
 clean:
 	rm -rv ./clap/__pycache__/
-	rm -rv ./__pycache__/
