@@ -17,22 +17,12 @@ class Parser():
         self.parsed = {}
         self.arguments = []
         self.feed(argv)
-        self.add(long='CLAP-deep-check', argument=str)
 
     def __contains__(self, option):
         """Returns True if Parser() contains given option as parsed.
         Remeber to parse() the input before you will use this feature.
         """
         return option in self.parsed
-
-    def _metahas(self, string):
-        return string in self.argv
-
-    def _metaget(self, string):
-        if self.parsed: value = self.get(string)
-        elif self.type(string) is not None: value = self.argv[self.argv.index(string)+1]
-        else: value = None
-        return value
 
     def feed(self, argv):
         """Feeds input arguments list to parser.
@@ -195,9 +185,6 @@ class Parser():
         """Checks if input list is valid for this instance of Parser().
         Run before `parse()` to check for errors in input list.
         """
-        if self._metahas('--CLAP-deep-check'):
-            if self._metaget('--CLAP-deep-check') == 'on': deep = True
-            elif self._metaget('--CLAP-deep-check') == 'off': deep = False
         self._checkunrecognized()
         self._checkarguments(deep=deep)
         self._checkrequired()
