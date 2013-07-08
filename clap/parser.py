@@ -179,7 +179,7 @@ class Parser():
                     conflicting = ''
                     if c in self.argv: conflicting = c
                     elif alias and alias in self.argv: conflicting = alias
-                    if conflicting: raise errors.ConflictingOptionsError('{0} : {1}'.format(o, conflicting))
+                    if conflicting: raise errors.ConflictingOptionsError('{0} | {1}'.format(o, conflicting))
 
     def check(self, deep=True):
         """Checks if input list is valid for this instance of Parser().

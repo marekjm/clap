@@ -29,12 +29,12 @@ If using Modes() instead of simple Parser() remember to call `define()` method b
 class Modes():
     """Object implementing modes functionality.
     """
-    def __init__(self, argv, default):
+    def __init__(self, argv, default='DEFAULT'):
         self.argv = []
-        self.modes = {}
+        self.modes = {'DEFAULT': parser.Parser()}
         self.mode = ''
-        self.parser = None
         self.default = default
+        self.parser = None
         self.feed(argv)
 
     def __contains__(self, option):
