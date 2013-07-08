@@ -53,7 +53,7 @@ class Modes():
         self.parser = None
         self.mode = ''
 
-    def addOption(self, short='', long='', type=None, required=False, not_with=[], conflicts=[], hint=''):
+    def addOption(self, short='', long='', argument=None, required=False, not_with=[], conflicts=[], hint=''):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
@@ -63,7 +63,7 @@ class Modes():
             foo --verbose print 'Hello World!'
             foo bar --verbose 'Hello World!'
         """
-        new = option.Option(short=short, long=long, type=type, required=required, not_with=not_with, conflicts=conflicts, hint=hint)
+        new = option.Option(short=short, long=long, argument=argument, required=required, not_with=not_with, conflicts=conflicts, hint=hint)
         for name in self.modes: self.modes[name]._append(new)
         return new
 
@@ -102,12 +102,15 @@ class Modes():
         index = self._modeindex()
         if index > -1:
             mode = self.argv[index]
+            n = 1
         else:
             mode = self.default
             index = 0
+            n = 0
         if mode not in self.modes: raise errors.UnrecognizedModeError(mode)
         self.parser = self.modes[mode]
-        self.parser.feed(self.argv[:index] + self.argv[index:])
+        input = self.argv[:index] + self.argv[index+n:]
+        self.parser.feed(input)
         self.mode = mode
         return mode
 
@@ -125,3 +128,8 @@ class Modes():
         """Returns option's argument.
         """
         return self.parser.get(s)
+
+    def type(self, s):
+        """Returns type of the option.
+        """
+        return self.parser.type(s)

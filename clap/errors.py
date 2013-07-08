@@ -22,6 +22,10 @@ class MissingArgumentError(Exception):
     pass
 
 
+class InvalidArgumentTypeError(Exception):
+    pass
+
+
 class ConflictingOptionsError(Exception):
     """Raised when two or more conflicting options are found together.
     """

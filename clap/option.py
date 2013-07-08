@@ -7,13 +7,13 @@
 class Option():
     """Object representing an option.
     """
-    def __init__(self, short='', long='', type=None, required=False, not_with=[], conflicts=[], hint=''):
+    def __init__(self, short='', long='', argument=None, required=False, not_with=[], conflicts=[], hint=''):
         if not (short or long): raise TypeError('neither short nor long variant was specified')
         if short: short = '-' + short
         if long: long = '--' + long
         self.meta = {   'short': short,
                         'long': long,
-                        'type': type,
+                        'argument': argument,
                         'required': required,
                         'not_with': not_with,
                         'conflicts': conflicts,
@@ -47,4 +47,5 @@ class Option():
         """Returns type of argument for this option.
         None indicates no argument.
         """
-        return self['type']
+        t = self['argument']
+        return t

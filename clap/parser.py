@@ -12,12 +12,12 @@ class Parser():
     """Used for parsing options.
     """
     def __init__(self, argv=[]):
-        self.feed(argv)
-        self.options = []
         self.argv = []
+        self.options = []
         self.parsed = {}
         self.arguments = []
-        self.add(long='CLAP-deep-check', type=str)
+        self.feed(argv)
+        self.add(long='CLAP-deep-check', argument=str)
 
     def __contains__(self, option):
         """Returns True if Parser() contains given option as parsed.
@@ -48,7 +48,7 @@ class Parser():
         """
         self.options.append(option)
 
-    def add(self, short='', long='', type=None, required=False, not_with=[], conflicts=[], hint=''):
+    def add(self, short='', long='', argument=None, required=False, not_with=[], conflicts=[], hint=''):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
@@ -70,7 +70,7 @@ class Parser():
 
         :returns: clap.option.Option
         """
-        new = option.Option(short=short, long=long, type=type, required=required, not_with=not_with, conflicts=conflicts, hint=hint)
+        new = option.Option(short=short, long=long, argument=argument, required=required, not_with=not_with, conflicts=conflicts, hint=hint)
         self._append(new)
         return new
 
@@ -110,16 +110,15 @@ class Parser():
                 break
         return alias
 
-    def type(self, option):
+    def type(self, s):
         """Returns type of given option.
         None indicates that option takes no additional argument.
         """
-        type = None
+        t = None
         for o in self.options:
-            if o.match(option):
-                type = o.type()
-                break
-        return type
+            if o.match(s):
+                t = o.type()
+        return t
 
     def gethint(self, option):
         """Returns hint for given option.
@@ -129,18 +128,6 @@ class Parser():
                 hint = o['hint']
                 break
         return hint
-
-    def help(self):
-        """Prints help for this instance of Parser().
-        """
-        for o in self.options:
-            if o['short']: option = o['short']
-            else: option = o['long']
-            message = option
-            if self.alias(option): message += ', {0}'.format(self.alias(option))
-            message += ' ({0})'.format(self.type(option))
-            if self.gethint(option): message += ': {0}'.format(self.gethint(option))
-            print(message)
 
     def _checkunrecognized(self):
         """Checks if input list contains any unrecognized options.
@@ -166,7 +153,7 @@ class Parser():
                 if i+1 == len(self.argv): raise errors.MissingArgumentError(opt)
                 arg = self.argv[i+1]
                 try: self.type(opt)(arg)
-                except ValueError as e: raise TypeError(e)
+                except ValueError as e: raise errors.InvalidArgumentTypeError('{0}: {1}'.format(opt, e))
                 if deep and formater.lookslikeopt(arg) and self.accepts(arg): raise errors.MissingArgumentError(opt)
 
     def _checkrequired(self):
@@ -178,7 +165,6 @@ class Parser():
             if i['not_with']:
                 for n in i['not_with']:
                     alias = self.alias(n)
-                    print(n, alias)
                     if n in self.argv: check = False
                     if alias and alias in self.argv: check = False
                     if not check: break
