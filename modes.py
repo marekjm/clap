@@ -67,6 +67,8 @@ options.addOption(short='h', long='help')
 options.addOption(short='v', long='verbose', conflicts=['--quiet'])
 options.addOption(short='q', long='quiet', conflicts=['--verbose'])
 options.addOption(short='L', long='log', argument=str)
+options.addOption(long='bar', requires=['--foo'])
+options.addOption(long='foo', requires=['--bar'], argument=str)
 
 
 try:

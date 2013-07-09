@@ -64,7 +64,7 @@ class Modes():
         If you `addOption` it is added to the general parser and all mode-parsers.
         """
         new = option.Option(short=short, long=long, argument=argument,
-                            required=required, requires=[], not_with=not_with,
+                            required=required, requires=requires, not_with=not_with,
                             conflicts=conflicts, hint=hint)
         for name in self.modes: self.modes[name]._append(new)
         return new
@@ -87,16 +87,11 @@ class Modes():
         for i, item in enumerate(self.argv):
             if item == '--': break
             if not formater.lookslikeopt(item):
-                index = i
-                finish = True
-                if i == 0: break
+                if i == 0: index = i
                 else:
                     opt = self.argv[i-1]
-                    for name in self.modes:
-                        if self.modes[name].type(opt) is not None:
-                            finish = False
-                            break
-                if finish: break
+                    if self.type(opt) is None: index = i
+                if index > -1: break
         return index
 
     def define(self):
@@ -135,4 +130,10 @@ class Modes():
     def type(self, s):
         """Returns type of the option.
         """
-        return self.parser.type(s)
+        t = None
+        for m in self.modes:
+            for o in self.modes[m].options:
+                t = self.modes[m].type(s)
+                if t is not None: break
+            if t is not None: break
+        return t

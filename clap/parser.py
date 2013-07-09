@@ -173,14 +173,17 @@ class Parser():
         """Check if all options required by other options are present.
         """
         for i in self.options:
+            o = str(i)
+            oalias = self.alias(o)
+            if o not in self.argv or (oalias and oalias not in self.argv): continue 
             for n in i['requires']:
                 alias = self.alias(n)
                 fail = True
                 if n in self.argv: fail = False
                 if alias and alias in self.argv: fail = False
                 if fail:
-                    if str(i) in self.argv: needs = str(i)
-                    else: needs = self.alias(str(i))
+                    if o in self.argv: needs = o
+                    else: needs = oalias
                     raise errors.RequiredOptionNotFoundError('{0} -> {1}'.format(needs, n))
 
     def _checkconflicts(self):
