@@ -10,8 +10,8 @@ formater = clap.formater.Formater(args)
 parser = clap.parser.Parser(list(formater))
 parser.add(long='verbose', short='v', conflicts=['--quiet'])
 parser.add(long='quiet', short='q', conflicts=['--verbose'])
-parser.add(short='n', argument=int, hint='how many times to print given text')
-parser.add(long='text', short='t', argument=str, required=True, hint='text to print')
+parser.add(short='n', argument=int, requires=['--text'], hint='how many times to print given text')
+parser.add(long='text', short='t', argument=str, hint='text to print')
 
 try:
     parser.check()
@@ -22,7 +22,7 @@ except clap.errors.RequiredOptionNotFoundError as e:
     print('fatal: required option not found: {0}'.format(e))
     exit()
 except clap.errors.MissingArgumentError as e:
-    print('fatal: missing argument for option: {0} {1}'.format(e, parser.type(e)))
+    print('fatal: missing argument for option: {0}'.format(e))
     exit()
 
 parser.parse()

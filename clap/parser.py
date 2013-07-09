@@ -38,7 +38,7 @@ class Parser():
         """
         self.options.append(option)
 
-    def add(self, short='', long='', argument=None, required=False, not_with=[], conflicts=[], hint=''):
+    def add(self, short='', long='', argument=None, required=False, requires=[], not_with=[], conflicts=[], hint=''):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
@@ -60,7 +60,9 @@ class Parser():
 
         :returns: clap.option.Option
         """
-        new = option.Option(short=short, long=long, argument=argument, required=required, not_with=not_with, conflicts=conflicts, hint=hint)
+        new = option.Option(short=short, long=long, argument=argument,
+                            required=required, requires=requires, not_with=not_with,
+                            conflicts=conflicts, hint=hint)
         self._append(new)
         return new
 
@@ -167,6 +169,20 @@ class Parser():
             if alias and alias in self.argv: fail = False
             if fail: raise errors.RequiredOptionNotFoundError(option)
 
+    def _checkrequires(self):
+        """Check if all options required by other options are present.
+        """
+        for i in self.options:
+            for n in i['requires']:
+                alias = self.alias(n)
+                fail = True
+                if n in self.argv: fail = False
+                if alias and alias in self.argv: fail = False
+                if fail:
+                    if str(i) in self.argv: needs = str(i)
+                    else: needs = self.alias(str(i))
+                    raise errors.RequiredOptionNotFoundError('{0} -> {1}'.format(needs, n))
+
     def _checkconflicts(self):
         """Check for conflicting options.
         """
@@ -188,9 +204,10 @@ class Parser():
         Run before `parse()` to check for errors in input list.
         """
         self._checkunrecognized()
-        self._checkarguments(deep=deep)
         self._checkrequired()
+        self._checkrequires()
         self._checkconflicts()
+        self._checkarguments(deep=deep)
 
     def parse(self):
         """Parses input.

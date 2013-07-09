@@ -46,6 +46,10 @@ class Modes():
     def __str__(self):
         return self.mode
 
+    @property
+    def arguments(self):
+        return self.parser.arguments
+
     def feed(self, argv):
         """Feeds input arguments list to parser.
         """
@@ -53,17 +57,15 @@ class Modes():
         self.parser = None
         self.mode = ''
 
-    def addOption(self, short='', long='', argument=None, required=False, not_with=[], conflicts=[], hint=''):
+    def addOption(self, short='', long='', argument=None, required=False, requires=[], not_with=[], conflicts=[], hint=''):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
-        If you `addOption` it is added to the general parser and all mode-parsers so both following
-        syntaxes are correct:
-            
-            foo --verbose print 'Hello World!'
-            foo bar --verbose 'Hello World!'
+        If you `addOption` it is added to the general parser and all mode-parsers.
         """
-        new = option.Option(short=short, long=long, argument=argument, required=required, not_with=not_with, conflicts=conflicts, hint=hint)
+        new = option.Option(short=short, long=long, argument=argument,
+                            required=required, requires=[], not_with=not_with,
+                            conflicts=conflicts, hint=hint)
         for name in self.modes: self.modes[name]._append(new)
         return new
 

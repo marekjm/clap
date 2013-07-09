@@ -7,7 +7,7 @@
 class Option():
     """Object representing an option.
     """
-    def __init__(self, short='', long='', argument=None, required=False, not_with=[], conflicts=[], hint=''):
+    def __init__(self, short='', long='', argument=None, required=False, requires=[], not_with=[], conflicts=[], hint=''):
         if not (short or long): raise TypeError('neither short nor long variant was specified')
         if short: short = '-' + short
         if long: long = '--' + long
@@ -15,6 +15,7 @@ class Option():
                         'long': long,
                         'argument': argument,
                         'required': required,
+                        'requires': requires,
                         'not_with': not_with,
                         'conflicts': conflicts,
                         'hint': hint,
