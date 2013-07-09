@@ -171,15 +171,17 @@ class Parser():
         """Check for conflicting options.
         """
         for i in self.options:
-            if i['long']: o = i['long']
-            else: o = i['short']
-            if i['conflicts'] and o in self.argv:
+            o = str(i)
+            oalias = self.alias(o)
+            if i['conflicts'] and (o in self.argv or (oalias and oalias in self.argv)):
+                if o in self.argv: conflicted = o
+                else: conflicted = oalias
                 for c in i['conflicts']:
                     alias = self.alias(c)
                     conflicting = ''
                     if c in self.argv: conflicting = c
                     elif alias and alias in self.argv: conflicting = alias
-                    if conflicting: raise errors.ConflictingOptionsError('{0} | {1}'.format(o, conflicting))
+                    if conflicting: raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, conflicting))
 
     def check(self, deep=True):
         """Checks if input list is valid for this instance of Parser().

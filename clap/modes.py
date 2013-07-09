@@ -29,9 +29,9 @@ If using Modes() instead of simple Parser() remember to call `define()` method b
 class Modes():
     """Object implementing modes functionality.
     """
-    def __init__(self, argv, default='DEFAULT'):
+    def __init__(self, argv, default=''):
         self.argv = []
-        self.modes = {'DEFAULT': parser.Parser()}
+        self.modes = {'': parser.Parser()}
         self.mode = ''
         self.default = default
         self.parser = None
