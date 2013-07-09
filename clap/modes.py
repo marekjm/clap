@@ -85,6 +85,7 @@ class Modes():
         """
         index = -1
         for i, item in enumerate(self.argv):
+            if item == '--': break
             if not formater.lookslikeopt(item):
                 index = i
                 finish = True
