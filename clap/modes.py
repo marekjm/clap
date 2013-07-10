@@ -129,11 +129,16 @@ class Modes():
 
     def type(self, s):
         """Returns type of the option.
+        If mode is defined use self.parser. 
+        If not, interate over all modes and return first non-None
+        type found.
         """
         t = None
-        for m in self.modes:
-            for o in self.modes[m].options:
-                t = self.modes[m].type(s)
+        if self.parser: t = self.parser.type(s)
+        else:
+            for m in self.modes:
+                for o in self.modes[m].options:
+                    t = self.modes[m].type(s)
+                    if t is not None: break
                 if t is not None: break
-            if t is not None: break
         return t

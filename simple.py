@@ -30,6 +30,6 @@ parser.parse()
 if '-n' in parser: n = parser.get('-n')
 else: n = 1
 
-if '--quiet' not in parser:
+if '--quiet' not in parser and '--text' in parser:
     for i in range(n): print(parser.get('--text'))
 if '--verbose' in parser and '--quiet' not in parser: print('What a nice day we have today.')

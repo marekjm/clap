@@ -175,7 +175,7 @@ class Parser():
         for i in self.options:
             o = str(i)
             oalias = self.alias(o)
-            if o not in self.argv or (oalias and oalias not in self.argv): continue 
+            if o not in self.argv and (oalias and oalias not in self.argv): continue 
             for n in i['requires']:
                 alias = self.alias(n)
                 fail = True

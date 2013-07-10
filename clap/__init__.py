@@ -4,4 +4,4 @@ from clap import option
 from clap import parser
 from clap import modes
 
-__version__ = '0.5.4'
+__version__ = '0.5.6'
