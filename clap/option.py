@@ -81,8 +81,8 @@ class Option():
 
     def __str__(self):
         string = ''
-        if self.meta['short']: string = self.meta['short']
         if self.meta['long']: string = self.meta['long']
+        if self.meta['short']: string = self.meta['short']
         return string
 
     def match(self, s):
