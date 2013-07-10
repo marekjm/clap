@@ -7,14 +7,17 @@ import sys
 args = sys.argv[1:]
 
 formater = clap.formater.Formater(args)
+formater.format()
+
 parser = clap.parser.Parser(list(formater))
 parser.add(short='v', long='verbose', conflicts=['--quiet'])
 parser.add(short='q', long='quiet', conflicts=['--verbose'])
 parser.add(short='t', long='text', argument=str, hint='text to print')
+parser.add(long='more', requires=['--text', '--number', '-f', '-r', '-z'])
 parser.add(short='n', long='number', argument=int, requires=['--text'], hint='how many times to print given text')
-parser.add(long='foo', needs=['--bar', '--baz'])
-parser.add(long='bar')
-parser.add(long='baz')
+parser.add(short='f', long='foo', needs=['--bar', '--baz'])
+parser.add(short='r', long='bar')
+parser.add(short='z', long='baz')
 
 try:
     parser.check()
