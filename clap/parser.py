@@ -38,7 +38,7 @@ class Parser():
         """
         self.options.append(option)
 
-    def add(self, short='', long='', argument=None, required=False, requires=[], not_with=[], conflicts=[], hint=''):
+    def add(self, short='', long='', argument=None, requires=[], needs=[], required=False, not_with=[], conflicts=[], hint=''):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
@@ -61,7 +61,8 @@ class Parser():
         :returns: clap.option.Option
         """
         new = option.Option(short=short, long=long, argument=argument,
-                            required=required, requires=requires, not_with=not_with,
+                            requires=requires, needs=needs,
+                            required=required, not_with=not_with,
                             conflicts=conflicts, hint=hint)
         self._append(new)
         return new
@@ -161,8 +162,9 @@ class Parser():
                     if alias and alias in self.argv: check = False
                     if not check: break
             if not check: continue
-            if i['long']: option = i['long']
-            else: option = i['short']
+            #if i['long']: option = i['long']
+            #else: option = i['short']
+            option = str(i)
             alias = self.alias(option)
             fail = True
             if option in self.argv: fail = False
@@ -185,6 +187,23 @@ class Parser():
                     if o in self.argv: needs = o
                     else: needs = oalias
                     raise errors.RequiredOptionNotFoundError('{0} -> {1}'.format(needs, n))
+
+    def _checkneeds(self):
+        """Check needed options.
+        """
+        for i in self.options:
+            o = str(i)
+            oalias = self.alias(o)
+            if o not in self.argv and (oalias and oalias not in self.argv): continue
+            for n in i['needs']:
+                alias = self.alias(n)
+                fail = True
+                if n in self.argv: fail = False
+                if alias and alias in self.argv: fail = False
+                if fail:
+                    if o in self.argv: needs = o
+                    else: needs = oalias
+                    raise errors.NeededOptionNotFoundError('{0} -> {1}'.format(needs, ', '.join(i['needs'])))
 
     def _checkconflicts(self):
         """Check for conflicting options.
@@ -209,6 +228,7 @@ class Parser():
         self._checkunrecognized()
         self._checkrequired()
         self._checkrequires()
+        self._checkneeds()
         self._checkconflicts()
         self._checkarguments(deep=deep)
 

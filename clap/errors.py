@@ -16,6 +16,12 @@ class RequiredOptionNotFoundError(Exception):
     pass
 
 
+class NeededOptionNotFoundError(Exception):
+    """Raised when even one of needed options is not found.
+    """
+    pass
+
+
 class MissingArgumentError(Exception):
     """Raised when option requires an argument but it is not found.
     """
