@@ -2,6 +2,14 @@
 
 ----
 
+#### Version 0.6.2 (2013-07-12):
+
+* __upd__:  `modes.Modes()` renamed to `modes.Parser()`
+* __new__:  `_getinput()` method in `parser.Parser()` added another security layer to checks
+
+
+----
+
 #### Version 0.2.3 (2013-06-29):
 
 * __new__:  `required` optional argument in `clap.Parser.add()`, if passed and option is not found in input when `check()`ing error is raised,
@@ -9,10 +17,6 @@
 
 
 ----
-
-#### Version 0.6.2 (2013-07-12):
-
-* __upd__:  `modes.Modes()` renamed to `modes.Parser()`
 
 #### Version 0.2.2 (2013-06-29):
 

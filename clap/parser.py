@@ -122,10 +122,23 @@ class Parser():
                 break
         return hint
 
+    def _getinput(self):
+        """Returns list of options and arguments until '--' string or
+        first non-option and non-option-argument string.
+        """
+        index = 0
+        for i, item in enumerate(self.argv):
+            if item == '--': break
+            if i > 0 and not formater.lookslikeopt(item) and self.type(self.argv[i-1]) is None: break
+            index = i
+        if index: input = self.argv[:index]
+        else: input = self.argv
+        return input
+
     def _checkunrecognized(self):
         """Checks if input list contains any unrecognized options.
         """
-        for i in self.argv:
+        for i in self._getinput():
             if i == '--': break
             if formater.lookslikeopt(i) and not self.accepts(i): raise errors.UnrecognizedOptionError(i)
 
@@ -140,11 +153,12 @@ class Parser():
         escape first hyphen or double-escape first hyphen.
         Last check is done only when `deep` argument is True.
         """
-        for i, opt in enumerate(self.argv):
+        input = self._getinput()
+        for i, opt in enumerate(input):
             if i == '--': break
             if formater.lookslikeopt(opt) and self.type(opt):
-                if i+1 == len(self.argv): raise errors.MissingArgumentError(opt)
-                arg = self.argv[i+1]
+                if i+1 == len(input): raise errors.MissingArgumentError(opt)
+                arg = input[i+1]
                 try: self.type(opt)(arg)
                 except ValueError as e: raise errors.InvalidArgumentTypeError('{0}: {1}'.format(opt, e))
                 if deep and formater.lookslikeopt(arg) and self.accepts(arg): raise errors.MissingArgumentError(opt)
@@ -152,76 +166,78 @@ class Parser():
     def _checkrequired(self):
         """Checks if all required options are present in input list.
         """
+        input = self._getinput()
         for i in self.options:
             check = True
             if not i['required']: continue
             if i['not_with']:
                 for n in i['not_with']:
                     alias = self.alias(n)
-                    if n in self.argv: check = False
-                    if alias and alias in self.argv: check = False
+                    if n in input: check = False
+                    if alias and alias in input: check = False
                     if not check: break
             if not check: continue
-            #if i['long']: option = i['long']
-            #else: option = i['short']
             option = str(i)
             alias = self.alias(option)
             fail = True
-            if option in self.argv: fail = False
-            if alias and alias in self.argv: fail = False
+            if option in input: fail = False
+            if alias and alias in input: fail = False
             if fail: raise errors.RequiredOptionNotFoundError(option)
 
     def _checkrequires(self):
         """Check if all options required by other options are present.
         """
+        input = self._getinput()
         for i in self.options:
             o = str(i)
             oalias = self.alias(o)
-            if o not in self.argv:
-                if (oalias and oalias not in self.argv) or not oalias: continue 
+            if o not in input:
+                if (oalias and oalias not in input) or not oalias: continue 
             for n in i['requires']:
                 alias = self.alias(n)
                 fail = True
-                if n in self.argv: fail = False
-                if alias and alias in self.argv: fail = False
+                if n in input: fail = False
+                if alias and alias in input: fail = False
                 if fail:
-                    if o in self.argv: needs = o
+                    if o in input: needs = o
                     else: needs = oalias
                     raise errors.RequiredOptionNotFoundError('{0} -> {1}'.format(needs, n))
 
     def _checkneeds(self):
         """Check needed options.
         """
+        input = self._getinput()
         for i in self.options:
             o = str(i)
             oalias = self.alias(o)
-            if o not in self.argv:
-                if (oalias and (oalias not in self.argv)) or not oalias:
+            if o not in input:
+                if (oalias and (oalias not in input)) or not oalias:
                     continue
             for n in i['needs']:
                 alias = self.alias(n)
                 fail = True
-                if n in self.argv: fail = False
-                if alias and alias in self.argv: fail = False
+                if n in input: fail = False
+                if alias and alias in input: fail = False
                 if fail:
-                    if o in self.argv: needs = o
+                    if o in input: needs = o
                     else: needs = oalias
                     raise errors.NeededOptionNotFoundError('{0} -> {1}'.format(needs, ', '.join(i['needs'])))
 
     def _checkconflicts(self):
         """Check for conflicting options.
         """
+        input = self._getinput()
         for i in self.options:
             o = str(i)
             oalias = self.alias(o)
-            if i['conflicts'] and (o in self.argv or (oalias and oalias in self.argv)):
-                if o in self.argv: conflicted = o
+            if i['conflicts'] and (o in input or (oalias and oalias in input)):
+                if o in input: conflicted = o
                 else: conflicted = oalias
                 for c in i['conflicts']:
                     alias = self.alias(c)
                     conflicting = ''
-                    if c in self.argv: conflicting = c
-                    elif alias and alias in self.argv: conflicting = alias
+                    if c in input: conflicting = c
+                    elif alias and alias in input: conflicting = alias
                     if conflicting: raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, conflicting))
 
     def check(self, deep=True):
