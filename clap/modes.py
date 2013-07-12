@@ -26,7 +26,7 @@ If using Modes() instead of simple Parser() remember to call `define()` method b
 """
 
 
-class Modes():
+class Parser():
     """Object implementing modes functionality.
     """
     def __init__(self, argv, default=''):
