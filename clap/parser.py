@@ -131,7 +131,7 @@ class Parser():
             if item == '--': break
             if i > 0 and not formater.lookslikeopt(item) and self.type(self.argv[i-1]) is None: break
             index = i
-        if index: input = self.argv[:index]
+        if index: input = self.argv[:index+1]
         else: input = self.argv
         return input
 
@@ -211,17 +211,17 @@ class Parser():
             o = str(i)
             oalias = self.alias(o)
             if o not in input:
-                if (oalias and (oalias not in input)) or not oalias:
-                    continue
+                if (oalias and (oalias not in input)) or not oalias: continue
+            fail = True
             for n in i['needs']:
                 alias = self.alias(n)
-                fail = True
-                if n in input: fail = False
-                if alias and alias in input: fail = False
-                if fail:
-                    if o in input: needs = o
-                    else: needs = oalias
-                    raise errors.NeededOptionNotFoundError('{0} -> {1}'.format(needs, ', '.join(i['needs'])))
+                if n in input or (alias and (alias in input)):
+                    fail = False
+                    break
+            if fail:
+                if o in input: needs = o
+                else: needs = oalias
+                raise errors.NeededOptionNotFoundError('{0} -> {1}'.format(needs, ', '.join(i['needs'])))
 
     def _checkconflicts(self):
         """Check for conflicting options.

@@ -2,6 +2,10 @@
 
 ----
 
+#### Version 0.6.3 (2013-07-19):
+
+* __fix__:  fixed bug in `Parser._checkneeds()` which caused `needs` param to behave like `requires`
+
 #### Version 0.6.2 (2013-07-12):
 
 * __upd__:  `modes.Modes()` renamed to `modes.Parser()`
