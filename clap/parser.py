@@ -218,7 +218,7 @@ class Parser():
                 if n in input or (alias and (alias in input)):
                     fail = False
                     break
-            if fail:
+            if fail and i['needs']:
                 if o in input: needs = o
                 else: needs = oalias
                 raise errors.NeededOptionNotFoundError('{0} -> {1}'.format(needs, ', '.join(i['needs'])))

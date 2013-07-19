@@ -5,6 +5,7 @@
 #### Version 0.6.3 (2013-07-19):
 
 * __fix__:  fixed bug in `Parser._checkneeds()` which caused `needs` param to behave like `requires`
+* __fix__:  fixed bug in `Parser._checkneeds()` which caused it to raise an exception if parameter `needs` was empty list,
 
 #### Version 0.6.2 (2013-07-12):
 
