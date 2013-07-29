@@ -1,13 +1,17 @@
 VERSION = 0.0.1
 TAGNAME = clap-$(VERSION)
 
-.PHONY: test
+.PHONY: tests tests-python2
 
-test:
-	python3 -m unittest --catch --failfast --verbose test.py 
+tests:
+	python3 -m unittest --catch --failfast --verbose tests.py
+
+tests-python2:
+	python2 -m unittest --catch --failfast --verbose tests.py
 
 doc:
-	pydoc3 ./clap.py > DOC
+	echo "" > DOC
+	pydoc3 ./clap/* >> DOC
 
 clean:
 	rm -rv ./clap/__pycache__/

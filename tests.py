@@ -1,232 +1,99 @@
 #/usr/bin/env python3
 
 import unittest
+import warnings
+
 import clap
 
-__version__ = '0.2.1'
+
+#   enable debugging output which is basically huge number of print() calls
+DEBUG = False
+
+
+class BaseTests(unittest.TestCase):
+    def testOptionRecognition(self):
+        tests = [   ('-a', True),
+                    ('--foo', True),
+                    ('--foo=bar', True),
+                    ('-abc', True),
+                    ('a', False),
+                    ('foo', False),
+                    ('--a', False),
+                    ('-a=foo', False),
+                    ('--', False),
+                    ('-', False),
+                ]
+        for opt, result in tests:
+            if DEBUG: print(opt, result)
+            self.assertEqual(clap.base.lookslikeopt(opt), result)
+
 
 class FormatterTests(unittest.TestCase):
-    def testSplittinEqualSignedOptions(self):
-        f = clap.formater.Formater(argv=['eggs', '--foo=bar', '-s', 'pam'])
+    def testSplittingEqualSignedOptions(self):
+        argv = ['--foo=bar', '--', '--baz=bax']
+        f = clap.formater.Formater(argv)
+        f._splitequal()
+        if DEBUG: print('\'{0}\' -> \'{1}\''.format(' '.join(argv), ' '.join(f.formated)))
+        self.assertEqual(f.formated, ['--foo', 'bar', '--', '--baz=bax'])
+
+    def testSplittingConnectedShortOptions(self):
+        argv = ['-abc', '--', '-def']
+        f = clap.formater.Formater(argv)
+        f._splitshorts()
+        if DEBUG: print('\'{0}\' -> \'{1}\''.format(' '.join(argv), ' '.join(f.formated)))
+        self.assertEqual(f.formated, ['-a', '-b', '-c', '--', '-def'])
+
+    def testGeneralFormating(self):
+        argv = ['-abc', 'eggs', '--bar', '--ham', 'good', '--food=spam', '--', '--bax=bay']
+        f = clap.formater.Formater(argv)
         f.format()
-        self.assertEqual(f.formated, ['eggs', '--foo', 'bar', '-s', 'pam'])
-
-    def testSplittingLongOptionsWithArgumentWrapped(self):
-        f = clap.formater.Formater(argv=['eggs', '--foo=bar baz', '-s', 'pam'])
-        f.format()
-        self.assertEqual(f.formated, ['eggs', '--foo', 'bar baz', '-s', 'pam'])
+        if DEBUG: print('\'{0}\' -> \'{1}\''.format(' '.join(argv), ' '.join(f.formated)))
+        self.assertEqual(f.formated, ['-a', '-b', '-c', 'eggs', '--bar', '--ham', 'good', '--food', 'spam', '--', '--bax=bay'])
 
 
-class ParserManipulationTests(unittest.TestCase):
-    def testAddingShortOptionsWithoutArgument(self):
-        parser = clap.Parser()
-        parser.add(short='f')
-        parser.add(short='b', type=str)
-        self.assertEqual(parser._short, ['-f', '-b:'])
+class OptionTests(unittest.TestCase):
+    def testOnlyShortName(self):
+        o = clap.option.Option(short='f')
+        self.assertEqual(o['short'], '-f')
+        self.assertEqual(o['long'], '')
+        self.assertEqual(str(o), '-f')
 
-    def testAddingShortOptionsDoesNotDuplicateOptions(self):
-        parser = clap.Parser()
-        parser.addshort('f')
-        parser.addshort('f')
-        self.assertEqual(parser._short, ['-f'])
+    def testOnlyLongName(self):
+        o = clap.option.Option(long='foo')
+        self.assertEqual(o['short'], '')
+        self.assertEqual(o['long'], '--foo')
+        self.assertEqual(str(o), '--foo')
 
-    def testAddingShortOptionsDoesNotDuplicateOptionsWhenAddingArgument(self):
-        parser = clap.Parser()
-        parser.addshort('f')
-        parser.addshort('f:')
-        self.assertEqual(parser._short, ['-f:'])
+    def testInvalidLongName(self):
+        tests = ['a', 'A', '0', '-']
+        for o in tests:
+            if DEBUG: print(o)
+            self.assertRaises(TypeError, clap.option.Option, long=o)
 
-    def testAddingShortOptionsDoesNotDuplicateOptionsWhenRemovingArgument(self):
-        parser = clap.Parser()
-        parser.addshort('f:')
-        parser.addshort('f')
-        self.assertEqual(parser._short, ['-f'])
-    
-    def testAddingLongOptions(self):
-        parser = clap.Parser()
-        parser.addlong('foo')
-        self.assertEqual(parser._long, ['--foo'])
+    def testBothNames(self):
+        o = clap.option.Option(short='f', long='foo')
+        self.assertEqual(o['short'], '-f')
+        self.assertEqual(o['long'], '--foo')
+        self.assertEqual(str(o), '--foo')
 
-    def testAddingLongOptionsDoesNotDuplicateOptions(self):
-        parser = clap.Parser()
-        parser.addlong('foo')
-        parser.addlong('foo')
-        self.assertEqual(parser._long, ['--foo'])
+    def testNoName(self):
+        self.assertRaises(TypeError, clap.option.Option)
 
-    def testAddingLongOptionsDoesNotDuplicateOptionsWhenAddingArgument(self):
-        parser = clap.Parser()
-        parser.addlong('foo')
-        parser.addlong('foo=')
-        self.assertEqual(parser._long, ['--foo='])
+    def testTyping(self):
+        o = clap.option.Option(short='f', argument=int)
+        self.assertEqual(int, o.type())
+        p = clap.option.Option(short='f')
+        self.assertEqual(None, p.type())
 
-    def testAddingLongOptionsDoesNotDuplicateOptionsWhenRemovingArgument(self):
-        parser = clap.Parser()
-        parser.addlong('foo')
-        parser.addlong('foo=')
-        self.assertEqual(parser._long, ['--foo='])
-    
-    def testRemovingShortOptions(self):
-        parser = clap.Parser()
-        parser.addshort('f')
-        parser.rmshort('-f')
-        self.assertEqual(parser._short, [])
-
-    def testRemovingLongOptions(self):
-        parser = clap.Parser()
-        parser.addlong('foo')
-        parser.rmlong('--foo')
-        self.assertEqual(parser._long, [])
-    
-    def testPurging(self):
-        parser = clap.Parser(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam', '--bar', 'spammer'])
-        parser.parse()
-        self.assertEqual(parser._short, ['-f:', '-b'])
-        self.assertEqual(parser._long, ['--foo=', '--bar'])
-        self.assertEqual(parser._argv, ['-f', 'spam', '--bar', 'spammer'])
-        self.assertEqual(parser._options, [('-f', 'spam'), ('--bar', '')])
-        self.assertEqual(parser._arguments, ['spammer'])
-        parser.purge()
-        self.assertEqual(parser._short, [])
-        self.assertEqual(parser._long, [])
-        self.assertEqual(parser._argv, [])
-        self.assertEqual(parser._options, [])
-        self.assertEqual(parser._arguments, [])
+    def testMatching(self):
+        o = clap.option.Option(short='f', long='foo')
+        self.assertEqual(True, o.match('-f'))
+        self.assertEqual(True, o.match('--foo'))
 
 
 class ParserTests(unittest.TestCase):
-    def testValidOptionChecking(self):
-        parser = clap.Parser(short='f:b', long=['foo=', 'bar'])
-        self.assertEqual(parser._isopt('-f'), False)
-        self.assertEqual(parser._isopt('-f:'), True)
-        self.assertEqual(parser._isopt('-b'), True)
-        self.assertEqual(parser._isopt('-v'), False)
-
-        self.assertEqual(parser._isopt('--foo'), False)
-        self.assertEqual(parser._isopt('--foo='), True)
-        self.assertEqual(parser._isopt('--bar'), True)
-        self.assertEqual(parser._isopt('--verbose'), False)
-
-    def testSplittingShortOptions(self):
-        parser = clap.Parser(short='f:bz', long=['foo=', 'bar'], argv=['-f', 'spam0', '-bz', '--bar'])
-        parser._splitshorts()
-        self.assertEqual(parser._argv, ['-f', 'spam0', '-b', '-z', '--bar'])
-    
-    def testSplittingShortOptionsWhichRequireArgument(self):
-        parser = clap.Parser(short='f:bz', long=['foo=', 'bar'], argv=['-bzf', 'spam0', '--bar'])
-        parser._splitshorts()
-        self.assertEqual(parser._argv, ['-b', '-z', '-f', 'spam0', '--bar'])
-    
-    def testParseRaisesError(self):
-        parser = clap.Parser(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam0', '-v', '-b', '--foo', 'spam1', '--bar'])
-        self.assertRaises(clap.UnexpectedOptionError, parser.parse)
-
-    def testParseSimple(self):
-        parser = clap.Parser(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam0', '-b', '--foo', 'spam1', '--bar'])
-        parser.parse()
-        self.assertEqual(parser._options, [('-f', 'spam0'), ('-b', ''), ('--foo', 'spam1'), ('--bar', '')])
-        self.assertEqual(parser._arguments, [])
-
-    def testParseWithArguments(self):
-        parser = clap.Parser(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam0', '-b', '--foo', 'spam1', '--bar', 'arguments'])
-        parser.parse()
-        self.assertEqual(parser._options, [('-f', 'spam0'), ('-b', ''), ('--foo', 'spam1'), ('--bar', '')])
-        self.assertEqual(parser._arguments, ['arguments'])
-    
-    def testParseWithMissingArgument(self):
-        parser = clap.Parser(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam0', '-b', '--foo'])
-        self.assertRaises(clap.ArgumentError, parser.parse)
-    
-    def testParseWithBreaker(self):
-        parser = clap.Parser(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam0', '-b', '--', '--foo', 'spam1', '--bar'])
-        parser.parse()
-        self.assertEqual(parser._options, [('-f', 'spam0'), ('-b', '')])
-        self.assertEqual(parser._arguments, ['--foo', 'spam1', '--bar'])
-
-    def testParseWhenOptionsAreJoined(self):
-        parser = clap.Parser(short='f:bz', long=['foo=', 'bar'], argv=['-bzf', 'spam0', '--foo', 'spam1', '--bar'])
-        parser.parse()
-        self.assertEqual(parser._options, [('-b', ''), ('-z', ''), ('-f', 'spam0'), ('--foo', 'spam1'), ('--bar', '')])
-        self.assertEqual(parser._arguments, [])
-
-    def testMissingOptionRaisesError(self):
-        p = clap.Parser(short='ba:r', required=['-a', '-r'], argv=['-b', '-a', 'spam', 'eggs'])
-        self.assertRaises(clap.MissingOptionError, p.parse)
-
-
-class InterfaceTests(unittest.TestCase):
-    def testInitialization(self):
-        interface = clap.Interface()
-        self.assertEqual(type(interface._parser), clap.Parser)
-        self.assertEqual(interface._parsed, False)
-    
-    def testParseMethod(self):
-        interface = clap.Interface()
-        interface.parse()
-        self.assertEqual(interface._options, {})
-    
-    def testParseWithDuplicates(self):
-        parser = clap.Interface(short='f:b', long=['foo=', 'bar'], argv=['-f', 'spam0', '-b', '--foo', 'spam1', '--bar', '--foo', 'spam2'])
-        parser.parse()
-        self.assertEqual(parser._options, {'-f':'spam0', '-b':'', '--foo':'spam2', '--bar':''})
-        self.assertEqual(parser._arguments, [])
-
-    def testOptionGetter(self):
-        interface = clap.Interface(short='vV:', argv=['-v', '-V', '0.0.1'])
-        interface.parse()
-        self.assertEqual('0.0.1', interface.getopt('-V'))
-        self.assertEqual('', interface.getopt('-v'))
-
-    def testOptionGetterRaisesKeyError(self):
-        interface = clap.Interface(short='vV:', argv=['-V', '0.0.1'])
-        interface.parse()
-        self.assertRaises(KeyError, interface.getopt, '-v')
-
-    def testIsoptWithEnabledModeBoth(self):
-        p = clap.Interface(short='v', long=['version='])
-        p.parse()
-        self.assertEqual(True, p.isopt('-v'))
-        self.assertEqual(False, p.isopt('-v:'))
-        
-        self.assertEqual(True, p.isopt('--version='))
-        self.assertEqual(False, p.isopt('--version'))
-
-    def testIsoptWithEnabledModeShort(self):
-        p = clap.Interface(short='v', long=['version='])
-        p.parse()
-        self.assertEqual(True, p.isopt('-v', mode='s'))
-        self.assertEqual(False, p.isopt('-v:', mode='s'))
-        
-        self.assertEqual(False, p.isopt('--version=', mode='s'))
-        self.assertEqual(False, p.isopt('--version', mode='s'))
-
-    def testIsoptWithEnabledModeLong(self):
-        p = clap.Interface(short='v', long=['version='])
-        p.parse()
-        self.assertEqual(False, p.isopt('-v', mode='l'))
-        self.assertEqual(False, p.isopt('-v:', mode='l'))
-        
-        self.assertEqual(True, p.isopt('--version=', mode='l'))
-        self.assertEqual(False, p.isopt('--version', mode='l'))
-
-    def testWasPassed(self):
-        p = clap.Interface(short='v', argv=['-v', 'foo'])
-        p.parse()
-        self.assertEqual(True, p.waspassed('-v'))
-
-    def testWasPassedMultiple(self):
-        p = clap.Interface(short='v', long=['verbose'], argv=['-v', '--verbose', 'foo'])
-        p.parse()
-        self.assertEqual(True, p.waspassed('-v', '--verbose'))
-
-    def testArgumentsGetter(self):
-        interface = clap.Interface(short='f:b', argv=['-f', 'foo', '-b', 'bar'])
-        interface.parse()
-        self.assertEqual(interface.getargs(), ['bar'])
-    
-    def testGettingListOfAcceptedOptions(self):
-        interface = clap.Interface(short='f:bo:', long=['foo=', 'bar', 'output='])
-        interface.parse()
-        self.assertEqual(interface.listaccepted(), ['--bar', '--foo=', '--output=', '-b', '-f:', '-o:'])
+    def test(self):
+        warnings.warn('not implemented')
 
 
 if __name__ == '__main__': unittest.main()

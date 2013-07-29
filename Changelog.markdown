@@ -1,4 +1,4 @@
-#### Changelog file for clap
+#### Changelog file for CLAP
 
 ----
 
@@ -6,6 +6,14 @@
 
 * __fix__:  fixed bug in `Parser._checkneeds()` which caused `needs` param to behave like `requires`
 * __fix__:  fixed bug in `Parser._checkneeds()` which caused it to raise an exception if parameter `needs` was empty list,
+
+* __upd__:  updated regular expressions used for option string recognition,
+
+* __new__:  `clap/base.py` module,
+* __new__:  first tests added for versions `0.6.x`,
+
+
+----
 
 #### Version 0.6.2 (2013-07-12):
 

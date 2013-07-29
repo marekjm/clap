@@ -1,28 +1,19 @@
 #!/usr/bin/env python3
 
 
-import re
-
-
 """This module contains Formatter() object which is used to
-properly format input arguments for Parser().
+properly format input arguments for Parser(). 
+
+For information what strings CLAP considers *options strings* read the source of 
+`clap/base.py` which contains regular expressions used for option strings 
+recognition.
 """
 
 
-shortopt_regexp = re.compile('^-[a-zA-Z]$')
-longopt_regexp = re.compile('^--[a-zA-Z]+[a-zA-Z0-9]*(-[a-zA-Z0-9]+)*$')
-longopt_with_equal_sign_regexp = re.compile('^--[a-zA-Z]+[a-zA-Z0-9]*(-[a-zA-Z0-9]+)*=.*$')
-connected_shorts_regexp = re.compile('^-[a-zA-Z]+$')
+import re
 
 
-def lookslikeopt(s):
-    """Returns True if given string looks like option.
-    """
-    return bool(re.match(longopt_regexp, s) or
-                re.match(longopt_with_equal_sign_regexp, s) or
-                re.match(connected_shorts_regexp, s) or
-                re.match(shortopt_regexp, s)
-                )
+from clap import base
 
 
 class Formater():
@@ -49,7 +40,7 @@ class Formater():
             if self.formated[i] == '--':
                 current = self.formated[i:]
                 i = len(self.formated)
-            elif re.match(connected_shorts_regexp, self.formated[i]):
+            elif re.match(base.connected_shorts_regexp, self.formated[i]):
                 current = ['-{}'.format(n) for n in list(self.formated[i])[1:]]
             else:
                 current = [self.formated[i]]
@@ -68,7 +59,7 @@ class Formater():
             if self.formated[i] == '--':
                 current = self.formated[i:]
                 i = len(self.formated)
-            elif re.match(longopt_with_equal_sign_regexp, self.formated[i]):
+            elif re.match(base.longopt_with_equal_sign_regexp, self.formated[i]):
                 current = self.formated[i].split('=', 1)
             else:
                 current = [self.formated[i]]

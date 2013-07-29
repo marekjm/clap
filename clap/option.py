@@ -15,18 +15,18 @@ class Option():
     hard to remember. So, here is the explanation of what they do:
 
     short:
-        This is short name for the option
+        This is short name for the option. Given WITHOUT preceding hyphen.
 
     long:
-        This is long name for the option
+        This is long name for the option. MUST BE two or more characters. Given WITHOUT preceding hyphens.
 
     argument:
         You can pass one of these: str, int or float. If you do so, CLAP will expect an argument of given
-        type to be passed alongside the option.
+        type to be passed alongside the option. You can safely violate the rule about types as long as you pass 
+        one-argument callables to `argument`.
         CLAP will raise an exception when:
         * option is given no argument,
         * option is given argument of invalid type (argument is converted from string during parsing).
-        In fact, `argument` should just be a one-parameter callback taking string.
 
     requires:
         List of options that MUST be passed with this option. An excpetion is raised when EVEN ONE OF THEM
@@ -54,6 +54,7 @@ class Option():
     """
     def __init__(self, short='', long='', argument=None, requires=[], needs=[], required=False, not_with=[], conflicts=[], hint=''):
         if not (short or long): raise TypeError('neither short nor long variant was specified')
+        if len(long) < 2 and long: raise TypeError('long option name must be two or more characters, given: {0}'.format(long))
         if short: short = '-' + short
         if long: long = '--' + long
         self.meta = {   'short': short,
@@ -82,11 +83,14 @@ class Option():
     def __str__(self):
         string = ''
         if self.meta['long']: string = self.meta['long']
-        if self.meta['short']: string = self.meta['short']
+        if self.meta['short'] and not string: string = self.meta['short']
         return string
 
     def match(self, s):
         """Returns True if given string matches one of option names.
+        Options must be passed with one preceding hyphen for short and
+        two hyphens for long options.
+        If you pass an option without the hyphen, match will fail.
         """
         return s == self['short'] or s == self['long']
 
