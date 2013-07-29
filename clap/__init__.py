@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+
+#flake8: noqa
+
 from clap import formater
 from clap import errors
 from clap import option

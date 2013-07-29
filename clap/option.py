@@ -22,7 +22,7 @@ class Option():
 
     argument:
         You can pass one of these: str, int or float. If you do so, CLAP will expect an argument of given
-        type to be passed alongside the option. You can safely violate the rule about types as long as you pass 
+        type to be passed alongside the option. You can safely violate the rule about types as long as you pass
         one-argument callables to `argument`.
         CLAP will raise an exception when:
         * option is given no argument,
@@ -47,26 +47,23 @@ class Option():
     conflicts:
         List of options this option CANNOT BE passed with. If EVEN ONE OF THEM is found in `argv` an exception
         is raised.
-
-    hint:
-        It's self-explanatory, isn't it? Text explaining usage of the option.
-        **Warning:** may be deprecated in near future!
     """
-    def __init__(self, short='', long='', argument=None, requires=[], needs=[], required=False, not_with=[], conflicts=[], hint=''):
-        if not (short or long): raise TypeError('neither short nor long variant was specified')
-        if len(long) < 2 and long: raise TypeError('long option name must be two or more characters, given: {0}'.format(long))
+    def __init__(self, short='', long='', argument=None, requires=[], needs=[], required=False, not_with=[], conflicts=[]):
+        if not (short or long):
+            raise TypeError('neither short nor long variant was specified')
+        if len(long) < 2 and long:
+            raise TypeError('long option name must be two or more characters, given: {0}'.format(long))
         if short: short = '-' + short
         if long: long = '--' + long
-        self.meta = {   'short': short,
-                        'long': long,
-                        'argument': argument,
-                        'required': required,
-                        'requires': requires,
-                        'needs': needs,
-                        'not_with': not_with,
-                        'conflicts': conflicts,
-                        'hint': hint,
-                        }
+        self.meta = {'short': short,
+                     'long': long,
+                     'argument': argument,
+                     'required': required,
+                     'requires': requires,
+                     'needs': needs,
+                     'not_with': not_with,
+                     'conflicts': conflicts,
+                     }
 
     def __getitem__(self, key):
         return self.meta[key]

@@ -12,17 +12,17 @@ DEBUG = False
 
 class BaseTests(unittest.TestCase):
     def testOptionRecognition(self):
-        tests = [   ('-a', True),
-                    ('--foo', True),
-                    ('--foo=bar', True),
-                    ('-abc', True),
-                    ('a', False),
-                    ('foo', False),
-                    ('--a', False),
-                    ('-a=foo', False),
-                    ('--', False),
-                    ('-', False),
-                ]
+        tests = [('-a', True),
+                 ('--foo', True),
+                 ('--foo=bar', True),
+                 ('-abc', True),
+                 ('a', False),
+                 ('foo', False),
+                 ('--a', False),
+                 ('-a=foo', False),
+                 ('--', False),
+                 ('-', False),
+                 ]
         for opt, result in tests:
             if DEBUG: print(opt, result)
             self.assertEqual(clap.base.lookslikeopt(opt), result)
@@ -48,7 +48,8 @@ class FormatterTests(unittest.TestCase):
         f = clap.formater.Formater(argv)
         f.format()
         if DEBUG: print('\'{0}\' -> \'{1}\''.format(' '.join(argv), ' '.join(f.formated)))
-        self.assertEqual(f.formated, ['-a', '-b', '-c', 'eggs', '--bar', '--ham', 'good', '--food', 'spam', '--', '--bax=bay'])
+        self.assertEqual(f.formated,
+                         ['-a', '-b', '-c', 'eggs', '--bar', '--ham', 'good', '--food', 'spam', '--', '--bax=bay'])
 
 
 class OptionTests(unittest.TestCase):

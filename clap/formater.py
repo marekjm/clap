@@ -2,10 +2,10 @@
 
 
 """This module contains Formatter() object which is used to
-properly format input arguments for Parser(). 
+properly format input arguments for Parser().
 
-For information what strings CLAP considers *options strings* read the source of 
-`clap/base.py` which contains regular expressions used for option strings 
+For information what strings CLAP considers *options strings* read the source of
+`clap/base.py` which contains regular expressions used for option strings
 recognition.
 """
 

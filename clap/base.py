@@ -24,6 +24,3 @@ def lookslikeopt(s):
                 re.match(connected_shorts_regexp, s) or
                 re.match(shortopt_regexp, s)
                 )
-
-
-

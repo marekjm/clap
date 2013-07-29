@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from clap import formater, parser, errors, option
+from clap import base, parser, errors, option
 
 
 """This is interface which enables use of modes.
@@ -57,7 +57,7 @@ class Parser():
         self.parser = None
         self.mode = ''
 
-    def addOption(self, short='', long='', argument=None, requires=[], needs=[], required=False, not_with=[], conflicts=[], hint=''):
+    def addOption(self, short='', long='', argument=None, requires=[], needs=[], required=False, not_with=[], conflicts=[]):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
@@ -66,7 +66,7 @@ class Parser():
         new = option.Option(short=short, long=long, argument=argument,
                             requires=requires, needs=needs,
                             required=required, not_with=not_with,
-                            conflicts=conflicts, hint=hint)
+                            conflicts=conflicts)
         for name in self.modes: self.modes[name]._append(new)
         return new
 
@@ -82,12 +82,13 @@ class Parser():
 
     def _modeindex(self):
         """Returns index of first non-option-like item in input list.
-        Returns -1 if no mode is found.
+        Returns -1 if no mode is found (all input was scanned or `--` was
+        found).
         """
         index = -1
         for i, item in enumerate(self.argv):
             if item == '--': break
-            if not formater.lookslikeopt(item):
+            if not base.lookslikeopt(item):
                 if i == 0: index = i
                 else:
                     opt = self.argv[i-1]
@@ -130,7 +131,7 @@ class Parser():
 
     def type(self, s):
         """Returns type of the option.
-        If mode is defined use self.parser. 
+        If mode is defined use self.parser.
         If not, interate over all modes and return first non-None
         type found.
         """
