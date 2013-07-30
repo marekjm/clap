@@ -83,6 +83,18 @@ class Option():
         if self.meta['short'] and not string: string = self.meta['short']
         return string
 
+    def _alias(self, name):
+        """Returns other name of the option (if any).
+        If option has only one name returns empty string.
+
+        :param name: name of the option
+        """
+        alias = ''
+        if name == self['short']: alias = self['long']
+        elif name == self['long']: alias = self['short']
+        else: raise NameError('invalid name for this option: {0}'.format(name))
+        return alias
+
     def match(self, s):
         """Returns True if given string matches one of option names.
         Options must be passed with one preceding hyphen for short and

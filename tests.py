@@ -91,6 +91,12 @@ class OptionTests(unittest.TestCase):
         self.assertEqual(True, o.match('-f'))
         self.assertEqual(True, o.match('--foo'))
 
+    def testAliases(self):
+        o = clap.option.Option(short='f', long='foo')
+        self.assertEqual('--foo', o._alias('-f'))
+        self.assertEqual('-f', o._alias('--foo'))
+        self.assertRaises(NameError, o._alias, '--bar')
+
 
 class ParserTests(unittest.TestCase):
     def test(self):
