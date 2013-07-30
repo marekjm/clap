@@ -27,12 +27,11 @@ class Checker(base.Base):
         """Checks if arguments given to options which require them are valid.
         Raises `MissingArgumentError` when option which requires an argument is last item
         in input list.
-        Raises `TypeError` when option is given argument of invalid type.
+        Raises `InvalidArgumentTypeError` when option is given argument of invalid type.
         Raises `MissingArgumentError` when option which requires an argument is followed by
         another option accepted by this instance of parser.
         **Notice:** if you want to pass option-like argument wrap it in `"` or `'` and
         escape first hyphen or double-escape first hyphen.
-        Last check is done only when `deep` argument is True.
         """
         input = self._getinput()
         for i, opt in enumerate(input):
@@ -40,9 +39,9 @@ class Checker(base.Base):
             if base.lookslikeopt(opt) and self.type(opt):
                 if i+1 == len(input): raise errors.MissingArgumentError(opt)
                 arg = input[i+1]
+                if base.lookslikeopt(arg) and self.accepts(arg): raise errors.MissingArgumentError(opt)
                 try: self.type(opt)(arg)
                 except ValueError as e: raise errors.InvalidArgumentTypeError('{0}: {1}'.format(opt, e))
-                if base.lookslikeopt(arg) and self.accepts(arg): raise errors.MissingArgumentError(opt)
 
     def _checkrequired(self):
         """Checks if all required options are present in input list.
@@ -51,18 +50,18 @@ class Checker(base.Base):
             check = option['required']
             for n in option['not_with']:
                 if not check: break
-                check = not self._ininput(n)
+                check = not self._ininput(string=n)
             if not check: continue
-            if not self._ininput(str(option)): raise errors.RequiredOptionNotFoundError(option)
+            if not self._ininput(option): raise errors.RequiredOptionNotFoundError(option)
 
     def _checkrequires(self):
         """Check if all options required by other options are present.
         """
         for o in self.options:
             option = str(o)
-            if not self._ininput(option): continue
+            if not self._ininput(string=option): continue
             for n in o['requires']:
-                if not self._ininput(option):
+                if not self._ininput(string=n):
                     if option in self._getinput(): needs = option
                     else: needs = self.alias(option)
                     raise errors.RequiredOptionNotFoundError('{0} -> {1}'.format(needs, n))
@@ -93,4 +92,13 @@ class Checker(base.Base):
                     conflicting = self._variantin(c)
                     if conflicting: raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, conflicting))
 
-
+    def check(self):
+        """Performs a check.
+        """
+        self._checkunrecognized()
+        self._checkarguments()
+        self._checkrequired()
+        self._checkrequires()
+        self._checkneeds()
+        self._checkconflicts()
+        self._check()

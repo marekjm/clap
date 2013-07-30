@@ -7,7 +7,7 @@ import clap
 
 
 #   enable debugging output which is basically huge number of print() calls
-DEBUG = False
+DEBUG = True
 
 
 class BaseTests(unittest.TestCase):
@@ -47,6 +47,29 @@ class BaseTests(unittest.TestCase):
         base.add(long='foo')
         base.add(long='bar', argument=str)
         self.assertEqual(['--foo', '--bar', 'baz'], base._getinput())
+
+    def testGettingInputWithBreakerPresent(self):
+        argv = ['--foo', '--', '--bar', 'baz', 'bax']
+        base = clap.base.Base(argv)
+        base.add(long='foo')
+        base.add(long='bar', argument=str)
+        self.assertEqual(['--foo'], base._getinput())
+
+    def testCheckingIfOptionIsInInput(self):
+        argv = ['--foo', 'bax', '--bar', 'baz']
+        base = clap.base.Base(argv)
+        base.add(long='foo')
+        base.add(long='bar', argument=str)
+        self.assertEqual(True, base._ininput(string='--foo'))
+        self.assertEqual(False, base._ininput(string='--bar'))
+
+    def testCheckingIfOptionIsInInputWithBreaker(self):
+        argv = ['--foo', '--', '--bar', 'baz']
+        base = clap.base.Base(argv)
+        base.add(long='foo')
+        base.add(long='bar', argument=str)
+        self.assertEqual(True, base._ininput(string='--foo'))
+        self.assertEqual(False, base._ininput(string='--bar'))
 
     def testOptionRecognition(self):
         tests = [('-a', True),
@@ -136,23 +159,109 @@ class OptionTests(unittest.TestCase):
 
 
 class CheckerTests(unittest.TestCase):
-    def test(self):
-        warnings.warn('not implemented')
+    def testUnrecognizedOptions(self):
+        argv = ['--foo', '--bar', '--baz']
+        parser = clap.base.Base(argv)
+        parser.add(long='foo')
+        parser.add(long='baz')
+        checker = clap.checker.Checker(parser)
+        self.assertRaises(clap.errors.UnrecognizedOptionError, checker._checkunrecognized)
 
-    def test(self):
-        warnings.warn('not implemented')
+    def testArgumentNotGivenAtTheEnd(self):
+        argv = ['--bar', '--foo']
+        parser = clap.base.Base(argv)
+        parser.add(long='foo', argument=str)
+        parser.add(long='bar')
+        checker = clap.checker.Checker(parser)
+        self.assertRaises(clap.errors.MissingArgumentError, checker._checkarguments)
 
-    def test(self):
-        warnings.warn('not implemented')
+    def testArgumentNotGivenAtTheEndBecauseOfBreaker(self):
+        argv = ['--bar', '--foo', '--', 'baz']
+        parser = clap.base.Base(argv)
+        parser.add(long='foo', argument=str)
+        parser.add(long='bar')
+        checker = clap.checker.Checker(parser)
+        self.assertRaises(clap.errors.MissingArgumentError, checker._checkarguments)
 
-    def test(self):
-        warnings.warn('not implemented')
+    def testInvalidArgumentType(self):
+        argv = ['--bar', '--foo', 'baz']
+        parser = clap.base.Base(argv)
+        parser.add(long='foo', argument=int)
+        parser.add(long='bar')
+        checker = clap.checker.Checker(parser)
+        self.assertRaises(clap.errors.InvalidArgumentTypeError, checker._checkarguments)
 
-    def test(self):
-        warnings.warn('not implemented')
+    def testAnotherOptionGivenAsArgument(self):
+        argv = ['--foo', '--bar']
+        parser = clap.base.Base(argv)
+        parser.add(long='foo', argument=int)
+        parser.add(long='bar')
+        checker = clap.checker.Checker(parser)
+        self.assertRaises(clap.errors.MissingArgumentError, checker._checkarguments)
 
-    def test(self):
-        warnings.warn('not implemented')
+    def testRequiredOptionNotFound(self):
+        argv = ['--bar']
+        parser = clap.base.Base(argv)
+        parser.add(long='foo', required=True)
+        parser.add(long='bar')
+        checker = clap.checker.Checker(parser)
+        self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
+
+    def testRequiredOptionNotFoundBecauseOfBreaker(self):
+        argv = ['--bar', '--', '--foo']
+        parser = clap.base.Base(argv)
+        parser.add(long='foo', required=True)
+        parser.add(long='bar')
+        checker = clap.checker.Checker(parser)
+        if DEBUG: print(parser._getinput())
+        self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
+
+    def testRequiredNotWithAnotherOption(self):
+        argv = ['-b']
+        parser = clap.base.Base(argv)
+        parser.add(long='foo', required=True, not_with=['--bar'])
+        parser.add(short='b', long='bar')
+        checker = clap.checker.Checker(parser)
+        checker._checkrequired()
+
+    def testRequiredNotWithAnotherOptionNotFoundBecauseOfBreaker(self):
+        argv = ['--', '-b']
+        parser = clap.base.Base(argv)
+        parser.add(long='foo', required=True) #, not_with=['--bar'])
+        parser.add(short='b', long='bar')
+        checker = clap.checker.Checker(parser)
+        if DEBUG: print(parser._getinput())
+        self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
+
+    def testOptionRequiredByAnotherOption(self):
+        argv = ['--foo', '--bar', '--baz']
+        parser = clap.base.Base(argv)
+        parser.add(long='foo', requires=['--bar', '--baz'])
+        parser.add(long='bar')
+        parser.add(long='baz')
+        checker = clap.checker.Checker(parser)
+        if DEBUG: print(parser._getinput())
+        checker._checkrequires()
+
+    def testOptionRequiredByAnotherOptionNotFound(self):
+        argv = ['--foo', '--bar']
+        parser = clap.base.Base(argv)
+        parser.add(long='foo', requires=['--bar', '--baz'])
+        parser.add(long='bar')
+        parser.add(long='baz')
+        checker = clap.checker.Checker(parser)
+        if DEBUG: print(parser._getinput())
+        self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequires)
+
+    def testOptionRequiredByAnotherOptionNotFoundBecauseOfBreaker(self):
+        argv = ['--foo', '--bar', '--', '--baz']
+        parser = clap.base.Base(argv)
+        parser.add(long='foo', requires=['--bar', '--baz'])
+        parser.add(long='bar')
+        parser.add(long='baz')
+        checker = clap.checker.Checker(parser)
+        if DEBUG: print(parser._getinput())
+        self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequires)
 
     def test(self):
         warnings.warn('not implemented')

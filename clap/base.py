@@ -86,6 +86,16 @@ class Base():
         if index: self.options.pop(index)
         return index
 
+    def accepts(self, option):
+        """Returns True if Parser() accepts this option.
+        """
+        result = False
+        for i in self.options:
+            if i.match(option):
+                result = True
+                break
+        return result
+
     def type(self, name):
         """Returns type of given option.
         None indicates that option takes no additional argument.
@@ -97,29 +107,48 @@ class Base():
                 break
         return t
 
+    def alias(self, option):
+        """Returns alias string for given option.
+        Returns empty string if no alias exist.
+        """
+        alias = ''
+        for i in self.options:
+            if i.match(option):
+                alias = i._alias(option)
+                break
+        return alias
+
     def _getinput(self):
         """Returns list of options and arguments until '--' string or
         first non-option and non-option-argument string.
         """
-        index = 0
+        index = -1
         for i, item in enumerate(self.argv):
             if item == '--': break
             if i > 0 and not lookslikeopt(item) and self.type(self.argv[i-1]) is None: break
             index = i
-        if index: input = self.argv[:index+1]
+        if index >= 0: input = self.argv[:index+1]
         else: input = self.argv
         return input
 
-    def _ininput(self, option):
+    def _ininput(self, option=None, string=''):
         """Checks if given option is present in input.
         Used internally when checking.
 
         :param option: option object
         :type option: clap.option.Option
+        :param string: option name
+        :type string: str
         """
         input = self._getinput()
-        name = str(option)
-        alias = option._alias(name)
+        if option is not None:
+            name = str(option)
+            alias = option._alias(name)
+        else:
+            name = string
+            alias = self.alias(name)
+        print(input)
+        print(name, alias)
         result = False
         if name in input or (alias and alias in input): result = True
         return result

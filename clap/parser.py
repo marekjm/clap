@@ -33,27 +33,6 @@ class Parser(base.Base):
         self.parsed = {}
         self.arguments = []
 
-    def accepts(self, option):
-        """Returns True if Parser() accepts this option.
-        """
-        result = False
-        for i in self.options:
-            if i.match(option):
-                result = True
-                break
-        return result
-
-    def alias(self, option):
-        """Returns alias string for given option.
-        Returns empty string if no alias exist.
-        """
-        alias = ''
-        for i in self.options:
-            if i.match(option):
-                alias = i._alias(option)
-                break
-        return alias
-
     def check(self):
         """Checks if input list is valid for this instance of Parser().
         Run before `parse()` to check for errors in input list.
