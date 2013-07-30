@@ -33,51 +33,6 @@ class Parser(base.Base):
         self.parsed = {}
         self.arguments = []
 
-    def _append(self, option):
-        """Appends `Option()` object to options list.
-        """
-        self.options.append(option)
-
-    def add(self, short='', long='', argument=None, requires=[], needs=[], required=False, not_with=[], conflicts=[]):
-        """Adds an option to the list of options recognized by parser.
-        Available types are: int, float and str.
-
-        :param short: short, one character name for the option
-        :type short: str
-        :param long: long multiple-character name for option
-        :type short: str
-        :param type: type of argument for the option
-        :type type: str, int, float
-        :param required: whether this option is required or not
-        :type required: bool
-        :param not_with: list of options with which this option is not required (give only with `required`)
-        :param not_with: list[str]
-        :param conflicts: list of options with which this option must not be passed
-        :type conflicts: list[str]
-        :param hint: hint for the option
-        :type short: str
-
-        :returns: clap.option.Option
-        """
-        new = option.Option(short=short, long=long, argument=argument,
-                            requires=requires, needs=needs,
-                            required=required, not_with=not_with,
-                            conflicts=conflicts)
-        self._append(new)
-        return new
-
-    def remove(self, short='', long=''):
-        """Removes option from the list.
-
-        :returns: non-negative integer indicates that some option was removed
-        """
-        index = -1
-        for i, opt in enumerate(self.options):
-            if opt.match(short) or opt.match(long): index = i
-            if index > -1: break
-        if index: self.options.pop(index)
-        return index
-
     def accepts(self, option):
         """Returns True if Parser() accepts this option.
         """
@@ -94,22 +49,10 @@ class Parser(base.Base):
         """
         alias = ''
         for i in self.options:
-            if option == i['short']:
-                alias = i['long']
-                break
-            if option == i['long']:
-                alias = i['short']
+            if i.match(option):
+                alias = i._alias(option)
                 break
         return alias
-
-    def gethint(self, option):
-        """Returns hint for given option.
-        """
-        for o in self.options:
-            if o.match(option):
-                hint = o['hint']
-                break
-        return hint
 
     def check(self):
         """Checks if input list is valid for this instance of Parser().
@@ -125,7 +68,10 @@ class Parser(base.Base):
         while i < len(self.argv):
             string = self.argv[i]
             arg = None
-            if not self.accepts(string) or string == '--':
+            if string == '--':
+                i += 1
+                break
+            if not self.accepts(string):
                 break
             if self.type(string) is not None:
                 i += 1

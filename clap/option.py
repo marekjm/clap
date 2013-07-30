@@ -83,6 +83,14 @@ class Option():
         if self.meta['short'] and not string: string = self.meta['short']
         return string
 
+    def __eq__(self, option):
+        result = True
+        for key in self.meta:
+            if self[key] != option[key]:
+                result = False
+                break
+        return result
+
     def _alias(self, name):
         """Returns other name of the option (if any).
         If option has only one name returns empty string.

@@ -7,7 +7,7 @@ tests:
 	python3 -m unittest --catch --failfast --verbose tests.py
 
 tests-python2:
-	python2 -m unittest --catch --failfast --verbose tests.py
+	python2 -m unittest --catch --failfast --verbose tests
 
 doc:
 	echo "" > DOC

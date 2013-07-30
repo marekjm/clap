@@ -7,6 +7,8 @@
 
 import re
 
+from clap import option
+
 
 longopt_base = '--[a-zA-Z]+[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*'
 
@@ -33,14 +35,66 @@ class Base():
         self.argv = argv
         self.options = []
 
+    def __contains__(self, option):
+        """Checks if Base contains given option object.
+        """
+        return option in self.options
+
+    def _append(self, option):
+        """Appends `Option()` object to options list.
+        """
+        self.options.append(option)
+
+    def add(self, short='', long='', argument=None, requires=[], needs=[], required=False, not_with=[], conflicts=[]):
+        """Adds an option to the list of options recognized by parser.
+        Available types are: int, float and str.
+
+        :param short: short, one character name for the option
+        :type short: str
+        :param long: long multiple-character name for option
+        :type short: str
+        :param type: type of argument for the option
+        :type type: str, int, float
+        :param required: whether this option is required or not
+        :type required: bool
+        :param not_with: list of options with which this option is not required (give only with `required`)
+        :param not_with: list[str]
+        :param conflicts: list of options with which this option must not be passed
+        :type conflicts: list[str]
+        :param hint: hint for the option
+        :type short: str
+
+        :returns: clap.option.Option
+        """
+        new = option.Option(short=short, long=long, argument=argument,
+                            requires=requires, needs=needs,
+                            required=required, not_with=not_with,
+                            conflicts=conflicts)
+        self._append(new)
+        return new
+
+    def remove(self, short='', long=''):
+        """Removes option from the list.
+
+        :returns: non-negative integer indicates that some option was removed
+        """
+        index = -1
+        for i, opt in enumerate(self.options):
+            if opt.match(short) or opt.match(long):
+                index = i
+                break
+        if index: self.options.pop(index)
+        return index
+
     def type(self, name):
         """Returns type of given option.
         None indicates that option takes no additional argument.
         """
         t = None
         for o in self.options:
-            if o.match(s):
+            if o.match(name):
                 t = o.type()
+                break
         return t
 
     def _getinput(self):
@@ -85,5 +139,3 @@ class Base():
         if name in input: variant = name
         if alias and (alias in input): variant = alias
         return variant
-
-
