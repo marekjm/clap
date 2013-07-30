@@ -68,24 +68,22 @@ class Checker(base.Base):
         """Check needed options.
         """
         for i in self.options:
-            option = str(i)
-            if not self._ininput(option): continue
+            if not self._ininput(i): continue
             fail = True
             for n in i['needs']:
-                if self._ininput(option):
+                if self._ininput(i):
                     fail = False
                     break
             if fail and i['needs']:
-                needs = self._variantin(option)
+                needs = self._variantin(i)
                 raise errors.NeededOptionNotFoundError('{0} -> {1}'.format(needs, ', '.join(i['needs'])))
 
     def _checkconflicts(self):
         """Check for conflicting options.
         """
         for i in self.options:
-            option = str(i)
-            if i['conflicts'] and self._ininput(option):
-                conflicted = self._variantin(option)
+            if i['conflicts'] and self._ininput(i):
+                conflicted = self._variantin(i)
                 for c in i['conflicts']:
                     conflicting = self._variantin(c)
                     if conflicting: raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, conflicting))
@@ -99,4 +97,3 @@ class Checker(base.Base):
         self._checkrequires()
         self._checkneeds()
         self._checkconflicts()
-        self._check()
