@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from clap import base, option, errors
+from clap import base, errors
 
 
 """This module contains Checker() object which is used internaly, by
@@ -57,13 +57,11 @@ class Checker(base.Base):
     def _checkrequires(self):
         """Check if all options required by other options are present.
         """
-        for o in self.options:
-            option = str(o)
-            if not self._ininput(string=option): continue
-            for n in o['requires']:
+        for option in self.options:
+            if not self._ininput(option): continue
+            for n in option['requires']:
                 if not self._ininput(string=n):
-                    if option in self._getinput(): needs = option
-                    else: needs = self.alias(option)
+                    needs = self._variantin(option)
                     raise errors.RequiredOptionNotFoundError('{0} -> {1}'.format(needs, n))
 
     def _checkneeds(self):

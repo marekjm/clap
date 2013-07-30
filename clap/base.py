@@ -147,8 +147,6 @@ class Base():
         else:
             name = string
             alias = self.alias(name)
-        print(input)
-        print(name, alias)
         result = False
         if name in input or (alias and alias in input): result = True
         return result
@@ -163,7 +161,7 @@ class Base():
         """
         input = self._getinput()
         name = str(option)
-        alias = option.alias(name)
+        alias = option._alias(name)
         variant = ''
         if name in input: variant = name
         if alias and (alias in input): variant = alias

@@ -7,33 +7,39 @@ import clap
 
 
 #   enable debugging output which is basically huge number of print() calls
-DEBUG = True
+DEBUG = False
 
 
 class BaseTests(unittest.TestCase):
     def testAddingNewOption(self):
         base = clap.base.Base([])
-        base.add(short='f', long='foo', argument=str, required=True, not_with=['-s'], requires=['--bar'], needs=['--baz', '--bax'], conflicts=['--bay'])
+        base.add(short='f', long='foo', argument=str,
+                 required=True, not_with=['-s'],
+                 requires=['--bar'], needs=['--baz', '--bax'],
+                 conflicts=['--bay'])
         option0 = clap.option.Option(short='f', long='foo',
-                                    argument=str, required=True, not_with=['-s'],
-                                    requires=['--bar'], needs=['--baz', '--bax'],
-                                    conflicts=['--bay'])
+                                     argument=str, required=True, not_with=['-s'],
+                                     requires=['--bar'], needs=['--baz', '--bax'],
+                                     conflicts=['--bay'])
         option1 = clap.option.Option(short='b', long='bar',
-                                    argument=int,
-                                    needs=['--baz', '--bax'])
+                                     argument=int,
+                                     needs=['--baz', '--bax'])
         self.assertIn(option0, base.options)
         self.assertNotIn(option1, base.options)
 
     def testRemovingOption(self):
         base = clap.base.Base([])
-        base.add(short='f', long='foo', argument=str, required=True, not_with=['-s'], requires=['--bar'], needs=['--baz', '--bax'], conflicts=['--bay'])
+        base.add(short='f', long='foo', argument=str,
+                 required=True, not_with=['-s'],
+                 requires=['--bar'], needs=['--baz', '--bax'],
+                 conflicts=['--bay'])
         option0 = clap.option.Option(short='f', long='foo',
-                                    argument=str, required=True, not_with=['-s'],
-                                    requires=['--bar'], needs=['--baz', '--bax'],
-                                    conflicts=['--bay'])
+                                     argument=str, required=True, not_with=['-s'],
+                                     requires=['--bar'], needs=['--baz', '--bax'],
+                                     conflicts=['--bay'])
         option1 = clap.option.Option(short='b', long='bar',
-                                    argument=int,
-                                    needs=['--baz', '--bax'])
+                                     argument=int,
+                                     needs=['--baz', '--bax'])
         base.add(short='b', long='bar', argument=int, needs=['--baz', '--bax'])
         self.assertIn(option0, base.options)
         self.assertIn(option1, base.options)
@@ -225,10 +231,11 @@ class CheckerTests(unittest.TestCase):
         checker._checkrequired()
 
     def testRequiredNotWithAnotherOptionNotFoundBecauseOfBreaker(self):
-        argv = ['--', '-b']
+        argv = ['--baz', '--', '-b']
         parser = clap.base.Base(argv)
-        parser.add(long='foo', required=True) #, not_with=['--bar'])
+        parser.add(long='foo', required=True, not_with=['--bar'])
         parser.add(short='b', long='bar')
+        parser.add(long='baz')
         checker = clap.checker.Checker(parser)
         if DEBUG: print(parser._getinput())
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)

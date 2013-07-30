@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from clap import base, option, errors
+from clap import base, checker
 
 
 """This module contains Parser() object.

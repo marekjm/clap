@@ -89,10 +89,7 @@ class Parser():
         for i, item in enumerate(self.argv):
             if item == '--': break
             if not base.lookslikeopt(item):
-                if i == 0: index = i
-                else:
-                    opt = self.argv[i-1]
-                    if self.type(opt) is None: index = i
+                if i == 0 or self.type(self.argv[i-1]) is None: index = i
                 if index > -1: break
         return index
 
