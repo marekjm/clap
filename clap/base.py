@@ -31,14 +31,20 @@ def lookslikeopt(s):
 class Base():
     """Base class for option and checker.
     """
-    def __init__(self, argv):
-        self.argv = argv
+    def __init__(self, argv=[]):
+        self.argv = []
         self.options = []
+        if argv: self._feed(argv)
 
     def __contains__(self, option):
         """Checks if Base contains given option object.
         """
         return option in self.options
+
+    def _feed(self, argv):
+        """Feeds list of input arguments to Base object.
+        """
+        self.argv = argv
 
     def _append(self, option):
         """Appends `Option()` object to options list.

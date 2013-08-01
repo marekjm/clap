@@ -270,20 +270,60 @@ class CheckerTests(unittest.TestCase):
         if DEBUG: print(parser._getinput())
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequires)
 
-    def test(self):
-        warnings.warn('not implemented')
+    def testOptionNeededByAnotherOption(self):
+        argv_both = ['--bar', '--foo', '--baz']
+        argv_only_bar = ['--foo', '--bar', '42']
+        argv_only_baz = ['--baz', '--foo']
+        parser = clap.base.Base()
+        parser.add(long='foo', needs=['--bar', '--baz'])
+        parser.add(long='bar', argument=int)
+        parser.add(long='baz')
+        for argv in [argv_both, argv_only_bar, argv_only_baz]:
+            parser._feed(argv)
+            checker = clap.checker.Checker(parser)
+            if DEBUG: print(parser._getinput())
+            checker._checkneeds()
 
-    def test(self):
-        warnings.warn('not implemented')
+    def testOptionNeededByAnotherOptionNotFound(self):
+        argv = ['--foo']
+        parser = clap.base.Base()
+        parser.add(long='foo', needs=['--bar', '--baz'])
+        parser.add(long='bar', argument=int)
+        parser.add(long='baz')
+        parser._feed(argv)
+        checker = clap.checker.Checker(parser)
+        if DEBUG: print(parser._getinput())
+        self.assertRaises(clap.errors.NeededOptionNotFoundError, checker._checkneeds)
 
-    def test(self):
-        warnings.warn('not implemented')
+    def testOptionNeededByAnotherOptionNotFoundBecauseOfBreaker(self):
+        argv = ['--foo', '--', '--bar']
+        parser = clap.base.Base()
+        parser.add(long='foo', needs=['--bar', '--baz'])
+        parser.add(long='bar', argument=int)
+        parser.add(long='baz')
+        parser._feed(argv)
+        checker = clap.checker.Checker(parser)
+        if DEBUG: print(parser._getinput())
+        self.assertRaises(clap.errors.NeededOptionNotFoundError, checker._checkneeds)
 
-    def test(self):
-        warnings.warn('not implemented')
+    def testConflicts(self):
+        argv = ['--foo', '--bar']
+        parser = clap.base.Base(argv=argv)
+        parser.add(long='foo', conflicts=['--bar'])
+        parser.add(long='bar')
+        checker = clap.checker.Checker(parser)
+        if DEBUG: print(parser._getinput())
+        self.assertRaises(clap.errors.ConflictingOptionsError, checker._checkconflicts)
 
-    def test(self):
-        warnings.warn('not implemented')
+    def testConflictsNotRaisedBecauseOfBreaker(self):
+        argv = ['--foo', '--', '--bar']
+        parser = clap.base.Base()
+        parser.add(long='foo', conflicts=['--bar'])
+        parser.add(long='bar')
+        parser._feed(argv)
+        checker = clap.checker.Checker(parser)
+        if DEBUG: print(parser._getinput())
+        checker._checkconflicts()
 
 
 class ParserTests(unittest.TestCase):
