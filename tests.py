@@ -61,13 +61,23 @@ class BaseTests(unittest.TestCase):
         base.add(long='bar', argument=str)
         self.assertEqual(['--foo'], base._getinput())
 
-    def testCheckingIfOptionIsInInput(self):
-        argv = ['--foo', 'bax', '--bar', 'baz']
+    def testCheckingIfOptionIsInInputUsingString(self):
+        argv = ['--foo', '--bar', 'baz']
         base = clap.base.Base(argv)
-        base.add(long='foo')
-        base.add(long='bar', argument=str)
+        base.add(short='f', long='foo')
+        base.add(short='b', long='bar', argument=str)
         self.assertEqual(True, base._ininput(string='--foo'))
-        self.assertEqual(False, base._ininput(string='--bar'))
+        self.assertEqual(True, base._ininput(string='-b'))
+
+    def testCheckingIfOptionIsInInputUsingOptionObject(self):
+        argv = ['-f', '--bar', 'baz']
+        base = clap.base.Base(argv)
+        foo = clap.option.Option(short='f', long='foo')
+        bar = clap.option.Option(short='b', long='bar', argument=str)
+        base._append(foo)
+        base._append(bar)
+        self.assertEqual(True, base._ininput(option=foo))
+        self.assertEqual(True, base._ininput(option=bar))
 
     def testCheckingIfOptionIsInInputWithBreaker(self):
         argv = ['--foo', '--', '--bar', 'baz']
@@ -223,7 +233,7 @@ class CheckerTests(unittest.TestCase):
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
 
     def testRequiredNotWithAnotherOption(self):
-        argv = ['-b']
+        argv = ['--bar']
         parser = clap.base.Base(argv)
         parser.add(long='foo', required=True, not_with=['--bar'])
         parser.add(short='b', long='bar')
@@ -369,6 +379,14 @@ class ParserTests(unittest.TestCase):
         self.assertEqual('eggs', p.get('--str'))
         self.assertEqual(42, p.get('--int'))
         self.assertEqual(4.2, p.get('--float'))
+
+    @unittest.skip('will be implemented in version 0.6.4')
+    def testOptionsWithMultipleArguments(self):
+        argv = ['--foo', 'spam', '42', '3.14']
+        p = clap.parser.Parser(argv)
+        p.add(short='f', long='foo', argument=[str, int, float])
+        p.parse()
+        self.assertEqual(('spam', 42, 3.14), p.get('-f'))
 
     def testStopingAtBreaker(self):
         argv = ['--foo', '-s', 'eggs', '--int', '42', '--', '-f', '4.2']

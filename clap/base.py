@@ -6,6 +6,7 @@
 
 
 import re
+import warnings
 
 from clap import option
 
@@ -113,14 +114,14 @@ class Base():
                 break
         return t
 
-    def alias(self, option):
+    def alias(self, name):
         """Returns alias string for given option.
         Returns empty string if no alias exist.
         """
         alias = ''
         for i in self.options:
-            if i.match(option):
-                alias = i._alias(option)
+            if i.match(name):
+                alias = i._alias(name)
                 break
         return alias
 
@@ -141,33 +142,42 @@ class Base():
         """Checks if given option is present in input.
         Used internally when checking.
 
+        `option` takes precendence over `string`.
+
         :param option: option object
         :type option: clap.option.Option
         :param string: option name
         :type string: str
         """
         input = self._getinput()
+        if string:
+            name = string
+            alias = self.alias(string)
         if option is not None:
+            if string: warnings.warn('got both option and string parameters')
             name = str(option)
             alias = option._alias(name)
-        else:
-            name = string
-            alias = self.alias(name)
         result = False
         if name in input or (alias and alias in input): result = True
         return result
 
-    def _variantin(self, option):
+    def _variantin(self, option=None, string=''):
         """Returns which variant of option (long or short) is present in input.
         Used internaly when checking input. Empty string indicates that no variant
         is present (option is not present).
+
+        `option` takes precendence over `string`.
 
         :param option: option name
         :type option: str
         """
         input = self._getinput()
-        name = str(option)
-        alias = option._alias(name)
+        if string:
+            name = string
+            alias = self.alias(string)
+        if option is not None:
+            name = str(option)
+            alias = option._alias(name)
         variant = ''
         if name in input: variant = name
         if alias and (alias in input): variant = alias

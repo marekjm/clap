@@ -11,7 +11,7 @@
 
 * __new__:  `clap/base.py` module,
 * __new__:  `clap/checker.py` module,
-* __new__:  first tests added for versions `0.6.x`,
+* __new__:  first test suite added,
 
 * __rem__:  `hint` parameter is removed from all CLAP components,
 

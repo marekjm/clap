@@ -52,7 +52,7 @@ class Checker(base.Base):
                 if not check: break
                 check = not self._ininput(string=n)
             if not check: continue
-            if not self._ininput(option): raise errors.RequiredOptionNotFoundError(option)
+            if not self._ininput(option=option): raise errors.RequiredOptionNotFoundError(option)
 
     def _checkrequires(self):
         """Check if all options required by other options are present.
@@ -86,7 +86,7 @@ class Checker(base.Base):
                 conflicted = self._variantin(i)
                 for c in i['conflicts']:
                     conflicting = self._ininput(string=c)
-                    if conflicting: raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, conflicting))
+                    if conflicting: raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, self._variantin(string=c)))
 
     def check(self):
         """Performs a check.
