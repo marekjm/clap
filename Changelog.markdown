@@ -2,6 +2,10 @@
 
 ----
 
+#### Version 0.7.1 ():
+
+* __fix__:  fixed bug in `clap.modes.Parser().addOption()` (I forgot to port it to the new version of options)
+
 #### Version 0.7.0 (2013-08-03):
 
 **Warning**: this release is not backwards compatible, you'll need to port your software to it. 
