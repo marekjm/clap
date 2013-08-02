@@ -382,4 +382,9 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(['-f', '4.2'], p.arguments)
 
 
+class ModesTests(unittest.TestCase):
+    def test(self):
+        warnings.warn('not implemented')
+
+
 if __name__ == '__main__': unittest.main()

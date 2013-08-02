@@ -19,9 +19,12 @@ A more sphisticated example could be:
     foo --verbose --log './foo.log' bar --hello-world
 
 In this example a couple of options is passed before *mode-keyword* is found.
-These are global options which are commin to all modes.
+These are global options which are common to all modes.
 
-If using Modes() instead of simple Parser() remember to call `define()` method before
+When using `modes.Parser()` remember to add global options after all modes has been set.
+Otherwise, you'll get an `UnknownOptionError` when trying to pass global option.
+
+If using `modes.Parser()` instead of simple `parser.Parser()` remember to call `define()` method before
 `check()` and `parse()`.
 """
 
