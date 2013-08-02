@@ -10,4 +10,4 @@ from clap import checker
 from clap import parser
 from clap import modes
 
-__version__ = '0.6.3'
+__version__ = '0.7.0'

@@ -20,8 +20,8 @@ class Option():
     long:
         This is long name for the option. MUST BE two or more characters. Given WITHOUT preceding hyphens.
 
-    argument:
-        You can pass one of these: str, int or float. If you do so, CLAP will expect an argument of given
+    arguments:
+        You can pass list containing these types: str, int or float. If you do so, CLAP will expect an argument of given
         type to be passed alongside the option. You can safely violate the rule about types as long as you pass
         one-argument callables to `argument`.
         CLAP will raise an exception when:
@@ -48,7 +48,7 @@ class Option():
         List of options this option CANNOT BE passed with. If EVEN ONE OF THEM is found in `argv` an exception
         is raised.
     """
-    def __init__(self, short='', long='', argument=None, requires=[], needs=[], required=False, not_with=[], conflicts=[]):
+    def __init__(self, short='', long='', arguments=[], requires=[], needs=[], required=False, not_with=[], conflicts=[]):
         if not (short or long):
             raise TypeError('neither short nor long variant was specified')
         if len(long) < 2 and long:
@@ -57,7 +57,7 @@ class Option():
         if long: long = '--' + long
         self.meta = {'short': short,
                      'long': long,
-                     'argument': argument,
+                     'arguments': arguments,
                      'required': required,
                      'requires': requires,
                      'needs': needs,
@@ -112,8 +112,8 @@ class Option():
         return s == self['short'] or s == self['long']
 
     def type(self):
-        """Returns type of argument for this option.
-        None indicates no argument.
+        """Returns list of types of arguments for this option.
+        Empty list indocates that this option takes no argument.
         """
-        t = self['argument']
+        t = self['arguments']
         return t

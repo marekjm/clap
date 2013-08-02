@@ -2,9 +2,18 @@
 
 ----
 
-#### Version 0.6.4 ():
+#### Version 0.7.0 (2013-08-03):
+
+**Warning**: this release is not backwards compatible, you'll need to port your software to it. 
+However, only small adjustments will be needed and only the *in* part of the API changes and *out*
+remains the same (not quite, it is more powerful now).
+
+
+* __fix__:  fixed bug in `base.Base._getinput()` which caused it to return whole argv when it should return empty list
 
 * __new__:  it is possible to specify multiple arguments for an option (defined as a list, returned as a tuple of arguments),
+
+* __upd__:  `argument` parameter renamed to `arguments` in all methods and functions,
 
 
 ----

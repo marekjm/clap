@@ -69,7 +69,12 @@ class Parser(base.Base):
         self.arguments = self.argv[i:]
 
     def get(self, key):
-        """Returns option value.
-        Returns None if given option does not need an argument.
+        """Returns None if given option does not need an argument.
+        Returns tuple if option requests more than one argument.
+        For programmers' convinience, returns object of given type if
+        option requests one argument.
         """
-        return self.parsed[key]
+        value = self.parsed[key]
+        if len(value) == 0: value = None
+        elif len(value) == 1: value = value[0]
+        return value

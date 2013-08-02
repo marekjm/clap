@@ -39,29 +39,21 @@ class Checker(base.Base):
             opt = input[i]
             if i == '--': break
             if base.lookslikeopt(opt) and self.type(opt):
-                if i+1 == len(input): raise errors.MissingArgumentError(opt)
-                arg = input[i+1]
-                if base.lookslikeopt(arg) and self.accepts(arg): raise errors.MissingArgumentError(opt)
-                try:
-                    if type(self.type(opt)) == list:
-                        types = self.type(opt)
-                        for n, atype in enumerate(types):
-                            i += 1
-                            try:
-                                atype(input[i])
-                            except IndexError:
-                                expected = ''
-                                for t in types: expected += '{0}, '.format(t)
-                                expected = expected[:-2]
-                                got = ''
-                                for t in types[:n]: got += '{0}, '.format(t)
-                                if got: got = got[:-2]
-                                raise errors.MissingArgumentError('{0} requires {1} but got only {2}'.format(opt, expected, got))
-                    else:
-                        i += 1
-                        self.type(opt)(input[i])
-                except ValueError as e:
-                    raise errors.InvalidArgumentTypeError('{0}: {1}'.format(opt, e))
+                types = self.type(opt)
+                if i+len(types) >= len(input):
+                    raise errors.MissingArgumentError('{0} ({1})'.format(opt, ', '.join([str(t)[8:-2] for t in types])))
+                if base.lookslikeopt(input[i+1]) and self.accepts(input[i+1]):
+                    raise errors.MissingArgumentError(opt)
+                for n, atype in enumerate(types):
+                    i += 1
+                    try:
+                        atype(input[i])
+                    except IndexError:
+                        expected = ', '.join([str(t)[8:-2] for t in types])
+                        got = ', '.join([str(t)[8:-2] for t in types[:n]])
+                        raise errors.MissingArgumentError('{0} requires ({1}) but got only ({2})'.format(opt, expected, got))
+                    except ValueError as e:
+                        raise errors.InvalidArgumentTypeError('{0}: {1}: {2}'.format(opt, n, e))
             i += 1
 
     def _checkrequired(self):

@@ -13,34 +13,34 @@ DEBUG = False
 class BaseTests(unittest.TestCase):
     def testAddingNewOption(self):
         base = clap.base.Base([])
-        base.add(short='f', long='foo', argument=str,
+        base.add(short='f', long='foo', arguments=[str],
                  required=True, not_with=['-s'],
                  requires=['--bar'], needs=['--baz', '--bax'],
                  conflicts=['--bay'])
         option0 = clap.option.Option(short='f', long='foo',
-                                     argument=str, required=True, not_with=['-s'],
+                                     arguments=[str], required=True, not_with=['-s'],
                                      requires=['--bar'], needs=['--baz', '--bax'],
                                      conflicts=['--bay'])
         option1 = clap.option.Option(short='b', long='bar',
-                                     argument=int,
+                                     arguments=[int],
                                      needs=['--baz', '--bax'])
         self.assertIn(option0, base.options)
         self.assertNotIn(option1, base.options)
 
     def testRemovingOption(self):
         base = clap.base.Base([])
-        base.add(short='f', long='foo', argument=str,
+        base.add(short='f', long='foo', arguments=[str],
                  required=True, not_with=['-s'],
                  requires=['--bar'], needs=['--baz', '--bax'],
                  conflicts=['--bay'])
         option0 = clap.option.Option(short='f', long='foo',
-                                     argument=str, required=True, not_with=['-s'],
+                                     arguments=[str], required=True, not_with=['-s'],
                                      requires=['--bar'], needs=['--baz', '--bax'],
                                      conflicts=['--bay'])
         option1 = clap.option.Option(short='b', long='bar',
-                                     argument=int,
+                                     arguments=[int],
                                      needs=['--baz', '--bax'])
-        base.add(short='b', long='bar', argument=int, needs=['--baz', '--bax'])
+        base.add(short='b', long='bar', arguments=[int], needs=['--baz', '--bax'])
         self.assertIn(option0, base.options)
         self.assertIn(option1, base.options)
         base.remove(short='b')
@@ -51,14 +51,14 @@ class BaseTests(unittest.TestCase):
         argv = ['--', '--foo', '--bar', 'baz', 'bax']
         base = clap.base.Base(argv)
         base.add(long='foo')
-        base.add(long='bar', argument=str)
+        base.add(long='bar', arguments=[str])
         self.assertEqual([], base._getinput())
 
     def testGettingInput(self):
         argv = ['--foo', '--bar', 'baz', 'bax']
         base = clap.base.Base(argv)
         base.add(long='foo')
-        base.add(long='bar', argument=str)
+        base.add(long='bar', arguments=[str])
         self.assertEqual(['--foo', '--bar', 'baz'], base._getinput())
 
     def testGettingInputWhenOptionsRequestMultipleArguments(self):
@@ -66,21 +66,21 @@ class BaseTests(unittest.TestCase):
         base = clap.base.Base(argv)
         base.add(long='foo')
         base.add(long='bar')
-        base.add(long='point', argument=[int, int])
+        base.add(long='point', arguments=[int, int])
         self.assertEqual(['--foo', '--point', '0', '0', '--bar'], base._getinput())
 
     def testGettingInputWithBreakerPresent(self):
         argv = ['--foo', '--', '--bar', 'baz', 'bax']
         base = clap.base.Base(argv)
         base.add(long='foo')
-        base.add(long='bar', argument=str)
+        base.add(long='bar', arguments=[str])
         self.assertEqual(['--foo'], base._getinput())
 
     def testCheckingIfOptionIsInInputUsingString(self):
         argv = ['--foo', '--bar', 'baz']
         base = clap.base.Base(argv)
         base.add(short='f', long='foo')
-        base.add(short='b', long='bar', argument=str)
+        base.add(short='b', long='bar', arguments=[str])
         self.assertEqual(True, base._ininput(string='--foo'))
         self.assertEqual(True, base._ininput(string='-b'))
 
@@ -88,7 +88,7 @@ class BaseTests(unittest.TestCase):
         argv = ['-f', '--bar', 'baz']
         base = clap.base.Base(argv)
         foo = clap.option.Option(short='f', long='foo')
-        bar = clap.option.Option(short='b', long='bar', argument=str)
+        bar = clap.option.Option(short='b', long='bar', arguments=[str])
         base._append(foo)
         base._append(bar)
         self.assertEqual(True, base._ininput(option=foo))
@@ -98,7 +98,7 @@ class BaseTests(unittest.TestCase):
         argv = ['--foo', '--', '--bar', 'baz']
         base = clap.base.Base(argv)
         base.add(long='foo')
-        base.add(long='bar', argument=str)
+        base.add(long='bar', arguments=[str])
         self.assertEqual(True, base._ininput(string='--foo'))
         self.assertEqual(False, base._ininput(string='--bar'))
 
@@ -172,10 +172,10 @@ class OptionTests(unittest.TestCase):
         self.assertRaises(TypeError, clap.option.Option)
 
     def testTyping(self):
-        o = clap.option.Option(short='f', argument=int)
-        self.assertEqual(int, o.type())
+        o = clap.option.Option(short='f', arguments=[int])
+        self.assertEqual([int], o.type())
         p = clap.option.Option(short='f')
-        self.assertEqual(None, p.type())
+        self.assertEqual([], p.type())
 
     def testMatching(self):
         o = clap.option.Option(short='f', long='foo')
@@ -201,7 +201,7 @@ class CheckerTests(unittest.TestCase):
     def testArgumentNotGivenAtTheEnd(self):
         argv = ['--bar', '--foo']
         parser = clap.base.Base(argv)
-        parser.add(long='foo', argument=str)
+        parser.add(long='foo', arguments=[str])
         parser.add(long='bar')
         checker = clap.checker.Checker(parser)
         self.assertRaises(clap.errors.MissingArgumentError, checker._checkarguments)
@@ -209,7 +209,7 @@ class CheckerTests(unittest.TestCase):
     def testArgumentNotGivenAtTheEndBecauseOfBreaker(self):
         argv = ['--bar', '--foo', '--', 'baz']
         parser = clap.base.Base(argv)
-        parser.add(long='foo', argument=str)
+        parser.add(long='foo', arguments=[str])
         parser.add(long='bar')
         checker = clap.checker.Checker(parser)
         self.assertRaises(clap.errors.MissingArgumentError, checker._checkarguments)
@@ -217,7 +217,7 @@ class CheckerTests(unittest.TestCase):
     def testInvalidArgumentType(self):
         argv = ['--bar', '--foo', 'baz']
         parser = clap.base.Base(argv)
-        parser.add(long='foo', argument=int)
+        parser.add(long='foo', arguments=[int])
         parser.add(long='bar')
         checker = clap.checker.Checker(parser)
         self.assertRaises(clap.errors.InvalidArgumentTypeError, checker._checkarguments)
@@ -225,14 +225,14 @@ class CheckerTests(unittest.TestCase):
     def testInvalidArgumentTypeWhenMultipleArgumentsAreRequested(self):
         argv = ['--point', '0', 'y']
         parser = clap.base.Base(argv)
-        parser.add(long='point', argument=[int, int])
+        parser.add(long='point', arguments=[int, int])
         checker = clap.checker.Checker(parser)
         self.assertRaises(clap.errors.InvalidArgumentTypeError, checker._checkarguments)
 
     def testAnotherOptionGivenAsArgument(self):
         argv = ['--foo', '--bar']
         parser = clap.base.Base(argv)
-        parser.add(long='foo', argument=int)
+        parser.add(long='foo', arguments=[int])
         parser.add(long='bar')
         checker = clap.checker.Checker(parser)
         self.assertRaises(clap.errors.MissingArgumentError, checker._checkarguments)
@@ -308,7 +308,7 @@ class CheckerTests(unittest.TestCase):
         argv_only_baz = ['--baz', '--foo']
         parser = clap.base.Base()
         parser.add(long='foo', needs=['--bar', '--baz'])
-        parser.add(long='bar', argument=int)
+        parser.add(long='bar', arguments=[int])
         parser.add(long='baz')
         for argv in [argv_both, argv_only_bar, argv_only_baz]:
             parser._feed(argv)
@@ -320,7 +320,7 @@ class CheckerTests(unittest.TestCase):
         argv = ['--foo']
         parser = clap.base.Base()
         parser.add(long='foo', needs=['--bar', '--baz'])
-        parser.add(long='bar', argument=int)
+        parser.add(long='bar', arguments=[int])
         parser.add(long='baz')
         parser._feed(argv)
         checker = clap.checker.Checker(parser)
@@ -331,7 +331,7 @@ class CheckerTests(unittest.TestCase):
         argv = ['--foo', '--', '--bar']
         parser = clap.base.Base()
         parser.add(long='foo', needs=['--bar', '--baz'])
-        parser.add(long='bar', argument=int)
+        parser.add(long='bar', arguments=[int])
         parser.add(long='baz')
         parser._feed(argv)
         checker = clap.checker.Checker(parser)
@@ -366,17 +366,21 @@ class ParserTests(unittest.TestCase):
         p.add(short='b')
         p.add(short='c')
         p.parse()
-        self.assertEqual({'-a': None, '-b': None, '-c': None}, p.parsed)
+        self.assertEqual(None, p.get('-a'))
+        self.assertEqual(None, p.get('-b'))
+        self.assertEqual(None, p.get('-c'))
         self.assertEqual(['d', 'e', 'f'], p.arguments)
 
     def testShortOptionsWithArguments(self):
         argv = ['-s', 'eggs', '-i', '42', '-f', '4.2', 'foo']
         p = clap.parser.Parser(argv)
-        p.add(short='s', argument=str)
-        p.add(short='i', argument=int)
-        p.add(short='f', argument=float)
+        p.add(short='s', arguments=[str])
+        p.add(short='i', arguments=[int])
+        p.add(short='f', arguments=[float])
         p.parse()
-        self.assertEqual({'-s': 'eggs', '-i': 42, '-f': 4.2}, p.parsed)
+        self.assertEqual('eggs', p.get('-s'))
+        self.assertEqual(42, p.get('-i'))
+        self.assertEqual(4.2, p.get('-f'))
         self.assertEqual(['foo'], p.arguments)
 
     def testLongOptionsWithoutArguments(self):
@@ -394,9 +398,9 @@ class ParserTests(unittest.TestCase):
     def testLongOptionsWithArguments(self):
         argv = ['--str', 'eggs', '--int', '42', '--float', '4.2']
         p = clap.parser.Parser(argv)
-        p.add(long='str', argument=str)
-        p.add(long='int', argument=int)
-        p.add(long='float', argument=float)
+        p.add(long='str', arguments=[str])
+        p.add(long='int', arguments=[int])
+        p.add(long='float', arguments=[float])
         p.parse()
         self.assertEqual('eggs', p.get('--str'))
         self.assertEqual(42, p.get('--int'))
@@ -405,7 +409,7 @@ class ParserTests(unittest.TestCase):
     def testOptionsWithMultipleArguments(self):
         argv = ['--foo', 'spam', '42', '3.14']
         p = clap.parser.Parser(argv)
-        p.add(short='f', long='foo', argument=[str, int, float])
+        p.add(short='f', long='foo', arguments=[str, int, float])
         p.parse()
         self.assertEqual(('spam', 42, 3.14), p.get('-f'))
 
@@ -413,11 +417,13 @@ class ParserTests(unittest.TestCase):
         argv = ['--foo', '-s', 'eggs', '--int', '42', '--', '-f', '4.2']
         p = clap.parser.Parser(argv)
         p.add(long='foo')
-        p.add(long='int', argument=int)
-        p.add(short='s', argument=str)
-        p.add(short='f', argument=float)
+        p.add(long='int', arguments=[int])
+        p.add(short='s', arguments=[str])
+        p.add(short='f', arguments=[float])
         p.parse()
-        self.assertEqual({'--int': 42, '-s': 'eggs', '--foo': None}, p.parsed)
+        self.assertEqual(42, p.get('--int'))
+        self.assertEqual('eggs', p.get('-s'))
+        self.assertEqual(None, p.get('--foo'))
         self.assertEqual(['-f', '4.2'], p.arguments)
 
 

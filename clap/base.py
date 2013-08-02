@@ -52,7 +52,7 @@ class Base():
         """
         self.options.append(option)
 
-    def add(self, short='', long='', argument=None, requires=[], needs=[], required=False, not_with=[], conflicts=[]):
+    def add(self, short='', long='', arguments=[], requires=[], needs=[], required=False, not_with=[], conflicts=[]):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
@@ -60,8 +60,8 @@ class Base():
         :type short: str
         :param long: long multiple-character name for option
         :type short: str
-        :param type: type of argument for the option
-        :type type: str, int, float
+        :param arguments: list of arguments' types for the option
+        :type arguments: list
         :param required: whether this option is required or not
         :type required: bool
         :param not_with: list of options with which this option is not required (give only with `required`)
@@ -73,7 +73,7 @@ class Base():
 
         :returns: clap.option.Option
         """
-        new = option.Option(short=short, long=long, argument=argument,
+        new = option.Option(short=short, long=long, arguments=arguments,
                             requires=requires, needs=needs,
                             required=required, not_with=not_with,
                             conflicts=conflicts)
@@ -137,12 +137,12 @@ class Base():
             #   if a breaker is encountered -> break
             if item == '--': break
             #   if non-option string is encountered and it's not an argument -> break
-            if i > 0 and not lookslikeopt(item) and self.type(self.argv[i-1]) is None: break
+            if i > 0 and not lookslikeopt(item) and not self.type(self.argv[i-1]): break
             #   if non-option string is encountered and it's an argument
             #   increase counter by the number of arguments the option requests and
             #   proceed futher
-            if i > 0 and not lookslikeopt(item) and self.type(self.argv[i-1]) is not None:
-                if type(self.type(self.argv[i-1])) == list: i += len(self.type(self.argv[i-1]))-1
+            if i > 0 and not lookslikeopt(item) and self.type(self.argv[i-1]):
+                i += len(self.type(self.argv[i-1]))-1
             index = i
             i += 1
         if index >= 0:
