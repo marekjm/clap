@@ -2,6 +2,13 @@
 
 ----
 
+#### Version 0.6.4 ():
+
+* __new__:  it is possible to specify multiple arguments for an option (defined as a list, returned as a tuple of arguments),
+
+
+----
+
 #### Version 0.6.3 (2013-08-02):
 
 * __fix__:  fixed bug in `Parser._checkneeds()` which caused `needs` param to behave like `requires`

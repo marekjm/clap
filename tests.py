@@ -47,12 +47,27 @@ class BaseTests(unittest.TestCase):
         self.assertIn(option0, base.options)
         self.assertNotIn(option1, base.options)
 
+    def testGettingEmptyInput(self):
+        argv = ['--', '--foo', '--bar', 'baz', 'bax']
+        base = clap.base.Base(argv)
+        base.add(long='foo')
+        base.add(long='bar', argument=str)
+        self.assertEqual([], base._getinput())
+
     def testGettingInput(self):
         argv = ['--foo', '--bar', 'baz', 'bax']
         base = clap.base.Base(argv)
         base.add(long='foo')
         base.add(long='bar', argument=str)
         self.assertEqual(['--foo', '--bar', 'baz'], base._getinput())
+
+    def testGettingInputWhenOptionsRequestMultipleArguments(self):
+        argv = ['--foo', '--point', '0', '0', '--bar', 'baz']
+        base = clap.base.Base(argv)
+        base.add(long='foo')
+        base.add(long='bar')
+        base.add(long='point', argument=[int, int])
+        self.assertEqual(['--foo', '--point', '0', '0', '--bar'], base._getinput())
 
     def testGettingInputWithBreakerPresent(self):
         argv = ['--foo', '--', '--bar', 'baz', 'bax']
@@ -204,6 +219,13 @@ class CheckerTests(unittest.TestCase):
         parser = clap.base.Base(argv)
         parser.add(long='foo', argument=int)
         parser.add(long='bar')
+        checker = clap.checker.Checker(parser)
+        self.assertRaises(clap.errors.InvalidArgumentTypeError, checker._checkarguments)
+
+    def testInvalidArgumentTypeWhenMultipleArgumentsAreRequested(self):
+        argv = ['--point', '0', 'y']
+        parser = clap.base.Base(argv)
+        parser.add(long='point', argument=[int, int])
         checker = clap.checker.Checker(parser)
         self.assertRaises(clap.errors.InvalidArgumentTypeError, checker._checkarguments)
 
@@ -380,7 +402,6 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(42, p.get('--int'))
         self.assertEqual(4.2, p.get('--float'))
 
-    @unittest.skip('will be implemented in version 0.6.4')
     def testOptionsWithMultipleArguments(self):
         argv = ['--foo', 'spam', '42', '3.14']
         p = clap.parser.Parser(argv)

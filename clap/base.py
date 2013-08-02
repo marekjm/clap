@@ -129,13 +129,28 @@ class Base():
         """Returns list of options and arguments until '--' string or
         first non-option and non-option-argument string.
         """
+        warnings.warn('clap.base.Base._getinput() needs some optimization if possible')
         index = -1
-        for i, item in enumerate(self.argv):
+        i = 0
+        while i < len(self.argv):
+            item = self.argv[i]
+            #   if a breaker is encountered -> break
             if item == '--': break
+            #   if non-option string is encountered and it's not an argument -> break
             if i > 0 and not lookslikeopt(item) and self.type(self.argv[i-1]) is None: break
+            #   if non-option string is encountered and it's an argument
+            #   increase counter by the number of arguments the option requests and
+            #   proceed futher
+            if i > 0 and not lookslikeopt(item) and self.type(self.argv[i-1]) is not None:
+                if type(self.type(self.argv[i-1])) == list: i += len(self.type(self.argv[i-1]))-1
             index = i
-        if index >= 0: input = self.argv[:index+1]
-        else: input = self.argv
+            i += 1
+        if index >= 0:
+            #   if index is at least equal to zero this means that some input was found
+            input = self.argv[:index+1]
+        else:
+            #   otherwise the input is empty and there are only arguments
+            input = []
         return input
 
     def _ininput(self, option=None, string=''):

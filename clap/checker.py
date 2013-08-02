@@ -34,14 +34,35 @@ class Checker(base.Base):
         escape first hyphen or double-escape first hyphen.
         """
         input = self._getinput()
-        for i, opt in enumerate(input):
+        i = 0
+        while i < len(input):
+            opt = input[i]
             if i == '--': break
             if base.lookslikeopt(opt) and self.type(opt):
                 if i+1 == len(input): raise errors.MissingArgumentError(opt)
                 arg = input[i+1]
                 if base.lookslikeopt(arg) and self.accepts(arg): raise errors.MissingArgumentError(opt)
-                try: self.type(opt)(arg)
-                except ValueError as e: raise errors.InvalidArgumentTypeError('{0}: {1}'.format(opt, e))
+                try:
+                    if type(self.type(opt)) == list:
+                        types = self.type(opt)
+                        for n, atype in enumerate(types):
+                            i += 1
+                            try:
+                                atype(input[i])
+                            except IndexError:
+                                expected = ''
+                                for t in types: expected += '{0}, '.format(t)
+                                expected = expected[:-2]
+                                got = ''
+                                for t in types[:n]: got += '{0}, '.format(t)
+                                if got: got = got[:-2]
+                                raise errors.MissingArgumentError('{0} requires {1} but got only {2}'.format(opt, expected, got))
+                    else:
+                        i += 1
+                        self.type(opt)(input[i])
+                except ValueError as e:
+                    raise errors.InvalidArgumentTypeError('{0}: {1}'.format(opt, e))
+            i += 1
 
     def _checkrequired(self):
         """Checks if all required options are present in input list.

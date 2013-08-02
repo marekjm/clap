@@ -53,8 +53,15 @@ class Parser(base.Base):
             if not self.accepts(string):
                 break
             if self.type(string) is not None:
-                i += 1
-                arg = self.type(string)(self.argv[i])
+                if type(self.type(string)) == list:
+                    arg = []
+                    for atype in self.type(string):
+                        i += 1
+                        arg.append(atype(self.argv[i]))
+                    arg = tuple(arg)
+                else:
+                    i += 1
+                    arg = self.type(string)(self.argv[i])
             parsed[string] = arg
             if self.alias(string): parsed[self.alias(string)] = arg
             i += 1
