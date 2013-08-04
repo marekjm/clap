@@ -16,8 +16,10 @@ to imporove accuracy of error messages.
 
 * __new__:  `_append()` method on `clap.modes.Parser()`
 * __new__:  you can now nest modes,
+* __new__:  `_getarguments()` method in `clap.base.Base()`
 
-* __upd__:  there is no need to call `define()` before `check()` - the latter automatically calls the former,
+* __upd__:  there is no need to call `define()` before `check()` on `modes.Parser()` - the latter automatically calls the former,
+* __upd__:  `type()` now returns empty list if option takes no arguments,
 
 
 ----

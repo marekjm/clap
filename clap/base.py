@@ -152,6 +152,13 @@ class Base():
             input = self.argv[:index+1]
         return input
 
+    def _getarguments(self):
+        """Returns list of genral arguments passed to the program.
+        """
+        n = len(self._getinput())
+        if '--' in self.argv: n += 1
+        return self.argv[n:]
+
     def _ininput(self, option=None, string=''):
         """Checks if given option is present in input.
         Used internally when checking.

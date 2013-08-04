@@ -37,7 +37,6 @@ class Parser(base.Base):
         """Checks if input list is valid for this instance of Parser().
         Run before `parse()` to check for errors in input list.
         """
-        
         checker.Checker(self).check()
 
     def parse(self):
@@ -50,27 +49,22 @@ class Parser(base.Base):
         input = self._getinput()
         while i < len(input):
             string = input[i]
-            arg = None
-            if self.type(string) is not None:
-                if type(self.type(string)) == list:
-                    arg = []
-                    for atype in self.type(string):
-                        i += 1
-                        arg.append(atype(self.argv[i]))
-                    arg = tuple(arg)
-                else:
+            if self.type(string):
+                arg = []
+                for atype in self.type(string):
                     i += 1
-                    arg = self.type(string)(self.argv[i])
+                    arg.append(atype(input[i]))
+            else:
+                arg = []
+            arg = tuple(arg)
             parsed[string] = arg
             if self.alias(string): parsed[self.alias(string)] = arg
             i += 1
         self.parsed = parsed
-        n = len(input)
-        if '--' in self.argv: n += 1
-        self.arguments = self.argv[n:]
+        self.arguments = self._getarguments()
 
     def get(self, key):
-        """Returns None if given option does not need an argument.
+        """Returns None if given option does not request an argument.
         Returns tuple if option requests more than one argument.
         For programmers' convinience, returns object of given type if
         option requests one argument.
