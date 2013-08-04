@@ -9,5 +9,6 @@ from clap import base
 from clap import checker
 from clap import parser
 from clap import modes
+from clap import builder
 
 __version__ = '0.7.1'
