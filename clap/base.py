@@ -33,9 +33,8 @@ class Base():
     """Base class for option and checker.
     """
     def __init__(self, argv=[]):
-        self.argv = []
+        self.argv = argv
         self.options = []
-        if argv: self._feed(argv)
 
     def __contains__(self, option):
         """Checks if Base contains given option object.

@@ -2,7 +2,16 @@
 
 ----
 
-#### Version 0.7.1 ():
+#### Version 0.7.2 (2013-08-05):
+
+This version brings support for creating interfaces using JSON.
+
+* __new__:  `clap.builder` module containing `Parser()` and `ModesParser()` objects used for building interfaces,
+
+
+----
+
+#### Version 0.7.1 (2013-08-04):
 
 This version is capable of having *nested modes*, e.g. syntax like `foo bar baz --some --fancy options --after --this`.
 Such behaviour needed some changes in code to be done and this resulted in `check()` method of `modes.Parser()`
