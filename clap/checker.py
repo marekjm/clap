@@ -99,7 +99,8 @@ class Checker(base.Base):
                 conflicted = self._variantin(i)
                 for c in i['conflicts']:
                     conflicting = self._ininput(string=c)
-                    if conflicting: raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, self._variantin(string=c)))
+                    if conflicting:
+                        raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, self._variantin(string=c)))
 
     def check(self):
         """Performs a check.

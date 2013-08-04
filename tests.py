@@ -48,11 +48,16 @@ class BaseTests(unittest.TestCase):
         self.assertNotIn(option1, base.options)
 
     def testGettingEmptyInput(self):
-        argv = ['--', '--foo', '--bar', 'baz', 'bax']
-        base = clap.base.Base(argv)
+        argvs = [   ['--', '--foo', '--bar', 'baz', 'bax'],
+                    ['bax', '--foo', '--bar', 'baz'],
+                    ['bax', 'foo', 'bar', 'baz'],
+                    ]
+        base = clap.base.Base()
         base.add(long='foo')
         base.add(long='bar', arguments=[str])
-        self.assertEqual([], base._getinput())
+        for argv in argvs:
+            base._feed(argv)
+            self.assertEqual([], base._getinput())
 
     def testGettingInput(self):
         argv = ['--foo', '--bar', 'baz', 'bax']
