@@ -32,13 +32,12 @@ If using `modes.Parser()` instead of simple `parser.Parser()` remember to call `
 class Parser():
     """Object implementing modes functionality.
     """
-    def __init__(self, argv, default=''):
-        self.argv = []
+    def __init__(self, argv=[], default=''):
+        self.argv = argv
         self.modes = {'': parser.Parser()}
         self.mode = ''
         self.default = default
         self.parser = None
-        self.feed(argv)
 
     def __contains__(self, option):
         """If you check whether Parser() contains an option or not, general one and every mode-parser
@@ -60,6 +59,11 @@ class Parser():
         self.parser = None
         self.mode = ''
 
+    def _append(self, option):
+        """Appends option to sub-parsers.
+        """
+        for name in self.modes: self.modes[name]._append(option)
+
     def addOption(self, short='', long='', arguments=[], requires=[], needs=[], required=False, not_with=[], conflicts=[]):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
@@ -70,7 +74,7 @@ class Parser():
                             requires=requires, needs=needs,
                             required=required, not_with=not_with,
                             conflicts=conflicts)
-        for name in self.modes: self.modes[name]._append(new)
+        self._append(new)
         return new
 
     def addMode(self, name, parser):
@@ -117,6 +121,7 @@ class Parser():
     def check(self):
         """Checks input list for errors.
         """
+        self.define()
         self.parser.check()
 
     def parse(self):

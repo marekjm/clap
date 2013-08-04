@@ -4,7 +4,23 @@
 
 #### Version 0.7.1 ():
 
+This version is capable of having *nested modes*, e.g. syntax like `foo bar baz --some --fancy options --after --this`.
+Such behaviour needed some changes in code to be done and this resulted in `check()` method of `modes.Parser()`
+automatically calling define before any actual checking is done. 
+
+**Notice**: it's possible that in version 0.7.2 `modes.Parser()` will be renamed to prevent it being mistaken for `parser.Parser()` and
+to imporove accuracy of error messages.
+
+
 * __fix__:  fixed bug in `clap.modes.Parser().addOption()` (I forgot to port it to the new version of options)
+
+* __new__:  `_append()` method on `clap.modes.Parser()`
+* __new__:  you can now nest modes,
+
+* __upd__:  there is no need to call `define()` before `check()` - the latter automatically calls the former,
+
+
+----
 
 #### Version 0.7.0 (2013-08-03):
 

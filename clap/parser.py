@@ -37,6 +37,7 @@ class Parser(base.Base):
         """Checks if input list is valid for this instance of Parser().
         Run before `parse()` to check for errors in input list.
         """
+        
         checker.Checker(self).check()
 
     def parse(self):
