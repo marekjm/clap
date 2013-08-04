@@ -104,10 +104,10 @@ class Base():
         return result
 
     def type(self, name):
-        """Returns type of given option.
-        None indicates that option takes no additional argument.
+        """Returns list of types of given option's arguments.
+        Empty list indicates that option takes no additional argument.
         """
-        t = None
+        t = []
         for o in self.options:
             if o.match(name):
                 t = o.type()
@@ -131,8 +131,8 @@ class Base():
         Simple description: returns input without final arguments.
         """
         warnings.warn('clap.base.Base._getinput() needs some optimization if possible')
-        index = -1
-        i = 0
+        index, i = -1, 0
+        input = []
         while i < len(self.argv):
             item = self.argv[i]
             #   if a breaker is encountered -> break
@@ -150,9 +150,6 @@ class Base():
         if index >= 0:
             #   if index is at least equal to zero this means that some input was found
             input = self.argv[:index+1]
-        else:
-            #   otherwise the input is empty and there are only arguments
-            input = []
         return input
 
     def _ininput(self, option=None, string=''):

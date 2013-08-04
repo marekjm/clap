@@ -40,18 +40,16 @@ class Parser(base.Base):
         checker.Checker(self).check()
 
     def parse(self):
-        """Parses input.
+        """Parses input:
+        * assigns option-arguemnts to the options requesting them,
+        * separets options from general arguments,
         """
         parsed = {}
         i = 0
-        while i < len(self.argv):
-            string = self.argv[i]
+        input = self._getinput()
+        while i < len(input):
+            string = input[i]
             arg = None
-            if string == '--':
-                i += 1
-                break
-            if not self.accepts(string):
-                break
             if self.type(string) is not None:
                 if type(self.type(string)) == list:
                     arg = []
@@ -66,7 +64,9 @@ class Parser(base.Base):
             if self.alias(string): parsed[self.alias(string)] = arg
             i += 1
         self.parsed = parsed
-        self.arguments = self.argv[i:]
+        n = len(input)
+        if '--' in self.argv: n += 1
+        self.arguments = self.argv[n:]
 
     def get(self, key):
         """Returns None if given option does not need an argument.
