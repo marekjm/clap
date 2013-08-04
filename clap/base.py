@@ -136,7 +136,6 @@ class Base():
         while i < len(self.argv):
             item = self.argv[i]
             #   if a breaker is encountered -> break
-            print(i, item)
             if item == '--': break
             #   if non-option string is encountered and it's not an argument -> break
             if i == 0 and not lookslikeopt(item): break

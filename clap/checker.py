@@ -20,7 +20,6 @@ class Checker(base.Base):
         """Checks if input list contains any unrecognized options.
         """
         for i in self._getinput():
-            if i == '--': break
             if base.lookslikeopt(i) and not self.accepts(i): raise errors.UnrecognizedOptionError(i)
 
     def _checkarguments(self):
@@ -37,7 +36,6 @@ class Checker(base.Base):
         i = 0
         while i < len(input):
             opt = input[i]
-            if i == '--': break
             if base.lookslikeopt(opt) and self.type(opt):
                 types = self.type(opt)
                 if i+len(types) >= len(input):
