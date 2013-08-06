@@ -2,6 +2,20 @@
 
 ----
 
+#### Version 0.7.3 (2013-08-06):
+
+This version debugs stuff (I hope) and let's you create simple-parser interfaces using
+`clap.builder.Builder()` object (without need for `clap.builder.Parser()`.
+
+* __new__:  `clap.builder.Builder().build()` let's you build simple-parser interfaces,
+* __new__:  `clap.builder.Builder()._applyhandlersto()` method returns parser with applied
+            type handlers,
+
+* __rem__:  `clap.builder.Parser()` object is removed,
+
+
+----
+
 #### Version 0.7.2 (2013-08-05):
 
 This version brings support for creating interfaces using JSON.

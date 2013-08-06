@@ -124,6 +124,39 @@ class BaseTests(unittest.TestCase):
             self.assertEqual(clap.base.lookslikeopt(opt), result)
 
 
+class BuilderTests(unittest.TestCase):
+    def testTypeRecognitionOption(self):
+        data = {'short': 'p',
+                'arguments': [int, int]
+                }
+        self.assertEqual(True, clap.builder.isoption(data))
+
+    def testTypeRecognitionParser(self):
+        data = [ {'short': 'p',
+                 'arguments': [int, int]
+                 }
+                 ]
+        self.assertEqual(True, clap.builder.isparser(data))
+
+    def testTypeRecognitionParser(self):
+        data = {
+                'foo': [
+                    {
+                        'short': 'p',
+                        'arguments': [int, int]
+                    }
+                    ],
+                '__global__': [
+                        {
+                            'short': 'o',
+                            'long': 'output',
+                            'arguments': [str]
+                        }
+                    ]
+                }
+        self.assertEqual(True, clap.builder.ismodesparser(data))
+
+
 class FormatterTests(unittest.TestCase):
     def testSplittingEqualSignedOptions(self):
         argv = ['--foo=bar', '--', '--baz=bax']

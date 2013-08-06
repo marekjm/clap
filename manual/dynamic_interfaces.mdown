@@ -1,40 +1,150 @@
-### Building dynamic interfaces using CLAP
+## Building interfaces in JSON using CLAP
 
-Although it is possible to write interfaces by hand CLAP also
-supports building them from files. 
+Although it is possible to write interfaces in native Python CLAP also
+supports building them from JSON files. 
 Sometimes it's easier (and it's generally good idea) to keep interface
-separate from logic code.
-
+separate from logic code. Also, when you are making diffs or updates then it'll
+be easier to spot interface updates.
 
 ----
 
-#### `.clap` files
+### Limitations of JSON interfaces
 
-CLAP interfaces are contained in `*.clap` files.
+Currently (as of version 0.7.2) builder does not support nested modes so to achieve
+something like:
+
+    nature    laws    physics    --disable
+         ^       ^          ^            ^
+    mode |       |          |            |
+                 |          |            |
+    mode --------|          |            |
+                            |            |
+    mode -------------------|            |
+                                         |
+    option ------------------------------|
 
 
-##### Building example parser
+is not possible and you have to code it by hand in Python.
+But fear not - I'm working on this issue.
 
-Building parser is just a JSON list containing few JSON dicts describing options.
+----
+
+### Handling option types
+
+There is no method to access Python types straghtly from JSON because it would violate
+the syntax of JSON and the interface wouldn't be built successfully.
+
+However, virtually every type can be accessed without much hassle - via *type-handlers*.
+A *handler* as a string - `str`, `int` or `foo` or `bar` - associated with some callback
+function.
+`Builder()` object has `addTypeHandler()` method which is used for assigning such strings
+to their callback functions.
+
+**USAGE**: `Builder().addTypeHandler('string-identifer', some.callback.function)`
+
+Type handler is added to builder like this:
+
+    builder = clap.builder.Builder('/path/to/fancy/ui.json', argv=[...])
+    builder.addTypeHandler('url', datatypes.url)
+
+where `datatypes.url()` is function validating URLs.
+
+Note that you don't've to add type handlers for `str`, `int` and `float` types
+as they are handled implicitly.
+
+----
+
+### JSON descriptions of UI elements
+
+#### 1. Option
+
+Options are represented in JSON as dictionaries and appended to their parsers using
+the handy feature of `parser.add(**option)` dictionary expansion (I cannot force myself
+to memorize the name of it but it's handy).
+
+Example option (covering all possible fields):
+
+    {
+        "short": "f",
+        "long": "foo",
+        "arguments": ["str", "int", "float"],
+        "conflicts": ["--bar"],
+        "requires": ["--baz"],
+        "needs": ["--bax", "--bay"],
+        "required": true,
+        "not_with": ["--spam"],
+    }
+
+----
+
+#### 2. Parser
+
+Parser is just a list of options.
 
     [
         {
-            "short": "o",
-            "long": "output",
-            "arguments": ["str"],
-            "requires": ["--foo", "--bar"]
+            "short": "f",
+            "long": "foo"
         },
         {
-            "short": "v",
-            "long": "version",
-        },
-        {
-            "short": "V",
-            "long": "verbose"
+            "short": "b",
+            "long": "bar",
+            "arguments": ["int"],
         }
     ]
 
-Type identifiers are stored as strings and you must pass every such identifier
-when initializing the builder. Basic types (`str`, `int`, `float`) are predefined and
-there is no need to define them.
+----
 
+#### 3. Modes Parser
+
+Modes parser is represented by a JSON dictionary in which each name is a name of a
+mode. Each mode is a parser (so a list of options).
+
+Keep in mind that there are few reserved keys:
+
+*   `short`:        is reserved because of current implementation of type detection
+                    (CLAP must make distinction between modes parser and option),
+*   `long`:         see above,
+*   `__global__`:   a list of global options (applied to all modes),
+
+This list may be a subject to change if CLAP will gain some new functionality (new keys may
+be added) or when some more sophisticated type-detection will be implemented (`short` and `long`
+may be removed from the list - but this is highly unlikely).
+
+Example:
+
+    {
+        "door": [
+            {
+                "short": "s",
+                "long": "shut"
+            },
+            {
+                "short": "r",
+                "long": "ring-the-bell"
+            }
+        ],
+        "window": [
+            {
+                "short": "b",
+                "long": "break"
+            },
+            {
+                "short": "l",
+                "long": "look-through"
+            }
+        ],
+        "__global__": [
+            {
+                "short": "o",
+                "long": "open"
+            },
+            {
+                "short": "c",
+                "long": "close"
+            }
+        ]
+    }
+
+
+Unfortunatelly, there is now way to define nested modes.

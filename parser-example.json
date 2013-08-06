@@ -1,0 +1,25 @@
+[
+    {
+        "short": "i",
+        "long": "integer",
+        "arguments": ["int"],
+        "conflicts": ["--float"]
+    },
+    {
+        "short": "f",
+        "long": "float",
+        "arguments": ["float"],
+        "conflicts": ["--integer"]
+    },
+    {
+        "short": "s",
+        "long": "string",
+        "arguments": ["str"]
+    },
+    {
+        "short": "p",
+        "long": "print",
+        "needs": ["--float", "--integer"],
+        "requires": ["--string"]
+    }
+]
