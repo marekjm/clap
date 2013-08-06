@@ -1,0 +1,40 @@
+### Building dynamic interfaces using CLAP
+
+Although it is possible to write interfaces by hand CLAP also
+supports building them from files. 
+Sometimes it's easier (and it's generally good idea) to keep interface
+separate from logic code.
+
+
+----
+
+#### `.clap` files
+
+CLAP interfaces are contained in `*.clap` files.
+
+
+##### Building example parser
+
+Building parser is just a JSON list containing few JSON dicts describing options.
+
+    [
+        {
+            "short": "o",
+            "long": "output",
+            "arguments": ["str"],
+            "requires": ["--foo", "--bar"]
+        },
+        {
+            "short": "v",
+            "long": "version",
+        },
+        {
+            "short": "V",
+            "long": "verbose"
+        }
+    ]
+
+Type identifiers are stored as strings and you must pass every such identifier
+when initializing the builder. Basic types (`str`, `int`, `float`) are predefined and
+there is no need to define them.
+

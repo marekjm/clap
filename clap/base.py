@@ -11,6 +11,10 @@ import warnings
 from clap import option
 
 
+#   special flag which will issue debug messages when True
+DEBUG = False
+
+
 longopt_base = '--[a-zA-Z]+[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*'
 
 shortopt_regexp = re.compile('^-[a-zA-Z0-9]$')
@@ -129,7 +133,7 @@ class Base():
         first non-option and non-option-argument string.
         Simple description: returns input without final arguments.
         """
-        warnings.warn('clap.base.Base._getinput() needs some optimization if possible')
+        if DEBUG: warnings.warn('clap.base.Base._getinput() needs some optimization if possible')
         index, i = -1, 0
         input = []
         while i < len(self.argv):

@@ -80,9 +80,17 @@ class ModesParser(Builder):
         self._applyhandlers()
         for mode in self.data:
             if mode == '__global__': continue
-            p = clap.parser.Parser()
-            for option in self.data[mode]: p.add(**option)
-            self.interface.addMode(mode, p)
+            self.interface.addMode(mode, buildparser(self.data[mode]))
         if '__global__' in self.data:
             for option in self.data['__global__']: self.interface.addOption(**option)
         return self.interface
+
+
+def buildparser(data, argv=[]):
+    """Builds parser from dict.
+    :param data: data used to build UI
+    :type data: dict
+    """
+    p = clap.parser.Parser(argv=argv)
+    for option in data: p.add(**option)
+    return p

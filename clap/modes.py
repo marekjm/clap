@@ -23,9 +23,6 @@ These are global options which are common to all modes.
 
 When using `modes.Parser()` remember to add global options after all modes has been set.
 Otherwise, you'll get an `UnknownOptionError` when trying to pass global option.
-
-If using `modes.Parser()` instead of simple `parser.Parser()` remember to call `define()` method before
-`check()` and `parse()`.
 """
 
 
@@ -47,6 +44,10 @@ class Parser():
 
     def __str__(self):
         return self.mode
+
+    @property
+    def parsed(self):
+        return self.parser.parsed
 
     @property
     def arguments(self):
@@ -89,14 +90,14 @@ class Parser():
 
     def _modeindex(self):
         """Returns index of first non-option-like item in input list.
-        Returns -1 if no mode is found (all input was scanned or `--` was
-        found).
+        Returns -1 if no mode was found but all input was scanned or `--` was
+        found.
         """
         index = -1
         for i, item in enumerate(self.argv):
             if item == '--': break
             if not base.lookslikeopt(item):
-                if i == 0 or self.type(self.argv[i-1]) is None: index = i
+                if i == 0 or not self.type(self.argv[i-1]): index = i
                 if index > -1: break
         return index
 
