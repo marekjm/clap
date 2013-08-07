@@ -7,7 +7,6 @@ files.
 
 
 import json
-import os
 
 import clap
 
@@ -18,10 +17,11 @@ def isoption(data):
     """
     return type(data) == dict and ('short' in data or 'long' in data)
 
+
 def isparser(data):
     """Checks if given data can be treated as a representation of parser.
     """
-    correct_type = type(data) == list 
+    correct_type = type(data) == list
     correct_contents = True
     for d in data:
         if not isoption(d):
@@ -29,15 +29,16 @@ def isparser(data):
             break
     return correct_type and correct_contents
 
+
 def ismodesparser(data):
     """Checks if given data can be treated as a representation of modes parser.
     """
     correct_contents = True
     for d in data:
-        if not isparser(d) or not ismodesparser(d):
+        if not isparser(d) or not ismodesparser(d) or isoption(d):
             correct_contents = False
             break
-    return type(data) == dict and ('short' not in data and 'long' not in data)
+    return type(data) == dict and correct_contents
 
 
 #   building functions
@@ -52,6 +53,7 @@ def buildparser(data, argv=[]):
     p = clap.parser.Parser(argv=argv)
     for option in data: p.add(**option)
     return p
+
 
 def buildmodesparser(data, argv=[]):
     """Builds modes parser from dict.
@@ -68,7 +70,7 @@ def buildmodesparser(data, argv=[]):
         else: raise Exception('invalid element: {0}'.format(element))
         p.addMode(mode, element)
     if '__global__' in data:
-        if type(data) != list: raise TypeError('"__global__" mus be a list of options')
+        if type(data['__global__']) != list: raise TypeError('"__global__" must be a list of options')
         for option in data['__global__']: p.addOption(**option)
     return p
 

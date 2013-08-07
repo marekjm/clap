@@ -11,4 +11,4 @@ from clap import parser
 from clap import modes
 from clap import builder
 
-__version__ = '0.7.4'
+__version__ = '0.7.5'
