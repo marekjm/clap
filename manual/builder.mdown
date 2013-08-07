@@ -2,22 +2,16 @@
 
 Since version 0.7.2 it is possible to build user interface entirely in JSON and
 use CLAP to load it.
-Every feature that can be used when creating interfaces using Python API is also
-available using JSON builders.
+Since 0.7.4 every feature that can be used when creating interfaces using Python API is also
+available using JSON builder.
 
 
 ----
 
 #### Building
 
-Parser is defined as a JSON list containing dictionaries describing options.
-Syntax for options is:
-
-*   key:    name of the parameter as would be passed to `parser.Parser.add()` via
-            Python API,
-*   value:  value as would be passed with the parameter,
-
-Only thing that needs to be set up in Python are *type-handlers* that are not built-in
-Python data types. These are the callback functions which are used for `arguments`
-parameter in `parser.Parser.add()`. In JSON they are referred to as strings and need
+Only thing that needs to be set up in native Python are *type-handlers* that are not built-in
+Python data types.
+These *type-handlers* are the callback functions which are used for `arguments`
+parameter in `clap.parser.Parser.add()`. In JSON they are referred to as strings and need
 to be replaced by real functions. `str`, `int` and `float` are always available.

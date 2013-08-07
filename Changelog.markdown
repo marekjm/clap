@@ -2,6 +2,29 @@
 
 ----
 
+#### Version 0.7.4 (2013-08-07):
+
+This version brings support for creating nested modes in JSON interfaces.
+Apart from this, some refactoring had been done in `clap/builder.py`.
+`clap.builder.ModesParser()` is no longer there - only object that is needed
+to build an interface is `clap.builder.Builder()`.
+Builder functions, and element-type recognition functions, are exposed so you can
+use them directly with no need to initialize builder object.
+However, I don't see a need for this - if you would wnat to translate dicts and
+lists to interfaces and bother with all the stuff around them it's easier to just
+code the whole interface by hand. This functionality will never be removed.
+
+* __new__:  `isparser()`, `isoption()` and `ismodesparser()` functions in `clap.builder`,
+* __new__:  `buildparser()` and `buildmodesparser()` functions in `clap.builder`,
+
+* __upd__:  `clap.builder.Builder()` is no longer limited to simple parsers - it can
+            now build also single- and nested-modes parsers.
+
+* __rem__:  `clap.builder.ModesParser()` is removed and it's functionality is now in
+            `clap.builder.Builder()`
+
+----
+
 #### Version 0.7.3 (2013-08-06):
 
 This version debugs stuff (I hope) and let's you create simple-parser interfaces using
