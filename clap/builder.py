@@ -15,7 +15,26 @@ import clap
 def isoption(data):
     """Checks if given data can be treated as a representation of option.
     """
-    return type(data) == dict and ('short' in data or 'long' in data)
+    correct_type = type(data) == dict
+    correct_contents = True
+    copy = data.copy()
+    legal_keys = ['short', 'long', 'conflicts', 'arguments', 'requires', 'needs', 'required', 'not_with']
+    for k in legal_keys:
+        if k in copy: del copy[k]
+    if copy: correct_contents = False
+    if correct_contents:
+        for i in data:
+            if type(i) == str:
+                pass
+            elif type(i) == list:
+                for j in i:
+                    if type(j) != str:
+                        correct_contents = False
+                        break
+            else:
+                correct_contents = False
+            if not correct_contents: break
+    return correct_type and correct_contents
 
 
 def isparser(data):
@@ -23,22 +42,27 @@ def isparser(data):
     """
     correct_type = type(data) == list
     correct_contents = True
-    for d in data:
-        if not isoption(d):
-            correct_type = False
-            break
+    if correct_type:
+        for d in data:
+            if not isoption(d):
+                correct_contents = False
+                break
     return correct_type and correct_contents
 
 
 def ismodesparser(data):
     """Checks if given data can be treated as a representation of modes parser.
     """
-    correct_contents = True
-    for d in data:
-        if not isparser(d) or not ismodesparser(d) or isoption(d):
-            correct_contents = False
-            break
-    return type(data) == dict and correct_contents
+    correct_type = type(data) is dict
+    if correct_type:
+        correct_contents = True
+        for d in data:
+            if not ((isparser(data[d]) or ismodesparser(data[d])) and not isoption(data[d])):
+                correct_contents = False
+                break
+    else:
+        correct_contents = False
+    return correct_type and correct_contents
 
 
 #   building functions
@@ -139,11 +163,14 @@ class Builder():
     def build(self):
         """Builds the interface.
         """
+        print(type(self.data))
         if isparser(self.data):
             self.interface = buildparser(self._applyhandlersto(self.data), argv=self.argv)
         elif ismodesparser(self.data):
             self._applyhandlers()
             self.interface = buildmodesparser(data=self.data, argv=self.argv)
+        else:
+            raise TypeError('cannot detect root UI type: {0}'.format(self.path))
 
     def get(self):
         """Returns built interface.

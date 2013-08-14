@@ -2,6 +2,14 @@
 
 ----
 
+#### Version 0.7.5 (2013-08-14):
+
+This version fixes type-detection issues with JSON-based interfaces (well, they are still alpha/beta).
+Pure Python API is free from these bugs.
+
+
+----
+
 #### Version 0.7.4 (2013-08-07):
 
 This version brings support for creating nested modes in JSON interfaces.

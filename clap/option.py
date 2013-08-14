@@ -103,6 +103,14 @@ class Option():
         else: raise NameError('invalid name for this option: {0}'.format(name))
         return alias
 
+    def _copy(self):
+        """Returns copy of the option dict.
+        :returns: dict
+        """
+        copy = {}
+        for k in self.meta: copy[k] = self.meta[k]
+        return copy
+
     def match(self, s):
         """Returns True if given string matches one of option names.
         Options must be passed with one preceding hyphen for short and
