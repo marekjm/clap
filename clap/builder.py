@@ -163,7 +163,6 @@ class Builder():
     def build(self):
         """Builds the interface.
         """
-        print(type(self.data))
         if isparser(self.data):
             self.interface = buildparser(self._applyhandlersto(self.data), argv=self.argv)
         elif ismodesparser(self.data):
