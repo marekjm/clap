@@ -1,5 +1,4 @@
-VERSION = 0.0.1
-TAGNAME = clap-$(VERSION)
+PYTHONVERSION=3.3
 
 .PHONY: tests tests-python2
 
@@ -13,5 +12,15 @@ doc:
 	echo "" > DOC
 	pydoc3 ./clap/* >> DOC
 
+install:
+	make tests
+	make clean
+	cp -Rv ./clap /usr/lib/python${PYTHONVERSION}/site-packages/
+
+local-install:
+	make tests
+	make clean
+	cp -Rv ./clap ~/.local/lib/python${PYTHONVERSION}/site-packages/
+
 clean:
-	rm -rv ./{clap/,}{*.pyc,__pycache__/}
+	rm -rv ./clap/__pycache__
