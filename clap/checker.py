@@ -104,8 +104,8 @@ class Checker(base.Base):
         """Performs a check.
         """
         self._checkunrecognized()
+        self._checkconflicts()
         self._checkarguments()
         self._checkrequired()
         self._checkrequires()
         self._checkneeds()
-        self._checkconflicts()
