@@ -2,6 +2,15 @@
 
 ----
 
+#### Version 0.7.6 (2013-08-):
+
+* __upd__:  order in which validating methods are called (conflicts are checked just after
+            unrecognized options to prevent typing a lot and getting an error about conflicting
+            options),
+
+
+----
+
 #### Version 0.7.5 (2013-08-14):
 
 This version fixes type-detection issues with JSON-based interfaces (well, they are still alpha/beta).
