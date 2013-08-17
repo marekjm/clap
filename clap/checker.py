@@ -15,6 +15,7 @@ class Checker(base.Base):
     def __init__(self, parser):
         self.argv = parser.argv
         self.options = parser.options
+        self.parser = parser
 
     def _checkunrecognized(self):
         """Checks if input list contains any unrecognized options.
@@ -73,6 +74,8 @@ class Checker(base.Base):
             for n in option['requires']:
                 if not self._ininput(string=n):
                     needs = self._variantin(option)
+                    if not self.parser.accepts(n):
+                        raise errors.UIDesignError('\'{0}\' requires unrecognized option \'{1}\''.format(needs, n))
                     raise errors.RequiredOptionNotFoundError('{0} -> {1}'.format(needs, n))
 
     def _checkneeds(self):

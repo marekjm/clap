@@ -29,6 +29,10 @@ class MissingArgumentError(Exception):
 
 
 class InvalidArgumentTypeError(Exception):
+    """Raised when option's argument cannot be converted to its desired type.
+    Example: option `--point` requires two arguments: (int, int) but input is:
+        foo --point 42 z
+    """
     pass
 
 
@@ -40,5 +44,13 @@ class ConflictingOptionsError(Exception):
 
 class BuilderError(Exception):
     """Raised when something wrong went in builder.
+    """
+    pass
+
+
+class UIDesignError(Exception):
+    """Raised by checker when it finds out some error in UI design.
+    For example:
+    *   option requires another option which is unrecognized (I did it once),
     """
     pass
