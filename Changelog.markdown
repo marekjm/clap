@@ -9,6 +9,8 @@
             options),
 
 * __new__:  `BuilderError` in `clap.errors`, raised when builder loads invalid JSON
+* __new__:  `UIDesignError` in `clap.errors`, raised when one option requires another option
+            which is undefined,
 
 
 ----
