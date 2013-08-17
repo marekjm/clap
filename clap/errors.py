@@ -36,3 +36,9 @@ class ConflictingOptionsError(Exception):
     """Raised when two or more conflicting options are found together.
     """
     pass
+
+
+class BuilderError(Exception):
+    """Raised when something wrong went in builder.
+    """
+    pass

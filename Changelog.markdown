@@ -8,6 +8,8 @@
             unrecognized options to prevent typing a lot and getting an error about conflicting
             options),
 
+* __new__:  `BuilderError` in `clap.errors`, raised when builder loads invalid JSON
+
 
 ----
 

@@ -134,7 +134,10 @@ class Builder():
         """Loads JSON from given path.
         """
         ifstream = open(self.path)
-        data = json.loads(ifstream.read())
+        try:
+            data = json.loads(ifstream.read())
+        except ValueError as e:
+            raise clap.errors.BuilderError('invalid UI JSON: {0}: {1}'.format(self.path, e))
         ifstream.close()
         self.data = data
 
