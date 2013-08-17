@@ -137,7 +137,7 @@ class Builder():
         try:
             data = json.loads(ifstream.read())
         except ValueError as e:
-            raise clap.errors.BuilderError('invalid UI JSON: {0}: {1}'.format(self.path, e))
+            raise clap.errors.BuilderError('{0}: {1}'.format(self.path, e))
         ifstream.close()
         self.data = data
 
