@@ -65,14 +65,14 @@ class Parser():
         """
         for name in self.modes: self.modes[name]._append(option)
 
-    def addOption(self, short='', long='', arguments=[], requires=[], needs=[], required=False, not_with=[], conflicts=[]):
+    def addOption(self, short='', long='', arguments=[], requires=[], wants=[], required=False, not_with=[], conflicts=[]):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
         If you `addOption` it is added to the general parser and all mode-parsers.
         """
         new = option.Option(short=short, long=long, arguments=arguments,
-                            requires=requires, needs=needs,
+                            requires=requires, wants=wants,
                             required=required, not_with=not_with,
                             conflicts=conflicts)
         self._append(new)

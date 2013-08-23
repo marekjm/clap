@@ -78,19 +78,19 @@ class Checker(base.Base):
                         raise errors.UIDesignError('\'{0}\' requires unrecognized option \'{1}\''.format(needs, n))
                     raise errors.RequiredOptionNotFoundError('{0} -> {1}'.format(needs, n))
 
-    def _checkneeds(self):
-        """Check needed options.
+    def _checkwants(self):
+        """Check for wanted options.
         """
         for i in self.options:
-            if not self._ininput(i) or not i['needs']: continue
+            if not self._ininput(i) or not i['wants']: continue
             fail = True
-            for n in i['needs']:
+            for n in i['wants']:
                 if self._ininput(string=n):
                     fail = False
                     break
             if fail:
                 needs = self._variantin(i)
-                raise errors.NeededOptionNotFoundError('{0} -> {1}'.format(needs, ', '.join(i['needs'])))
+                raise errors.WantedOptionNotFoundError('{0} -> {1}'.format(needs, ', '.join(i['wants'])))
 
     def _checkconflicts(self):
         """Check for conflicting options.
@@ -111,4 +111,4 @@ class Checker(base.Base):
         self._checkarguments()
         self._checkrequired()
         self._checkrequires()
-        self._checkneeds()
+        self._checkwants()

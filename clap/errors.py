@@ -16,7 +16,7 @@ class RequiredOptionNotFoundError(Exception):
     pass
 
 
-class NeededOptionNotFoundError(Exception):
+class WantedOptionNotFoundError(Exception):
     """Raised when even one of needed options is not found.
     """
     pass

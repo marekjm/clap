@@ -11,6 +11,7 @@ import json
 import clap
 
 
+legal_option__keys = ['short', 'long', 'conflicts', 'arguments', 'requires', 'wants', 'required', 'not_with', 'help']
 #   type recognition functions
 def isoption(data):
     """Checks if given data can be treated as a representation of option.
@@ -18,8 +19,7 @@ def isoption(data):
     correct_type = type(data) == dict
     correct_contents = True
     copy = data.copy()
-    legal_keys = ['short', 'long', 'conflicts', 'arguments', 'requires', 'needs', 'required', 'not_with']
-    for k in legal_keys:
+    for k in legal_option__keys:
         if k in copy: del copy[k]
     if copy: correct_contents = False
     if correct_contents:
@@ -160,6 +160,11 @@ class Builder():
 
     def addTypeHandler(self, name, callback):
         """Adds callback function to specific type identifier.
+
+        Callback function should have a name that can be easily understood e.g. str, int, float,
+        url, hexint or so.
+        If it cannot be so, add specific information in the help of options that take this type
+        as an argument.
         """
         self.types[name] = callback
 

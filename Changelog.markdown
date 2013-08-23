@@ -2,11 +2,17 @@
 
 ----
 
-#### Version 0.7.6 (2013-08-):
+#### Version 0.8.0 (2013-08-):
+
+This version **is not backwards compatible**! You'll need to fix your JSON and/or Python built interfaces
+for the new stuff - `needs` was renamed to `wants`, `NeededOptionNotFoundError` was renamed to `WantedOption...`.
 
 * __upd__:  order in which validating methods are called (conflicts are checked just after
             unrecognized options to prevent typing a lot and getting an error about conflicting
             options),
+* __upd__:  `needs` arguments renamed to `wants` in all places,
+* __upd__:  `clap.checker.Checker._checkneeds` renamed to `clap.checker.Checker._checkwants`,
+* __upd__:  `clap.errors.NeededOptionNotFoundError` renamed to `clap.errors.WantedOptionNotFoundError`,
 
 * __new__:  `BuilderError` in `clap.errors`, raised when builder loads invalid JSON
 * __new__:  `UIDesignError` in `clap.errors`, raised when one option requires another option
@@ -14,6 +20,7 @@
 * __new__:  `parser` and `modes` arguments in `Builder.build()` for forcing build of given type,
             keep in mind that they are provided as a workaround for type-detection bugs with
             JSON interfaces,
+* __new__:  `clap.helper.Helper` which can build help information from parsers,
 
 
 ----

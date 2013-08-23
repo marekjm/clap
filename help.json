@@ -1,0 +1,44 @@
+[
+    {
+        "short": "v",
+        "long": "version",
+        "help": "display version information and exit"
+    },
+    {
+        "short": "V",
+        "long": "verbose",
+        "help": "be more verbose",
+        "conflicts": ["--quiet"]
+    },
+    {
+        "short": "q",
+        "long": "quiet",
+        "help": "be less verbose",
+        "conflicts": ["--verbose"]
+    },
+    {
+        "short": "f",
+        "long": "foo",
+        "help": "some option",
+        "required": true,
+        "arguments": ["str"]
+    },
+    {
+        "short": "p",
+        "long": "point",
+        "help": "define a point",
+        "arguments": ["int", "int"],
+        "wants": ["--2d", "--3d"]
+    },
+    {
+        "long": "2d",
+        "help": "define a point in two dimensional space",
+        "conflicts": ["--3d", "--foo"]
+    },
+    {
+        "long": "3d",
+        "help": "define a point in three dimensional space",
+        "arguments": ["int"],
+        "conflicts": ["--2d", "--foo"]
+    }
+]

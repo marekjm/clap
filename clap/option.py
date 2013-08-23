@@ -32,7 +32,7 @@ class Option():
         List of options that MUST be passed with this option. An excpetion is raised when EVEN ONE OF THEM
         is NOT found in `argv`.
 
-    needs:
+    wants:
         Slightly different from `requires`.
         It's list of options which MAY be passed with this option. An exception is raised when NONE OF THEM
         is found in `argv`.
@@ -51,7 +51,7 @@ class Option():
     help:
         Description of the option. General help. You name it.
     """
-    def __init__(self, short='', long='', arguments=[], requires=[], needs=[], required=False, not_with=[], conflicts=[], help=''):
+    def __init__(self, short='', long='', arguments=[], requires=[], wants=[], required=False, not_with=[], conflicts=[], help=''):
         if not (short or long):
             raise TypeError('neither short nor long variant was specified')
         if len(long) < 2 and long:
@@ -63,7 +63,7 @@ class Option():
                      'arguments': arguments,
                      'required': required,
                      'requires': requires,
-                     'needs': needs,
+                     'wants': wants,
                      'not_with': not_with,
                      'conflicts': conflicts,
                      'help': help,

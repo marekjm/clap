@@ -15,15 +15,15 @@ class BaseTests(unittest.TestCase):
         base = clap.base.Base([])
         base.add(short='f', long='foo', arguments=[str],
                  required=True, not_with=['-s'],
-                 requires=['--bar'], needs=['--baz', '--bax'],
+                 requires=['--bar'], wants=['--baz', '--bax'],
                  conflicts=['--bay'])
         option0 = clap.option.Option(short='f', long='foo',
                                      arguments=[str], required=True, not_with=['-s'],
-                                     requires=['--bar'], needs=['--baz', '--bax'],
+                                     requires=['--bar'], wants=['--baz', '--bax'],
                                      conflicts=['--bay'])
         option1 = clap.option.Option(short='b', long='bar',
                                      arguments=[int],
-                                     needs=['--baz', '--bax'])
+                                     wants=['--baz', '--bax'])
         self.assertIn(option0, base.options)
         self.assertNotIn(option1, base.options)
 
@@ -31,16 +31,16 @@ class BaseTests(unittest.TestCase):
         base = clap.base.Base([])
         base.add(short='f', long='foo', arguments=[str],
                  required=True, not_with=['-s'],
-                 requires=['--bar'], needs=['--baz', '--bax'],
+                 requires=['--bar'], wants=['--baz', '--bax'],
                  conflicts=['--bay'])
         option0 = clap.option.Option(short='f', long='foo',
                                      arguments=[str], required=True, not_with=['-s'],
-                                     requires=['--bar'], needs=['--baz', '--bax'],
+                                     requires=['--bar'], wants=['--baz', '--bax'],
                                      conflicts=['--bay'])
         option1 = clap.option.Option(short='b', long='bar',
                                      arguments=[int],
-                                     needs=['--baz', '--bax'])
-        base.add(short='b', long='bar', arguments=[int], needs=['--baz', '--bax'])
+                                     wants=['--baz', '--bax'])
+        base.add(short='b', long='bar', arguments=[int], wants=['--baz', '--bax'])
         self.assertIn(option0, base.options)
         self.assertIn(option1, base.options)
         base.remove(short='b')
@@ -340,41 +340,41 @@ class CheckerTests(unittest.TestCase):
         if DEBUG: print(parser._getinput())
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequires)
 
-    def testOptionNeededByAnotherOption(self):
+    def testOptionWantedByAnotherOption(self):
         argv_both = ['--bar', '--foo', '--baz']
         argv_only_bar = ['--foo', '--bar', '42']
         argv_only_baz = ['--baz', '--foo']
         parser = clap.base.Base()
-        parser.add(long='foo', needs=['--bar', '--baz'])
+        parser.add(long='foo', wants=['--bar', '--baz'])
         parser.add(long='bar', arguments=[int])
         parser.add(long='baz')
         for argv in [argv_both, argv_only_bar, argv_only_baz]:
             parser._feed(argv)
             checker = clap.checker.Checker(parser)
             if DEBUG: print(parser._getinput())
-            checker._checkneeds()
+            checker._checkwants()
 
     def testOptionNeededByAnotherOptionNotFound(self):
         argv = ['--foo']
         parser = clap.base.Base()
-        parser.add(long='foo', needs=['--bar', '--baz'])
+        parser.add(long='foo', wants=['--bar', '--baz'])
         parser.add(long='bar', arguments=[int])
         parser.add(long='baz')
         parser._feed(argv)
         checker = clap.checker.Checker(parser)
         if DEBUG: print(parser._getinput())
-        self.assertRaises(clap.errors.NeededOptionNotFoundError, checker._checkneeds)
+        self.assertRaises(clap.errors.WantedOptionNotFoundError, checker._checkwants)
 
     def testOptionNeededByAnotherOptionNotFoundBecauseOfBreaker(self):
         argv = ['--foo', '--', '--bar']
         parser = clap.base.Base()
-        parser.add(long='foo', needs=['--bar', '--baz'])
+        parser.add(long='foo', wants=['--bar', '--baz'])
         parser.add(long='bar', arguments=[int])
         parser.add(long='baz')
         parser._feed(argv)
         checker = clap.checker.Checker(parser)
         if DEBUG: print(parser._getinput())
-        self.assertRaises(clap.errors.NeededOptionNotFoundError, checker._checkneeds)
+        self.assertRaises(clap.errors.WantedOptionNotFoundError, checker._checkwants)
 
     def testConflicts(self):
         argv = ['--foo', '--bar']

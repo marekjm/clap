@@ -55,29 +55,13 @@ class Base():
         """
         self.options.append(option)
 
-    def add(self, short='', long='', arguments=[], requires=[], needs=[], required=False, not_with=[], conflicts=[], help=''):
+    def add(self, short='', long='', arguments=[], requires=[], wants=[], required=False, not_with=[], conflicts=[], help=''):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
-
-        :param short: short, one character name for the option
-        :type short: str
-        :param long: long multiple-character name for option
-        :type short: str
-        :param arguments: list of arguments' types for the option
-        :type arguments: list
-        :param required: whether this option is required or not
-        :type required: bool
-        :param not_with: list of options with which this option is not required (give only with `required`)
-        :param not_with: list[str]
-        :param conflicts: list of options with which this option must not be passed
-        :type conflicts: list[str]
-        :param help: description for the option
-        :type short: str
-
         :returns: clap.option.Option
         """
         new = option.Option(short=short, long=long, arguments=arguments,
-                            requires=requires, needs=needs,
+                            requires=requires, wants=wants,
                             required=required, not_with=not_with,
                             conflicts=conflicts,
                             help=help)
