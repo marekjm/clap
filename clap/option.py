@@ -47,8 +47,11 @@ class Option():
     conflicts:
         List of options this option CANNOT BE passed with. If EVEN ONE OF THEM is found in `argv` an exception
         is raised.
+
+    help:
+        Description of the option. General help. You name it.
     """
-    def __init__(self, short='', long='', arguments=[], requires=[], needs=[], required=False, not_with=[], conflicts=[]):
+    def __init__(self, short='', long='', arguments=[], requires=[], needs=[], required=False, not_with=[], conflicts=[], help=''):
         if not (short or long):
             raise TypeError('neither short nor long variant was specified')
         if len(long) < 2 and long:
@@ -63,6 +66,7 @@ class Option():
                      'needs': needs,
                      'not_with': not_with,
                      'conflicts': conflicts,
+                     'help': help,
                      }
 
     def __getitem__(self, key):

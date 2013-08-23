@@ -163,12 +163,15 @@ class Builder():
         """
         self.types[name] = callback
 
-    def build(self):
+    def build(self, parser=False, modes=False):
         """Builds the interface.
+
+        :param parser: force build of parser
+        :param modes: force build of modes parser
         """
-        if isparser(self.data):
+        if isparser(self.data) or parser:
             self.interface = buildparser(self._applyhandlersto(self.data), argv=self.argv)
-        elif ismodesparser(self.data):
+        elif ismodesparser(self.data) or modes:
             self._applyhandlers()
             self.interface = buildmodesparser(data=self.data, argv=self.argv)
         else:

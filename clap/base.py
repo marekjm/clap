@@ -55,7 +55,7 @@ class Base():
         """
         self.options.append(option)
 
-    def add(self, short='', long='', arguments=[], requires=[], needs=[], required=False, not_with=[], conflicts=[]):
+    def add(self, short='', long='', arguments=[], requires=[], needs=[], required=False, not_with=[], conflicts=[], help=''):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
@@ -71,7 +71,7 @@ class Base():
         :param not_with: list[str]
         :param conflicts: list of options with which this option must not be passed
         :type conflicts: list[str]
-        :param hint: hint for the option
+        :param help: description for the option
         :type short: str
 
         :returns: clap.option.Option
@@ -79,7 +79,8 @@ class Base():
         new = option.Option(short=short, long=long, arguments=arguments,
                             requires=requires, needs=needs,
                             required=required, not_with=not_with,
-                            conflicts=conflicts)
+                            conflicts=conflicts,
+                            help=help)
         self._append(new)
         return new
 

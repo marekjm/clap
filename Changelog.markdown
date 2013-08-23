@@ -11,6 +11,9 @@
 * __new__:  `BuilderError` in `clap.errors`, raised when builder loads invalid JSON
 * __new__:  `UIDesignError` in `clap.errors`, raised when one option requires another option
             which is undefined,
+* __new__:  `parser` and `modes` arguments in `Builder.build()` for forcing build of given type,
+            keep in mind that they are provided as a workaround for type-detection bugs with
+            JSON interfaces,
 
 
 ----

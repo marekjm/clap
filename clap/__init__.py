@@ -10,5 +10,6 @@ from clap import checker
 from clap import parser
 from clap import modes
 from clap import builder
+from clap import helper
 
-__version__ = '0.7.5'
+__version__ = '0.7.6'
