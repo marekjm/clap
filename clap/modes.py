@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 
 
-from clap import base, parser, errors, option
-
-
 """This is interface which enables use of modes.
 It is basically a set of parsers from which one is chosen according
 to the *mode-keyword* found in input list.
@@ -24,6 +21,9 @@ These are global options which are common to all modes.
 When using `modes.Parser()` remember to add global options after all modes has been set.
 Otherwise, you'll get an `UnknownOptionError` when trying to pass global option.
 """
+
+
+from clap import base, parser, errors, option
 
 
 class Parser():
@@ -65,13 +65,13 @@ class Parser():
         """
         for name in self.modes: self.modes[name]._append(option)
 
-    def addOption(self, short='', long='', arguments=[], requires=[], wants=[], required=False, not_with=[], conflicts=[]):
+    def addOption(self, short='', long='', help='', arguments=[], requires=[], wants=[], required=False, not_with=[], conflicts=[]):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
         If you `addOption` it is added to the general parser and all mode-parsers.
         """
-        new = option.Option(short=short, long=long, arguments=arguments,
+        new = option.Option(short=short, long=long, help='', arguments=arguments,
                             requires=requires, wants=wants,
                             required=required, not_with=not_with,
                             conflicts=conflicts)
