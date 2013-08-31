@@ -2,7 +2,14 @@
 
 ----
 
-#### Version 0.8.1 (2013-08-):
+#### Version 0.8.2 (2013-08-31):
+
+* __new__:  support for non-global options given to modes (helps writing modes which act more like parsers),
+
+
+----
+
+#### Version 0.8.1 (2013-08-31):
 
 This version **is not backwards compatible**! You'll need to fix your JSON and/or Python built interfaces
 for the new stuff - `needs` was renamed to `wants`, `NeededOptionNotFoundError` was renamed to `WantedOption...`.

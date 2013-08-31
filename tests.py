@@ -466,8 +466,35 @@ class ParserTests(unittest.TestCase):
 
 
 class ModesTests(unittest.TestCase):
-    def test(self):
-        warnings.warn('not implemented')
+    def testAddingModesAfterOptions(self):
+        ok = ['--option']
+        bad = ['--option', 'bar']
+        bar = clap.parser.Parser()
+        modes = clap.modes.Parser()
+        modes.addOption(short='o', long='option')
+        modes.addMode(name='bar', parser=bar)
+        modes.feed(ok)
+        modes.check()
+        modes.feed(bad)
+        self.assertRaises(clap.errors.UnrecognizedOptionError, modes.check)
+
+    def testAddingModesBeforeOptions(self):
+        argv = ['--option', 'bar']
+        bar = clap.parser.Parser()
+        modes = clap.modes.Parser()
+        modes.addMode(name='bar', parser=bar)
+        modes.addOption(short='o', long='option')
+        modes.feed(argv)
+        modes.check()
+
+    def testAddingOptionsAfterModesButWithLocalArgument(self):
+        argv = ['--option', 'bar']
+        bar = clap.parser.Parser()
+        modes = clap.modes.Parser()
+        modes.addMode(name='bar', parser=bar)
+        modes.addOption(short='o', long='option', local=True)
+        modes.feed(argv)
+        self.assertRaises(clap.errors.UnrecognizedOptionError, modes.check)
 
 
 if __name__ == '__main__': unittest.main()

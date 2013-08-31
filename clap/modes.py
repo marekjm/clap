@@ -60,22 +60,26 @@ class Parser():
         self.parser = None
         self.mode = ''
 
-    def _append(self, option):
+    def _append(self, option, local=False):
         """Appends option to sub-parsers.
         """
-        for name in self.modes: self.modes[name]._append(option)
+        if local:
+            self.modes['']._append(option)
+        else:
+            for name in self.modes: self.modes[name]._append(option)
 
-    def addOption(self, short='', long='', help='', arguments=[], requires=[], wants=[], required=False, not_with=[], conflicts=[]):
+    def addOption(self, short='', long='', help='', arguments=[], requires=[], wants=[], required=False, not_with=[], conflicts=[], local=False):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
-        If you `addOption` it is added to the general parser and all mode-parsers.
+        If you `addOption` it is added to the general parser and all mode-parsers unless
+        `local` is passed.
         """
         new = option.Option(short=short, long=long, help='', arguments=arguments,
                             requires=requires, wants=wants,
                             required=required, not_with=not_with,
                             conflicts=conflicts)
-        self._append(new)
+        self._append(new, local)
         return new
 
     def addMode(self, name, parser):
