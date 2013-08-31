@@ -1,5 +1,23 @@
 #### Changelog file for CLAP
 
+This file describes changes in CLAP codebase, usage, public and private API and documentation.
+It's mostly useful for developers who use the CLAP library.
+
+##### Rules
+
+* __fix__:  bug fixes,
+* __upd__:  updated feature,
+* __new__:  new features,
+* __dep__:  deprecated features (scheduled for removal in next *n* versions),
+
+
+----
+
+#### Version 0.8.3 (2013-08-31):
+
+* __fix__:  fixed bug which prevented building JSON interfaces with local mode-options,
+
+
 ----
 
 #### Version 0.8.2 (2013-08-31):

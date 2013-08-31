@@ -11,7 +11,7 @@ import json
 import clap
 
 
-legal_option__keys = ['short', 'long', 'conflicts', 'arguments', 'requires', 'wants', 'required', 'not_with', 'help']
+legal_option__keys = ['short', 'long', 'conflicts', 'arguments', 'requires', 'wants', 'required', 'not_with', 'help', 'local']
 #   type recognition functions
 def isoption(data):
     """Checks if given data can be treated as a representation of option.
