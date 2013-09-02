@@ -41,8 +41,8 @@ class Parser(base.Base):
 
     def parse(self):
         """Parses input:
-        * assigns option-arguemnts to the options requesting them,
-        * separets options from general arguments,
+        * assigns option-arguments to the options requesting them,
+        * separets options from operands,
         """
         parsed = {}
         i = 0

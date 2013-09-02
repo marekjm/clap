@@ -141,10 +141,15 @@ class Builder():
         ifstream.close()
         self.data = data
 
-    def _applyhandlers(self):
+    def _applyhandlers(self, parser):
         """Replaces type names in JSON with their callback functions.
         """
-        for p in self.data: self.data[p] = self._applyhandlersto(self.data[p])
+        for p in parser:
+            if isparser(parser[p]):
+                parser[p] = self._applyhandlersto(parser[p])
+            elif ismodesparser(parser[p]):
+                parser[p] = self._applyhandlers(parser[p])
+        return parser
 
     def _applyhandlersto(self, parser):
         """Replaces type names in given parser-list with their callback functions.
@@ -154,7 +159,8 @@ class Builder():
         """
         for i, option in enumerate(parser):
             if 'arguments' in option:
-                for n, name in enumerate(option['arguments']): option['arguments'][n] = self.types[name]
+                for n, name in enumerate(option['arguments']):
+                    option['arguments'][n] = self.types[name]
                 parser[i] = option
         return parser
 
@@ -177,8 +183,7 @@ class Builder():
         if isparser(self.data) or parser:
             self.interface = buildparser(self._applyhandlersto(self.data), argv=self.argv)
         elif ismodesparser(self.data) or modes:
-            self._applyhandlers()
-            self.interface = buildmodesparser(data=self.data, argv=self.argv)
+            self.interface = buildmodesparser(data=self._applyhandlers(self.data), argv=self.argv)
         else:
             raise TypeError('cannot detect root UI type: {0}'.format(self.path))
 

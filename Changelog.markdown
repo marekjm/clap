@@ -13,6 +13,13 @@ It's mostly useful for developers who use the CLAP library.
 
 ----
 
+#### Version 0.8.4 (2013-09-02):
+
+* __fix__:  type handlers are applied also to nested parsers,
+
+
+----
+
 #### Version 0.8.3 (2013-08-31):
 
 * __fix__:  fixed bug which prevented building JSON interfaces with local mode-options,
