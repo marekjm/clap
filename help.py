@@ -5,7 +5,6 @@ import clap
 import sys
 
 b = clap.builder.Builder('./help.json')
-#b.build(parser=True)
 b.build()
 ui = b.get()
 

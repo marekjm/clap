@@ -9,6 +9,16 @@ It's mostly useful for developers who use the CLAP library.
 * __upd__:  updated feature,
 * __new__:  new features,
 * __dep__:  deprecated features (scheduled for removal in next *n* versions),
+* __rem__:  removed features,
+
+
+----
+
+#### Version 0.8.5 (2013-09-):
+
+* __upd__:  better help message generation,
+
+* __rem__:  `lines` parameter from `Helper().help()` method - now it returns only list of strings,
 
 
 ----

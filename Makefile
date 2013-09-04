@@ -17,7 +17,7 @@ install:
 	make clean
 	cp -Rv ./clap /usr/lib/python${PYTHONVERSION}/site-packages/
 
-local-install:
+local-install: ./clap/*.py
 	make tests
 	make clean
 	cp -Rv ./clap ~/.local/lib/python${PYTHONVERSION}/site-packages/
