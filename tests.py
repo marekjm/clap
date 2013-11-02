@@ -398,36 +398,36 @@ class CheckerTests(unittest.TestCase):
 
 class ParserTests(unittest.TestCase):
     def testShortOptionsWithoutArguments(self):
-        argv = ['-a', '-b', '-c', 'd', 'e', 'f']
-        p = clap.parser.Parser(argv)
-        p.add(short='a')
-        p.add(short='b')
-        p.add(short='c')
-        p.parse()
+        argv = ['-a', '-b', '-c', '--', 'd', 'e', 'f']
+        p = clap.modes.Parser(argv)
+        p.addOption(short='a')
+        p.addOption(short='b')
+        p.addOption(short='c')
+        p.finalize()
         self.assertEqual(None, p.get('-a'))
         self.assertEqual(None, p.get('-b'))
         self.assertEqual(None, p.get('-c'))
         self.assertEqual(['d', 'e', 'f'], p.arguments)
 
     def testShortOptionsWithArguments(self):
-        argv = ['-s', 'eggs', '-i', '42', '-f', '4.2', 'foo']
-        p = clap.parser.Parser(argv)
-        p.add(short='s', arguments=[str])
-        p.add(short='i', arguments=[int])
-        p.add(short='f', arguments=[float])
-        p.parse()
+        argv = ['-s', 'eggs', '-i', '42', '-f', '4.2', '--', 'foo']
+        p = clap.modes.Parser(argv)
+        p.addOption(short='s', arguments=[str])
+        p.addOption(short='i', arguments=[int])
+        p.addOption(short='f', arguments=[float])
+        p.finalize()
         self.assertEqual('eggs', p.get('-s'))
         self.assertEqual(42, p.get('-i'))
         self.assertEqual(4.2, p.get('-f'))
         self.assertEqual(['foo'], p.arguments)
 
     def testLongOptionsWithoutArguments(self):
-        argv = ['--foo', '--bar', '--baz', 'bax']
-        p = clap.parser.Parser(argv)
-        p.add(long='foo')
-        p.add(long='bar')
-        p.add(long='baz')
-        p.parse()
+        argv = ['--foo', '--bar', '--baz', '--', 'bax']
+        p = clap.modes.Parser(argv)
+        p.addOption(long='foo')
+        p.addOption(long='bar')
+        p.addOption(long='baz')
+        p.finalize()
         self.assertEqual(None, p.get('--foo'))
         self.assertEqual(None, p.get('--bar'))
         self.assertEqual(None, p.get('--baz'))
@@ -435,30 +435,30 @@ class ParserTests(unittest.TestCase):
 
     def testLongOptionsWithArguments(self):
         argv = ['--str', 'eggs', '--int', '42', '--float', '4.2']
-        p = clap.parser.Parser(argv)
-        p.add(long='str', arguments=[str])
-        p.add(long='int', arguments=[int])
-        p.add(long='float', arguments=[float])
-        p.parse()
+        p = clap.modes.Parser(argv)
+        p.addOption(long='str', arguments=[str])
+        p.addOption(long='int', arguments=[int])
+        p.addOption(long='float', arguments=[float])
+        p.finalize()
         self.assertEqual('eggs', p.get('--str'))
         self.assertEqual(42, p.get('--int'))
         self.assertEqual(4.2, p.get('--float'))
 
     def testOptionsWithMultipleArguments(self):
         argv = ['--foo', 'spam', '42', '3.14']
-        p = clap.parser.Parser(argv)
-        p.add(short='f', long='foo', arguments=[str, int, float])
-        p.parse()
+        p = clap.modes.Parser(argv)
+        p.addOption(short='f', long='foo', arguments=[str, int, float])
+        p.finalize()
         self.assertEqual(('spam', 42, 3.14), p.get('-f'))
 
     def testStopingAtBreaker(self):
         argv = ['--foo', '-s', 'eggs', '--int', '42', '--', '-f', '4.2']
-        p = clap.parser.Parser(argv)
-        p.add(long='foo')
-        p.add(long='int', arguments=[int])
-        p.add(short='s', arguments=[str])
-        p.add(short='f', arguments=[float])
-        p.parse()
+        p = clap.modes.Parser(argv)
+        p.addOption(long='foo')
+        p.addOption(long='int', arguments=[int])
+        p.addOption(short='s', arguments=[str])
+        p.addOption(short='f', arguments=[float])
+        p.finalize()
         self.assertEqual(42, p.get('--int'))
         self.assertEqual('eggs', p.get('-s'))
         self.assertEqual(None, p.get('--foo'))

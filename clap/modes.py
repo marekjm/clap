@@ -22,16 +22,19 @@ When using `modes.Parser()` remember to add global options after all modes has b
 Otherwise, you'll get an `UnknownOptionError` when trying to pass global option.
 """
 
+import warnings
 
-from clap import base, parser, errors, option
+from clap import base, errors, option
 
 
 class Parser():
     """Object implementing modes functionality.
     """
-    def __init__(self, argv=[], default=''):
+    def __init__(self, argv=[], default='', empty=True):
+        warnings.warn('clap.modes.Parser is deprecated: use clap.parser.Parser', DeprecationWarning)
         self.argv = argv
-        self.modes = {'': parser.Parser()}
+        if empty: self.modes = {'': base.Base()}
+        else: self.modes = {'': base.Base()}
         self.mode = ''
         self.default = default
         self.parser = None
@@ -94,15 +97,25 @@ class Parser():
 
     def _modeindex(self):
         """Returns index of first non-option-like item in input list.
-        Returns -1 if no mode was found but all input was scanned or `--` was
-        found.
+        Returns -1 if no mode was found but all input was scanned.
+
+        Quits searching as soon as `--` breaker is found.
         """
-        index = -1
-        for i, item in enumerate(self.argv):
+        index, i = -1, 0
+        while i < len(self.argv):
+            item = self.argv[i]
             if item == '--': break
+            if base.lookslikeopt(item):
+                # if item is an option get list of all its arguments and
+                # increase the counter accordingly;
+                # needed for support for options with multiple arguments because
+                # otherwise _modeindex() would treat second argument as a mode
+                n = len(self.type(item))
+                i += n
             if not base.lookslikeopt(item):
                 if i == 0 or not self.type(self.argv[i-1]): index = i
                 if index > -1: break
+            i += 1
         return index
 
     def define(self):
@@ -133,6 +146,13 @@ class Parser():
         """Parses input list.
         """
         self.parser.parse()
+
+    def finalize(self):
+        """Commits all actions required to get a usable parser.
+        """
+        self.define()
+        self.parse()
+        return self
 
     def get(self, s):
         """Returns option's argument.

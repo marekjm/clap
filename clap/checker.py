@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from clap import base, errors
+from clap import shared, errors
 
 
 """This module contains Checker() object which is used internaly, by
@@ -9,10 +9,11 @@ Parser() to check correctness of input.
 """
 
 
-class Checker(base.Base):
+class Checker():
     """This object is used for checking correctness of input.
     """
     def __init__(self, parser):
+        self._parser = parser
         self.argv = parser.argv
         self.options = parser.options
         self.parser = parser
@@ -20,8 +21,8 @@ class Checker(base.Base):
     def _checkunrecognized(self):
         """Checks if input list contains any unrecognized options.
         """
-        for i in self._getinput():
-            if base.lookslikeopt(i) and not self.accepts(i): raise errors.UnrecognizedOptionError(i)
+        for i in self._parser._getinput():
+            if shared.lookslikeopt(i) and not self._parser.accepts(i): raise errors.UnrecognizedOptionError(i)
 
     def _checkarguments(self):
         """Checks if arguments given to options which require them are valid.
@@ -33,15 +34,15 @@ class Checker(base.Base):
         **Notice:** if you want to pass option-like argument wrap it in `"` or `'` and
         escape first hyphen or double-escape first hyphen.
         """
-        input = self._getinput()
+        input = self._parser._getinput()
         i = 0
         while i < len(input):
             opt = input[i]
-            if base.lookslikeopt(opt) and self.type(opt):
-                types = self.type(opt)
+            if shared.lookslikeopt(opt) and self._parser.type(opt):
+                types = self._parser.type(opt)
                 if i+len(types) >= len(input):
                     raise errors.MissingArgumentError('{0} ({1})'.format(opt, ', '.join([str(t)[8:-2] for t in types])))
-                if base.lookslikeopt(input[i+1]) and self.accepts(input[i+1]):
+                if shared.lookslikeopt(input[i+1]) and self._parser.accepts(input[i+1]):
                     raise errors.MissingArgumentError(opt)
                 for n, atype in enumerate(types):
                     i += 1
@@ -58,50 +59,50 @@ class Checker(base.Base):
     def _checkrequired(self):
         """Checks if all required options are present in input list.
         """
-        for option in self.options:
+        for option in self._parser.options:
             check = option['required']
             for n in option['not_with']:
                 if not check: break
-                check = not self._ininput(string=n)
+                check = not self._parser._ininput(string=n)
             if not check: continue
-            if not self._ininput(option=option): raise errors.RequiredOptionNotFoundError(option)
+            if not self._parser._ininput(option=option): raise errors.RequiredOptionNotFoundError(option)
 
     def _checkrequires(self):
         """Check if all options required by other options are present.
         """
-        for option in self.options:
-            if not self._ininput(option): continue
+        for option in self._parser.options:
+            if not self._parser._ininput(option): continue
             for n in option['requires']:
-                if not self._ininput(string=n):
-                    needs = self._variantin(option)
-                    if not self.parser.accepts(n):
+                if not self._parser._ininput(string=n):
+                    needs = self._parser._variantin(option)
+                    if not self._parser.accepts(n):
                         raise errors.UIDesignError('\'{0}\' requires unrecognized option \'{1}\''.format(needs, n))
                     raise errors.RequiredOptionNotFoundError('{0} -> {1}'.format(needs, n))
 
     def _checkwants(self):
         """Check for wanted options.
         """
-        for i in self.options:
-            if not self._ininput(i) or not i['wants']: continue
+        for i in self._parser.options:
+            if not self._parser._ininput(i) or not i['wants']: continue
             fail = True
             for n in i['wants']:
-                if self._ininput(string=n):
+                if self._parser._ininput(string=n):
                     fail = False
                     break
             if fail:
-                needs = self._variantin(i)
+                needs = self._parser._variantin(i)
                 raise errors.WantedOptionNotFoundError('{0} -> {1}'.format(needs, ', '.join(i['wants'])))
 
     def _checkconflicts(self):
         """Check for conflicting options.
         """
-        for i in self.options:
-            if i['conflicts'] and self._ininput(i):
-                conflicted = self._variantin(i)
+        for i in self._parser.options:
+            if i['conflicts'] and self._parser._ininput(i):
+                conflicted = self._parser._variantin(i)
                 for c in i['conflicts']:
-                    conflicting = self._ininput(string=c)
+                    conflicting = self._parser._ininput(string=c)
                     if conflicting:
-                        raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, self._variantin(string=c)))
+                        raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, self._parser._variantin(string=c)))
 
     def check(self):
         """Performs a check.

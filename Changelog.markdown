@@ -14,7 +14,13 @@ It's mostly useful for developers who use the CLAP library.
 
 ----
 
-#### Version 0.8.5 (2013-09-):
+#### Version 0.9.0 (2013-09-):
+
+From this version `clap.modes.Parser` is deprecated - single and nested parsers were unified and
+now you can use `clap.parser.Parser` with modes (the API was copied from `clap.modes.Parser`).
+
+
+* __new__:  `parser.modes.Parser().finalize()` method which will define the parser and parse it via a single call,
 
 * __upd__:  better help message generation,
 
