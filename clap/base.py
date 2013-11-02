@@ -19,24 +19,20 @@ class Base():
     """Base class for option and checker.
     """
     def __init__(self, argv=[]):
-        self.argv = argv
-        self.options = []
-        self.parsed = {}
+        self._argv = argv
+        self._options = []
+        self._parsed = {}
+        self._operands = []
 
     def __contains__(self, option):
         """Checks if Base contains given option object.
         """
-        return option in self.options
-
-    def _feed(self, argv):
-        """Feeds list of input arguments to Base object.
-        """
-        self.argv = argv
+        return option in self._options
 
     def _append(self, option):
         """Appends `Option()` object to options list.
         """
-        self.options.append(option)
+        self._options.append(option)
 
     def add(self, short='', long='', arguments=[], requires=[], wants=[], required=False, not_with=[], conflicts=[], help=''):
         """Adds an option to the list of options recognized by parser.
@@ -57,18 +53,18 @@ class Base():
         :returns: non-negative integer indicates that some option was removed
         """
         index = -1
-        for i, opt in enumerate(self.options):
+        for i, opt in enumerate(self._options):
             if opt.match(short) or opt.match(long):
                 index = i
                 break
-        if index: self.options.pop(index)
+        if index: self._options.pop(index)
         return index
 
     def accepts(self, option):
         """Returns True if Parser() accepts this option.
         """
         result = False
-        for i in self.options:
+        for i in self._options:
             if i.match(option):
                 result = True
                 break
@@ -79,7 +75,7 @@ class Base():
         Empty list indicates that option takes no additional argument.
         """
         t = []
-        for o in self.options:
+        for o in self._options:
             if o.match(name):
                 t = o.type()
                 break
@@ -90,7 +86,7 @@ class Base():
         Returns empty string if no alias exist.
         """
         alias = ''
-        for i in self.options:
+        for i in self._options:
             if i.match(name):
                 alias = i._alias(name)
                 break
@@ -104,31 +100,31 @@ class Base():
         if DEBUG: warnings.warn('clap.base.Base._getinput() needs some optimization if possible')
         index, i = -1, 0
         input = []
-        while i < len(self.argv):
-            item = self.argv[i]
+        while i < len(self._argv):
+            item = self._argv[i]
             #   if a breaker is encountered -> break
             if item == '--': break
             #   if non-option string is encountered and it's not an argument -> break
             if i == 0 and not shared.lookslikeopt(item): break
-            if i > 0 and not shared.lookslikeopt(item) and not self.type(self.argv[i-1]): break
+            if i > 0 and not shared.lookslikeopt(item) and not self.type(self._argv[i-1]): break
             #   if non-option string is encountered and it's an argument
             #   increase counter by the number of arguments the option requests and
             #   proceed futher
-            if i > 0 and not shared.lookslikeopt(item) and self.type(self.argv[i-1]):
-                i += len(self.type(self.argv[i-1]))-1
+            if i > 0 and not shared.lookslikeopt(item) and self.type(self._argv[i-1]):
+                i += len(self.type(self._argv[i-1]))-1
             index = i
             i += 1
         if index >= 0:
             #   if index is at least equal to zero this means that some input was found
-            input = self.argv[:index+1]
+            input = self._argv[:index+1]
         return input
 
     def _getarguments(self):
         """Returns list of genral arguments passed to the program.
         """
         n = len(self._getinput())
-        if '--' in self.argv: n += 1
-        return self.argv[n:]
+        if '--' in self._argv: n += 1
+        return self._argv[n:]
 
     def _ininput(self, option=None, string=''):
         """Checks if given option is present in input.
@@ -177,10 +173,10 @@ class Base():
 
     def feed(self, argv):
         """Feeds input arguments list to parser.
-        Feeding new data to Parser() resets `parsed` and
-        `arguments` variables.
+        Feeding new data to resets `parsed` and
+        `operands` variables.
         """
-        self.argv = argv
+        self._argv = argv
         self.parsed = {}
         self.arguments = []
 

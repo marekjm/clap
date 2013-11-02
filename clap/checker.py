@@ -56,7 +56,7 @@ class Checker():
     def _checkrequired(self):
         """Checks if all required options are present in input list.
         """
-        for option in self._parser.options:
+        for option in self._parser._options:
             check = option['required']
             for n in option['not_with']:
                 if not check: break
@@ -67,7 +67,7 @@ class Checker():
     def _checkrequires(self):
         """Check if all options required by other options are present.
         """
-        for option in self._parser.options:
+        for option in self._parser._options:
             if not self._parser._ininput(option): continue
             for n in option['requires']:
                 if not self._parser._ininput(string=n):
@@ -79,7 +79,7 @@ class Checker():
     def _checkwants(self):
         """Check for wanted options.
         """
-        for i in self._parser.options:
+        for i in self._parser._options:
             if not self._parser._ininput(i) or not i['wants']: continue
             fail = True
             for n in i['wants']:
@@ -93,7 +93,7 @@ class Checker():
     def _checkconflicts(self):
         """Check for conflicting options.
         """
-        for i in self._parser.options:
+        for i in self._parser._options:
             if i['conflicts'] and self._parser._ininput(i):
                 conflicted = self._parser._variantin(i)
                 for c in i['conflicts']:
@@ -104,6 +104,7 @@ class Checker():
     def check(self):
         """Performs a check.
         """
+        print(type(self._parser))
         self._checkunrecognized()
         self._checkconflicts()
         self._checkarguments()

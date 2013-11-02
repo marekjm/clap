@@ -32,7 +32,7 @@ class Parser():
     """
     def __init__(self, argv=[], default='', empty=True):
         warnings.warn('clap.modes.Parser is deprecated: use clap.parser.Parser', DeprecationWarning)
-        self.argv = argv
+        self._argv = argv
         if empty: self.modes = {'': base.Base()}
         else: self.modes = {'': base.Base()}
         self.mode = ''
@@ -59,7 +59,7 @@ class Parser():
     def feed(self, argv):
         """Feeds input arguments list to parser.
         """
-        self.argv = argv
+        self._argv = argv
         self.parser = None
         self.mode = ''
 
@@ -102,8 +102,8 @@ class Parser():
         Quits searching as soon as `--` breaker is found.
         """
         index, i = -1, 0
-        while i < len(self.argv):
-            item = self.argv[i]
+        while i < len(self._argv):
+            item = self._argv[i]
             if item == '--': break
             if shared.lookslikeopt(item):
                 # if item is an option get list of all its arguments and
@@ -113,7 +113,7 @@ class Parser():
                 n = len(self.type(item))
                 i += n
             if not shared.lookslikeopt(item):
-                if i == 0 or not self.type(self.argv[i-1]): index = i
+                if i == 0 or not self.type(self._argv[i-1]): index = i
                 if index > -1: break
             i += 1
         return index
@@ -123,7 +123,7 @@ class Parser():
         """
         index = self._modeindex()
         if index > -1:
-            mode = self.argv[index]
+            mode = self._argv[index]
             n = 1
         else:
             mode = self.default
@@ -131,7 +131,7 @@ class Parser():
             n = 0
         if mode not in self.modes: raise errors.UnrecognizedModeError(mode)
         self.parser = self.modes[mode]
-        input = self.argv[:index] + self.argv[index+n:]
+        input = self._argv[:index] + self._argv[index+n:]
         self.parser.feed(input)
         self.mode = mode
         return mode
@@ -166,7 +166,7 @@ class Parser():
         if self.parser: t = self.parser.type(s)
         else:
             for m in self.modes:
-                for o in self.modes[m].options:
+                for o in self.modes[m]._options:
                     t = self.modes[m].type(s)
                     if t is not None: break
                 if t is not None: break

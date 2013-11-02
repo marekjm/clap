@@ -24,8 +24,8 @@ class BaseTests(unittest.TestCase):
         option1 = clap.option.Option(short='b', long='bar',
                                      arguments=[int],
                                      wants=['--baz', '--bax'])
-        self.assertIn(option0, base.options)
-        self.assertNotIn(option1, base.options)
+        self.assertIn(option0, base._options)
+        self.assertNotIn(option1, base._options)
 
     def testRemovingOption(self):
         base = clap.base.Base([])
@@ -41,11 +41,11 @@ class BaseTests(unittest.TestCase):
                                      arguments=[int],
                                      wants=['--baz', '--bax'])
         base.add(short='b', long='bar', arguments=[int], wants=['--baz', '--bax'])
-        self.assertIn(option0, base.options)
-        self.assertIn(option1, base.options)
+        self.assertIn(option0, base._options)
+        self.assertIn(option1, base._options)
         base.remove(short='b')
-        self.assertIn(option0, base.options)
-        self.assertNotIn(option1, base.options)
+        self.assertIn(option0, base._options)
+        self.assertNotIn(option1, base._options)
 
     def testGettingEmptyInput(self):
         argvs = [   ['--', '--foo', '--bar', 'baz', 'bax'],
@@ -56,7 +56,7 @@ class BaseTests(unittest.TestCase):
         base.add(long='foo')
         base.add(long='bar', arguments=[str])
         for argv in argvs:
-            base._feed(argv)
+            base.feed(argv)
             self.assertEqual([], base._getinput())
 
     def testGettingInput(self):
@@ -349,7 +349,7 @@ class CheckerTests(unittest.TestCase):
         parser.add(long='bar', arguments=[int])
         parser.add(long='baz')
         for argv in [argv_both, argv_only_bar, argv_only_baz]:
-            parser._feed(argv)
+            parser.feed(argv)
             checker = clap.checker.Checker(parser)
             if DEBUG: print(parser._getinput())
             checker._checkwants()
@@ -360,7 +360,7 @@ class CheckerTests(unittest.TestCase):
         parser.add(long='foo', wants=['--bar', '--baz'])
         parser.add(long='bar', arguments=[int])
         parser.add(long='baz')
-        parser._feed(argv)
+        parser.feed(argv)
         checker = clap.checker.Checker(parser)
         if DEBUG: print(parser._getinput())
         self.assertRaises(clap.errors.WantedOptionNotFoundError, checker._checkwants)
@@ -371,7 +371,7 @@ class CheckerTests(unittest.TestCase):
         parser.add(long='foo', wants=['--bar', '--baz'])
         parser.add(long='bar', arguments=[int])
         parser.add(long='baz')
-        parser._feed(argv)
+        parser.feed(argv)
         checker = clap.checker.Checker(parser)
         if DEBUG: print(parser._getinput())
         self.assertRaises(clap.errors.WantedOptionNotFoundError, checker._checkwants)
@@ -390,7 +390,7 @@ class CheckerTests(unittest.TestCase):
         parser = clap.base.Base()
         parser.add(long='foo', conflicts=['--bar'])
         parser.add(long='bar')
-        parser._feed(argv)
+        parser.feed(argv)
         checker = clap.checker.Checker(parser)
         if DEBUG: print(parser._getinput())
         checker._checkconflicts()
@@ -469,7 +469,7 @@ class ModesTests(unittest.TestCase):
     def testAddingModesAfterOptions(self):
         ok = ['--option']
         bad = ['--option', 'bar']
-        bar = clap.parser.Parser()
+        bar = clap.base.Base()
         modes = clap.modes.Parser()
         modes.addOption(short='o', long='option')
         modes.addMode(name='bar', parser=bar)
@@ -480,7 +480,7 @@ class ModesTests(unittest.TestCase):
 
     def testAddingModesBeforeOptions(self):
         argv = ['--option', 'bar']
-        bar = clap.parser.Parser()
+        bar = clap.base.Base()
         modes = clap.modes.Parser()
         modes.addMode(name='bar', parser=bar)
         modes.addOption(short='o', long='option')
@@ -489,7 +489,7 @@ class ModesTests(unittest.TestCase):
 
     def testAddingOptionsAfterModesButWithLocalArgument(self):
         argv = ['--option', 'bar']
-        bar = clap.parser.Parser()
+        bar = clap.base.Base()
         modes = clap.modes.Parser()
         modes.addMode(name='bar', parser=bar)
         modes.addOption(short='o', long='option', local=True)
