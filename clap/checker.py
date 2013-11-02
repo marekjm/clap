@@ -104,7 +104,6 @@ class Checker():
     def check(self):
         """Performs a check.
         """
-        print(type(self._parser))
         self._checkunrecognized()
         self._checkconflicts()
         self._checkarguments()
