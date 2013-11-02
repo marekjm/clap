@@ -22,11 +22,13 @@ now you can use `clap.parser.Parser` with modes (the API was copied from `clap.m
 
 * __new__:  `clap.parser.Parser().finalize()` method which will define the parser and parse it via a single call,
 * __new__:  `clap.shared` module containing functions and variables shared between various CLAP modules,
-* __new__:  `clap.base.Base`, `clap.module.Parser` and `clap.parser.Parser` got new `getoperands()` method,
+* __new__:  `clap.base.Base`, `clap.parser.Parser` and `clap.modes.Parser` got new `getoperands()` method,
+* __new__:  `clap.base.Base` and `clap.parser.Parser` have `__eq__()` method overloaded (comparing with `==` will be now possible),
 
 * __upd__:  better help message generation,
 * __upd__:  moved option regular expression patterns from `clap.base` to `clap.shared`,
 * __upd__:  moved `lookslikeopt()` function from `clap.base` to `clap.shared`,
+* __upd__:  information about default parser is now private,
 
 * __rem__:  `lines` parameter from `Helper().help()` method - now it returns only list of strings,
 

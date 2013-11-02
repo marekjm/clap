@@ -138,7 +138,7 @@ class BuilderTests(unittest.TestCase):
                  ]
         self.assertEqual(True, clap.builder.isparser(data))
 
-    def testTypeRecognitionParser(self):
+    def testTypeRecognitionNestedParser(self):
         data = {
                 'foo': [
                     {
@@ -154,7 +154,31 @@ class BuilderTests(unittest.TestCase):
                         }
                     ]
                 }
-        self.assertEqual(True, clap.builder.ismodesparser(data))
+        self.assertEqual(True, clap.builder.isparser(data))
+
+    def testBuildingSingleParserDefinedAsNestedWithAllOptionsGlobal(self):
+        parser = clap.parser.Parser()
+        parser.addOption(short='s', long='string', arguments=[str])
+        parser.addOption(short='i', long='integer', arguments=[int])
+        parser.addOption(short='f', long='float', arguments=[float])
+        built = clap.builder.Builder(path='./testfiles/single_parser_defined_as_nested_with_all_opts_global.json').build()
+        self.assertEqual(parser.finalize(), built.finalize())
+
+    def testBuildingSingleParserDefinedAsListOfOptions(self):
+        parser = clap.parser.Parser()
+        parser.addOption(short='s', long='string', arguments=[str])
+        parser.addOption(short='i', long='integer', arguments=[int])
+        parser.addOption(short='f', long='float', arguments=[float])
+        built = clap.builder.Builder(path='./testfiles/single_parser_defined_as_list_of_options.json').build()
+        self.assertEqual(parser.finalize().getopts(), built.finalize().getopts())
+
+    def testBuildingMultipleModeParser(self):
+        parser = clap.parser.Parser()
+        parser.addMode('foo', clap.parser.Parser().addOption(short='f', long='foo'))
+        parser.addMode('bar', clap.parser.Parser().addOption(short='b', long='bar'))
+        parser.addOption(short='B', long='baz')
+        built = clap.builder.Builder(path='./testfiles/multiple_modes_parser.json').build()
+        self.assertEqual(sorted(parser.finalize()._modes.keys()), sorted(built.finalize()._modes.keys()))
 
 
 class FormatterTests(unittest.TestCase):

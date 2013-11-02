@@ -23,6 +23,23 @@ class Base():
         self._parsed = {}
         self._operands = []
 
+    def __eq__(self, sth):
+        """Parsers are equal when they have the same:
+
+            * options,
+            * parsed options,
+            * operands,
+
+        Arguments given by user does not matter before they are parsed.
+        So, if two bases are compared and have everything but argv equal
+        this call will evaluate to True if the bases were not parsed and
+        to False if they have been parsed.
+        """
+        options = self._options == sth._options
+        parsed = self._parsed == sth._parsed
+        operands = self._operands == self._operands
+        return options and parsed and operands
+
     def __contains__(self, option):
         """Checks if Base contains given option object.
         """
@@ -218,6 +235,11 @@ class Base():
         """Returns list of operands passed to the program.
         """
         return self._operands
+
+    def getopts(self):
+        """Returns options supported by this parser.
+        """
+        return self._options
 
     def check(self):
         """Checks if input list is valid for this instance of Parser().

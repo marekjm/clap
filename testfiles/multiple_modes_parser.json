@@ -1,0 +1,20 @@
+{
+    "foo": [
+        {
+            "short": "f",
+            "long": "foo"
+        }
+    ],
+    "bar": [
+        {
+            "short": "b",
+            "long": "bar"
+        }
+    ],
+    "__global__": [
+        {
+            "short": "B",
+            "long": "baz"
+        }
+    ]
+}

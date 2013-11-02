@@ -40,7 +40,22 @@ def isoption(data):
     return correct_type and correct_contents
 
 
-def isparser(data):
+
+def isnestedparser(data):
+    """Checks if given data can be treated as a representation of modes parser.
+    """
+    correct_type = type(data) is dict
+    if correct_type:
+        correct_contents = True
+        for d in data:
+            if not ((issingleparser(data[d]) or isnestedparser(data[d])) and not isoption(data[d])):
+                correct_contents = False
+                break
+    else:
+        correct_contents = False
+    return correct_type and correct_contents
+
+def issingleparser(data):
     """Checks if given data can be treated as a representation of parser.
     """
     correct_type = type(data) == list
@@ -52,20 +67,11 @@ def isparser(data):
                 break
     return correct_type and correct_contents
 
-
 def ismodesparser(data):
-    """Checks if given data can be treated as a representation of modes parser.
-    """
-    correct_type = type(data) is dict
-    if correct_type:
-        correct_contents = True
-        for d in data:
-            if not ((isparser(data[d]) or ismodesparser(data[d])) and not isoption(data[d])):
-                correct_contents = False
-                break
-    else:
-        correct_contents = False
-    return correct_type and correct_contents
+    return isnestedparser(data)
+
+def isparser(data):
+    return isnestedparser(data) or issingleparser(data)
 
 
 #   building functions
@@ -78,7 +84,7 @@ def buildparser(data, argv=[]):
     :type data: list[dict]
     """
     p = clap.parser.Parser(argv=argv)
-    for option in data: p.add(**option)
+    for option in data: p.addOption(**option)
     return p
 
 
@@ -88,12 +94,12 @@ def buildmodesparser(data, argv=[]):
     :param data: data used to build UI
     :type data: dict
     """
-    p = clap.modes.Parser(argv=argv)
+    p = clap.parser.Parser(argv=argv)
     for mode in data:
         if mode == '__global__': continue
         element = data[mode]
-        if isparser(element): element = buildparser(element)
-        elif ismodesparser(element): element = buildmodesparser(element)
+        if issingleparser(element): element = buildparser(element)
+        elif isnestedparser(element): element = buildmodesparser(element)
         else: raise Exception('invalid element: {0}'.format(element))
         p.addMode(mode, element)
     if '__global__' in data:
@@ -183,12 +189,13 @@ class Builder():
         :param parser: force build of parser
         :param modes: force build of modes parser
         """
-        if isparser(self.data) or parser:
+        if issingleparser(self.data) or parser:
             self.interface = buildparser(self._applyhandlersto(self.data), argv=self.argv)
-        elif ismodesparser(self.data) or modes:
+        elif isnestedparser(self.data) or modes:
             self.interface = buildmodesparser(data=self._applyhandlers(self.data), argv=self.argv)
         else:
             raise TypeError('cannot detect root UI type: {0}'.format(self.path))
+        return self.interface
 
     def get(self):
         """Returns built interface.

@@ -3,15 +3,85 @@
 Since version 0.7.2 it is possible to build user interface entirely in JSON and
 use CLAP to load it.
 Since 0.7.4 every feature that can be used when creating interfaces using Python API is also
-available using JSON builder.
+available using JSON builder API.
 
 
 ----
 
-#### Building
+#### Argument types
 
 Only thing that needs to be set up in native Python are *type-handlers* that are not built-in
 Python data types.
 These *type-handlers* are the callback functions which are used for `arguments`
 parameter in `clap.parser.Parser.add()`. In JSON they are referred to as strings and need
 to be replaced by real functions. `str`, `int` and `float` are always available.
+
+
+----
+
+#### Building single-mode parser
+
+In singe-mode parser all options are global.
+This can be written as this:
+
+    {
+        "__global__": [
+            {
+                "short": "f",
+                "long": "foo"
+            },
+            {
+                "short": "b",
+                "long": "bar"
+            }
+        ]
+    }
+
+
+However, to provide backwards compatibility with pre-0.9.x versions single-mode parsers can be created
+by just list of options:
+
+    [
+        {
+            "short": "f",
+            "long": "foo"
+        },
+        {
+            "short": "b",
+            "long": "bar"
+        }
+    ]
+
+
+----
+
+#### Building multiple-modes parser
+
+Parsers with more than one mode are defined as dictionaries.
+Each key is a name of the parser for a different mode.
+
+There is a reserved key **`__global__`** which defines list of
+global options - common to all modes.
+
+Example:
+
+    {
+        "foo": [
+            {
+                "short": "f",
+                "long": "foo"
+            }
+        ],
+        "bar": [
+            {
+                "short": "b",
+                "long": "bar"
+            }
+        ],
+        "__global__": [
+            {
+                "short": "B",
+                "long" "baz"
+            }
+        ]
+    }

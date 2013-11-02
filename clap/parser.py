@@ -11,13 +11,12 @@ from clap import base, shared, option, checker
 class Parser():
     """Object implementing modes functionality.
     """
-    def __init__(self, argv=[], default='', empty=True):
+    def __init__(self, argv=[], default=''):
         self._argv = argv
-        if empty: self._modes = {'': base.Base()}
-        else: self._modes = {'': base.Base()}
+        self._modes = {'': base.Base()}
         self._mode = ''
-        self.default = default
-        self.parser = None
+        self._default = default
+        self._parser = None
         self._operands = []
 
     def __contains__(self, option):
@@ -28,6 +27,30 @@ class Parser():
 
     def __str__(self):
         return self.mode
+
+    def __eq__(self, sth):
+        """Checks if given sth (something) is equal to current instance of parser.
+        If two parsers are compared and they support the same set of modes and options but got different
+        list of arguments you can experience two situations:
+
+            0.  they will equal each other if not finalized,
+            1.  they will not equal each other if finalized,
+
+        This, possibly confusing, result is given because list of given arguments are not under control
+        of the programmer, change very often and are given  by user.
+
+        Here, we compare parsers from the functionality point of view and
+        we don't care what user might have given to the parser before it's finalized - after the
+        parser if finalized it's functionality is different.
+        """
+        default = self._default == sth._default
+        parser = self._parser == sth._parser
+        operands = self._operands == sth._operands
+        modes = True
+        for name in self._modes:
+            modes = self._modes[name] == sth._modes[name]
+            if not modes: break
+        return default and parser and operands and modes
 
     def feed(self, argv):
         """Feeds input arguments list to parser.
@@ -59,7 +82,7 @@ class Parser():
                             required=required, not_with=not_with,
                             conflicts=conflicts)
         self._append(new, local)
-        return new
+        return self
 
     def addMode(self, name, parser):
         """Adds mode to Modes() or overwrites old definition.
@@ -104,13 +127,13 @@ class Parser():
             mode = self._argv[index]
             n = 1
         else:
-            mode = self.default
+            mode = self._default
             index = 0
             n = 0
         if mode not in self._modes: raise errors.UnrecognizedModeError(mode)
-        self.parser = self._modes[mode]
+        self._parser = self._modes[mode]
         input = self._argv[:index] + self._argv[index+n:]
-        self.parser.feed(input)
+        self._parser.feed(input)
         self.mode = mode
         return mode
 
@@ -118,12 +141,12 @@ class Parser():
         """Checks input list for errors.
         """
         self.define()
-        self.parser.check()
+        self._parser.check()
 
     def parse(self):
         """Parses input list.
         """
-        self.parser.parse()
+        self._parser.parse()
 
     def finalize(self):
         """Commits all actions required to get a usable parser.
@@ -135,18 +158,23 @@ class Parser():
     def get(self, s):
         """Returns option's argument.
         """
-        return self.parser.get(s)
+        return self._parser.get(s)
 
     def getoperands(self):
         """Returns operands passed to the program.
         """
-        return self.parser.getoperands()
+        return self._parser.getoperands()
+
+    def getopts(self):
+        """Returns list of options supported by this parser.
+        """
+        return self._parser.getopts()
 
     def type(self, s):
         """Returns information about type(s) given option takes as its arguments.
         """
         t = None
-        if self.parser: t = self.parser.type(s)
+        if self._parser: t = self._parser.type(s)
         else:
             for m in self._modes:
                 for o in self._modes[m]._options:

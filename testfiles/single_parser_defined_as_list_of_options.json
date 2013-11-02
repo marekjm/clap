@@ -1,0 +1,17 @@
+[
+    {
+        "short": "s",
+        "long": "string",
+        "arguments": ["str"]
+    },
+    {
+        "short": "i",
+        "long": "integer",
+        "arguments": ["int"]
+    },
+    {
+        "short": "f",
+        "long": "float",
+        "arguments": ["float"]
+    }
+]
