@@ -8,8 +8,7 @@ from clap import option
 from clap import base
 from clap import checker
 from clap import parser
-from clap import modes
 from clap import builder
 from clap import helper
 
-__version__ = '0.9.0-alpha.0'
+__version__ = '0.9.0-alpha.1'

@@ -1,75 +1,156 @@
 #!/usr/bin/env python3
 
-
-from clap import base, checker
-
-
-"""This module contains Parser() object.
+"""This module contains command line arguments parser which is the object needed to
+actually convert input given to the program by the user to a usable form.
 """
 
 
-class Parser(base.Base):
-    """Used for parsing options.
+from clap import base, shared, option, checker
+
+
+class Parser():
+    """Object implementing modes functionality.
     """
-    def __init__(self, argv=[]):
-        self.argv = []
-        self.options = []
-        self.parsed = {}
-        self.arguments = []
-        self.feed(argv)
+    def __init__(self, argv=[], default='', empty=True):
+        self._argv = argv
+        if empty: self._modes = {'': base.Base()}
+        else: self._modes = {'': base.Base()}
+        self._mode = ''
+        self.default = default
+        self.parser = None
+        self._operands = []
 
     def __contains__(self, option):
-        """Returns True if Parser() contains given option as parsed.
-        Remeber to parse() the input before you will use this feature.
+        """If you check whether Parser() contains an option or not, general one and every mode-parser
+        is checked.
         """
-        return option in self.parsed
+        return option in self.parser
+
+    def __str__(self):
+        return self.mode
 
     def feed(self, argv):
         """Feeds input arguments list to parser.
-        Feeding new data to Parser() resets `parsed` and
-        `arguments` variables.
         """
-        self.argv = argv
-        self.parsed = {}
-        self.arguments = []
+        self._argv = argv
+        self.parser = None
+        self.mode = ''
+
+    def _append(self, option, local=False):
+        """Appends option to sub-parsers.
+        """
+        if local:
+            self._modes['']._append(option)
+        else:
+            for name in self._modes: self._modes[name]._append(option)
+
+    def addOption(self, short='', long='', help='', arguments=[],
+                  requires=[], wants=[],
+                  required=False, not_with=[],
+                  conflicts=[], local=False):
+        """Adds an option to the list of options recognized by parser.
+        Available types are: int, float and str.
+
+        If you `addOption` it is added to the general parser and all mode-parsers unless
+        `local` is passed.
+        """
+        new = option.Option(short=short, long=long, help='', arguments=arguments,
+                            requires=requires, wants=wants,
+                            required=required, not_with=not_with,
+                            conflicts=conflicts)
+        self._append(new, local)
+        return new
+
+    def addMode(self, name, parser):
+        """Adds mode to Modes() or overwrites old definition.
+        """
+        self._modes[name] = parser
+
+    def has(self, mode):
+        """Returns True if Modes() has given mode.
+        """
+        return mode in self.modes
+
+    def _modeindex(self):
+        """Returns index of first non-option-like item in input list.
+        Returns -1 if no mode was found but all input was scanned.
+
+        Quits searching as soon as `--` breaker is found.
+        """
+        index, i = -1, 0
+        while i < len(self._argv):
+            item = self._argv[i]
+            if item == '--': break
+            if shared.lookslikeopt(item):
+                # if item is an option get list of all its arguments and
+                # increase the counter accordingly;
+                # needed for support for options with multiple arguments because
+                # otherwise _modeindex() would treat second argument as a mode
+                args = self.type(item)
+                if args is not None: n = len(self.type(item))
+                else: n = 0
+                i += n
+            if not shared.lookslikeopt(item):
+                if i == 0 or not self.type(self._argv[i-1]): index = i
+                if index > -1: break
+            i += 1
+        return index
+
+    def define(self):
+        """Defines mode to use and sets correct parser.
+        """
+        index = self._modeindex()
+        if index > -1:
+            mode = self._argv[index]
+            n = 1
+        else:
+            mode = self.default
+            index = 0
+            n = 0
+        if mode not in self._modes: raise errors.UnrecognizedModeError(mode)
+        self.parser = self._modes[mode]
+        input = self._argv[:index] + self._argv[index+n:]
+        self.parser.feed(input)
+        self.mode = mode
+        return mode
 
     def check(self):
-        """Checks if input list is valid for this instance of Parser().
-        Run before `parse()` to check for errors in input list.
+        """Checks input list for errors.
         """
-        checker.Checker(self).check()
+        self.define()
+        self.parser.check()
 
     def parse(self):
-        """Parses input:
-        * assigns option-arguments to the options requesting them,
-        * separets options from operands,
+        """Parses input list.
         """
-        parsed = {}
-        i = 0
-        input = self._getinput()
-        while i < len(input):
-            string = input[i]
-            if self.type(string):
-                arg = []
-                for atype in self.type(string):
-                    i += 1
-                    arg.append(atype(input[i]))
-            else:
-                arg = []
-            arg = tuple(arg)
-            parsed[string] = arg
-            if self.alias(string): parsed[self.alias(string)] = arg
-            i += 1
-        self.parsed = parsed
-        self.arguments = self._getarguments()
+        self.parser.parse()
 
-    def get(self, key):
-        """Returns None if given option does not request an argument.
-        Returns tuple if option requests more than one argument.
-        For programmers' convinience, returns object of given type if
-        option requests one argument.
+    def finalize(self):
+        """Commits all actions required to get a usable parser.
         """
-        value = self.parsed[key]
-        if len(value) == 0: value = None
-        elif len(value) == 1: value = value[0]
-        return value
+        self.define()
+        self.parse()
+        return self
+
+    def get(self, s):
+        """Returns option's argument.
+        """
+        return self.parser.get(s)
+
+    def getoperands(self):
+        """Returns operands passed to the program.
+        """
+        return self.parser.getoperands()
+
+    def type(self, s):
+        """Returns information about type(s) given option takes as its arguments.
+        """
+        t = None
+        if self.parser: t = self.parser.type(s)
+        else:
+            for m in self._modes:
+                for o in self._modes[m]._options:
+                    t = self._modes[m].type(s)
+                    if t is not None: break
+                if t is not None: break
+        return t

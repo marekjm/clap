@@ -399,7 +399,7 @@ class CheckerTests(unittest.TestCase):
 class ParserTests(unittest.TestCase):
     def testShortOptionsWithoutArguments(self):
         argv = ['-a', '-b', '-c', '--', 'd', 'e', 'f']
-        p = clap.modes.Parser(argv)
+        p = clap.parser.Parser(argv)
         p.addOption(short='a')
         p.addOption(short='b')
         p.addOption(short='c')
@@ -411,7 +411,7 @@ class ParserTests(unittest.TestCase):
 
     def testShortOptionsWithArguments(self):
         argv = ['-s', 'eggs', '-i', '42', '-f', '4.2', '--', 'foo']
-        p = clap.modes.Parser(argv)
+        p = clap.parser.Parser(argv)
         p.addOption(short='s', arguments=[str])
         p.addOption(short='i', arguments=[int])
         p.addOption(short='f', arguments=[float])
@@ -423,7 +423,7 @@ class ParserTests(unittest.TestCase):
 
     def testLongOptionsWithoutArguments(self):
         argv = ['--foo', '--bar', '--baz', '--', 'bax']
-        p = clap.modes.Parser(argv)
+        p = clap.parser.Parser(argv)
         p.addOption(long='foo')
         p.addOption(long='bar')
         p.addOption(long='baz')
@@ -435,7 +435,7 @@ class ParserTests(unittest.TestCase):
 
     def testLongOptionsWithArguments(self):
         argv = ['--str', 'eggs', '--int', '42', '--float', '4.2']
-        p = clap.modes.Parser(argv)
+        p = clap.parser.Parser(argv)
         p.addOption(long='str', arguments=[str])
         p.addOption(long='int', arguments=[int])
         p.addOption(long='float', arguments=[float])
@@ -446,14 +446,14 @@ class ParserTests(unittest.TestCase):
 
     def testOptionsWithMultipleArguments(self):
         argv = ['--foo', 'spam', '42', '3.14']
-        p = clap.modes.Parser(argv)
+        p = clap.parser.Parser(argv)
         p.addOption(short='f', long='foo', arguments=[str, int, float])
         p.finalize()
         self.assertEqual(('spam', 42, 3.14), p.get('-f'))
 
     def testStopingAtBreaker(self):
         argv = ['--foo', '-s', 'eggs', '--int', '42', '--', '-f', '4.2']
-        p = clap.modes.Parser(argv)
+        p = clap.parser.Parser(argv)
         p.addOption(long='foo')
         p.addOption(long='int', arguments=[int])
         p.addOption(short='s', arguments=[str])
@@ -467,8 +467,8 @@ class ParserTests(unittest.TestCase):
     def testAddingModesAfterOptions(self):
         ok = ['--option']
         bad = ['--option', 'bar']
-        bar = clap.modes.Parser()
-        modes = clap.modes.Parser()
+        bar = clap.parser.Parser()
+        modes = clap.parser.Parser()
         modes.addOption(short='o', long='option')
         modes.addMode(name='bar', parser=bar)
         modes.feed(ok)
@@ -478,8 +478,8 @@ class ParserTests(unittest.TestCase):
 
     def testAddingModesBeforeOptions(self):
         argv = ['--option', 'bar']
-        bar = clap.modes.Parser()
-        modes = clap.modes.Parser()
+        bar = clap.parser.Parser()
+        modes = clap.parser.Parser()
         modes.addMode(name='bar', parser=bar)
         modes.addOption(short='o', long='option')
         modes.feed(argv)
@@ -487,8 +487,8 @@ class ParserTests(unittest.TestCase):
 
     def testAddingOptionsAfterModesButWithLocalArgument(self):
         argv = ['--option', 'bar']
-        bar = clap.modes.Parser()
-        modes = clap.modes.Parser()
+        bar = clap.parser.Parser()
+        modes = clap.parser.Parser()
         modes.addMode(name='bar', parser=bar)
         modes.addOption(short='o', long='option', local=True)
         modes.feed(argv)

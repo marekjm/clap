@@ -20,8 +20,9 @@ From this version `clap.modes.Parser` is deprecated - single and nested parsers 
 now you can use `clap.parser.Parser` with modes (the API was copied from `clap.modes.Parser`).
 
 
-* __new__:  `clap.modes.Parser().finalize()` method which will define the parser and parse it via a single call,
+* __new__:  `clap.parser.Parser().finalize()` method which will define the parser and parse it via a single call,
 * __new__:  `clap.shared` module containing functions and variables shared between various CLAP modules,
+* __new__:  `clap.base.Base`, `clap.module.Parser` and `clap.parser.Parser` got new `getoperands()` method,
 
 * __upd__:  better help message generation,
 * __upd__:  moved option regular expression patterns from `clap.base` to `clap.shared`,

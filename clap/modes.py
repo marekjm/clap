@@ -26,12 +26,10 @@ import warnings
 
 from clap import base, errors, option, shared
 
-
 class Parser():
     """Object implementing modes functionality.
     """
     def __init__(self, argv=[], default='', empty=True):
-        warnings.warn('clap.modes.Parser is deprecated: use clap.parser.Parser', DeprecationWarning)
         self._argv = argv
         if empty: self._modes = {'': base.Base()}
         else: self._modes = {'': base.Base()}
@@ -143,6 +141,7 @@ class Parser():
     def parse(self):
         """Parses input list.
         """
+        warnings.warn('clap.modes.Parser will be remove in version 0.9.1: use clap.parser.Parser instead', DeprecationWarning)
         self.parser.parse()
 
     def finalize(self):
