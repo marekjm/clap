@@ -24,7 +24,7 @@ Otherwise, you'll get an `UnknownOptionError` when trying to pass global option.
 
 import warnings
 
-from clap import base, errors, option
+from clap import base, errors, option, shared
 
 
 class Parser():
@@ -105,14 +105,14 @@ class Parser():
         while i < len(self.argv):
             item = self.argv[i]
             if item == '--': break
-            if base.lookslikeopt(item):
+            if shared.lookslikeopt(item):
                 # if item is an option get list of all its arguments and
                 # increase the counter accordingly;
                 # needed for support for options with multiple arguments because
                 # otherwise _modeindex() would treat second argument as a mode
                 n = len(self.type(item))
                 i += n
-            if not base.lookslikeopt(item):
+            if not shared.lookslikeopt(item):
                 if i == 0 or not self.type(self.argv[i-1]): index = i
                 if index > -1: break
             i += 1

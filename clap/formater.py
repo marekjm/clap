@@ -13,7 +13,7 @@ recognition.
 import re
 
 
-from clap import base
+from clap import shared
 
 
 class Formater():
@@ -40,7 +40,7 @@ class Formater():
             if self.formated[i] == '--':
                 current = self.formated[i:]
                 i = len(self.formated)
-            elif re.match(base.connected_shorts_regexp, self.formated[i]):
+            elif re.match(shared.connected_shorts_regexp, self.formated[i]):
                 current = ['-{}'.format(n) for n in list(self.formated[i])[1:]]
             else:
                 current = [self.formated[i]]
@@ -59,7 +59,7 @@ class Formater():
             if self.formated[i] == '--':
                 current = self.formated[i:]
                 i = len(self.formated)
-            elif re.match(base.longopt_with_equal_sign_regexp, self.formated[i]):
+            elif re.match(shared.longopt_with_equal_sign_regexp, self.formated[i]):
                 current = self.formated[i].split('=', 1)
             else:
                 current = [self.formated[i]]

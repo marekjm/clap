@@ -8,29 +8,11 @@
 import re
 import warnings
 
-from clap import option, checker
+from clap import option, checker, shared
 
 
 #   special flag which will issue debug messages when True
 DEBUG = False
-
-
-longopt_base = '--[a-zA-Z]+[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*'
-
-shortopt_regexp = re.compile('^-[a-zA-Z0-9]$')
-longopt_regexp = re.compile('^' + longopt_base + '$')
-longopt_with_equal_sign_regexp = re.compile('^' + longopt_base + '=.*$')
-connected_shorts_regexp = re.compile('^-[a-zA-Z0-9][a-zA-Z0-9]+$')
-
-
-def lookslikeopt(s):
-    """Returns True if given string looks like option.
-    """
-    return bool(re.match(longopt_regexp, s) or
-                re.match(longopt_with_equal_sign_regexp, s) or
-                re.match(connected_shorts_regexp, s) or
-                re.match(shortopt_regexp, s)
-                )
 
 
 class Base():
@@ -127,12 +109,12 @@ class Base():
             #   if a breaker is encountered -> break
             if item == '--': break
             #   if non-option string is encountered and it's not an argument -> break
-            if i == 0 and not lookslikeopt(item): break
-            if i > 0 and not lookslikeopt(item) and not self.type(self.argv[i-1]): break
+            if i == 0 and not shared.lookslikeopt(item): break
+            if i > 0 and not shared.lookslikeopt(item) and not self.type(self.argv[i-1]): break
             #   if non-option string is encountered and it's an argument
             #   increase counter by the number of arguments the option requests and
             #   proceed futher
-            if i > 0 and not lookslikeopt(item) and self.type(self.argv[i-1]):
+            if i > 0 and not shared.lookslikeopt(item) and self.type(self.argv[i-1]):
                 i += len(self.type(self.argv[i-1]))-1
             index = i
             i += 1

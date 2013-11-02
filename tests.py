@@ -121,7 +121,7 @@ class BaseTests(unittest.TestCase):
                  ]
         for opt, result in tests:
             if DEBUG: print(opt, result)
-            self.assertEqual(clap.base.lookslikeopt(opt), result)
+            self.assertEqual(clap.shared.lookslikeopt(opt), result)
 
 
 class BuilderTests(unittest.TestCase):
