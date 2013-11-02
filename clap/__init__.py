@@ -12,4 +12,4 @@ from clap import modes
 from clap import builder
 from clap import helper
 
-__version__ = '0.8.5'
+__version__ = '0.9.0-alpha.0'
