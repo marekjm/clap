@@ -120,7 +120,7 @@ class Base():
         return input
 
     def _getarguments(self):
-        """Returns list of genral arguments passed to the program.
+        """Returns list of all arguments passed to the program.
         """
         n = len(self._getinput())
         if '--' in self._argv: n += 1
