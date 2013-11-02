@@ -33,9 +33,9 @@ class Parser():
     def __init__(self, argv=[], default='', empty=True):
         warnings.warn('clap.modes.Parser is deprecated: use clap.parser.Parser', DeprecationWarning)
         self._argv = argv
-        if empty: self.modes = {'': base.Base()}
-        else: self.modes = {'': base.Base()}
-        self.mode = ''
+        if empty: self._modes = {'': base.Base()}
+        else: self._modes = {'': base.Base()}
+        self._mode = ''
         self.default = default
         self.parser = None
 
@@ -67,9 +67,9 @@ class Parser():
         """Appends option to sub-parsers.
         """
         if local:
-            self.modes['']._append(option)
+            self._modes['']._append(option)
         else:
-            for name in self.modes: self.modes[name]._append(option)
+            for name in self._modes: self._modes[name]._append(option)
 
     def addOption(self, short='', long='', help='', arguments=[], requires=[], wants=[], required=False, not_with=[], conflicts=[], local=False):
         """Adds an option to the list of options recognized by parser.
@@ -88,7 +88,7 @@ class Parser():
     def addMode(self, name, parser):
         """Adds mode to Modes() or overwrites old definition.
         """
-        self.modes[name] = parser
+        self._modes[name] = parser
 
     def has(self, mode):
         """Returns True if Modes() has given mode.
@@ -131,8 +131,8 @@ class Parser():
             mode = self.default
             index = 0
             n = 0
-        if mode not in self.modes: raise errors.UnrecognizedModeError(mode)
-        self.parser = self.modes[mode]
+        if mode not in self._modes: raise errors.UnrecognizedModeError(mode)
+        self.parser = self._modes[mode]
         input = self._argv[:index] + self._argv[index+n:]
         self.parser.feed(input)
         self.mode = mode
@@ -167,9 +167,9 @@ class Parser():
         t = None
         if self.parser: t = self.parser.type(s)
         else:
-            for m in self.modes:
-                for o in self.modes[m]._options:
-                    t = self.modes[m].type(s)
+            for m in self._modes:
+                for o in self._modes[m]._options:
+                    t = self._modes[m].type(s)
                     if t is not None: break
                 if t is not None: break
         return t
