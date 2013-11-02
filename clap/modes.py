@@ -110,7 +110,9 @@ class Parser():
                 # increase the counter accordingly;
                 # needed for support for options with multiple arguments because
                 # otherwise _modeindex() would treat second argument as a mode
-                n = len(self.type(item))
+                args = self.type(item)
+                if args is not None: n = len(self.type(item))
+                else: n = 0
                 i += n
             if not shared.lookslikeopt(item):
                 if i == 0 or not self.type(self._argv[i-1]): index = i

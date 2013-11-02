@@ -469,7 +469,7 @@ class ModesTests(unittest.TestCase):
     def testAddingModesAfterOptions(self):
         ok = ['--option']
         bad = ['--option', 'bar']
-        bar = clap.base.Base()
+        bar = clap.modes.Parser()
         modes = clap.modes.Parser()
         modes.addOption(short='o', long='option')
         modes.addMode(name='bar', parser=bar)
@@ -480,7 +480,7 @@ class ModesTests(unittest.TestCase):
 
     def testAddingModesBeforeOptions(self):
         argv = ['--option', 'bar']
-        bar = clap.base.Base()
+        bar = clap.modes.Parser()
         modes = clap.modes.Parser()
         modes.addMode(name='bar', parser=bar)
         modes.addOption(short='o', long='option')
@@ -489,7 +489,7 @@ class ModesTests(unittest.TestCase):
 
     def testAddingOptionsAfterModesButWithLocalArgument(self):
         argv = ['--option', 'bar']
-        bar = clap.base.Base()
+        bar = clap.modes.Parser()
         modes = clap.modes.Parser()
         modes.addMode(name='bar', parser=bar)
         modes.addOption(short='o', long='option', local=True)
