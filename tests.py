@@ -464,8 +464,6 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(None, p.get('--foo'))
         self.assertEqual(['-f', '4.2'], p.arguments)
 
-
-class ModesTests(unittest.TestCase):
     def testAddingModesAfterOptions(self):
         ok = ['--option']
         bad = ['--option', 'bar']
