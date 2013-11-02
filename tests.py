@@ -407,7 +407,7 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(None, p.get('-a'))
         self.assertEqual(None, p.get('-b'))
         self.assertEqual(None, p.get('-c'))
-        self.assertEqual(['d', 'e', 'f'], p.arguments)
+        self.assertEqual(['d', 'e', 'f'], p.getoperands())
 
     def testShortOptionsWithArguments(self):
         argv = ['-s', 'eggs', '-i', '42', '-f', '4.2', '--', 'foo']
@@ -419,7 +419,7 @@ class ParserTests(unittest.TestCase):
         self.assertEqual('eggs', p.get('-s'))
         self.assertEqual(42, p.get('-i'))
         self.assertEqual(4.2, p.get('-f'))
-        self.assertEqual(['foo'], p.arguments)
+        self.assertEqual(['foo'], p.getoperands())
 
     def testLongOptionsWithoutArguments(self):
         argv = ['--foo', '--bar', '--baz', '--', 'bax']
@@ -431,7 +431,7 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(None, p.get('--foo'))
         self.assertEqual(None, p.get('--bar'))
         self.assertEqual(None, p.get('--baz'))
-        self.assertEqual(['bax'], p.arguments)
+        self.assertEqual(['bax'], p.getoperands())
 
     def testLongOptionsWithArguments(self):
         argv = ['--str', 'eggs', '--int', '42', '--float', '4.2']
@@ -462,7 +462,7 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(42, p.get('--int'))
         self.assertEqual('eggs', p.get('-s'))
         self.assertEqual(None, p.get('--foo'))
-        self.assertEqual(['-f', '4.2'], p.arguments)
+        self.assertEqual(['-f', '4.2'], p.getoperands())
 
     def testAddingModesAfterOptions(self):
         ok = ['--option']

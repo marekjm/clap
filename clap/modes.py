@@ -38,6 +38,7 @@ class Parser():
         self._mode = ''
         self.default = default
         self.parser = None
+        self._operands = []
 
     def __contains__(self, option):
         """If you check whether Parser() contains an option or not, general one and every mode-parser
@@ -47,14 +48,6 @@ class Parser():
 
     def __str__(self):
         return self.mode
-
-    @property
-    def parsed(self):
-        return self.parser.parsed
-
-    @property
-    def arguments(self):
-        return self.parser.arguments
 
     def feed(self, argv):
         """Feeds input arguments list to parser.
@@ -71,7 +64,10 @@ class Parser():
         else:
             for name in self._modes: self._modes[name]._append(option)
 
-    def addOption(self, short='', long='', help='', arguments=[], requires=[], wants=[], required=False, not_with=[], conflicts=[], local=False):
+    def addOption(self, short='', long='', help='', arguments=[],
+                  requires=[], wants=[],
+                  required=False, not_with=[],
+                  conflicts=[], local=False):
         """Adds an option to the list of options recognized by parser.
         Available types are: int, float and str.
 
@@ -160,6 +156,11 @@ class Parser():
         """Returns option's argument.
         """
         return self.parser.get(s)
+
+    def getoperands(self):
+        """Returns operands passed to the program.
+        """
+        return self.parser.getoperands()
 
     def type(self, s):
         """Returns information about type(s) given option takes as its arguments.

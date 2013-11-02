@@ -1,8 +1,9 @@
+#!/usr/bin/env python3
+
 """Generates usage information and
 help data from parsers.
 """
 
-import warnings
 
 class Helper():
     """Helper object holds logic used to build usage and

@@ -5,7 +5,6 @@
 """
 
 
-import re
 import warnings
 
 from clap import option, checker, shared
@@ -201,8 +200,8 @@ class Base():
             parsed[string] = arg
             if self.alias(string): parsed[self.alias(string)] = arg
             i += 1
-        self.parsed = parsed
-        self.arguments = self._getarguments()
+        self._parsed = parsed
+        self._operands = self._getarguments()
 
     def get(self, key):
         """Returns None if given option does not request an argument.
@@ -210,10 +209,15 @@ class Base():
         For programmers' convinience, returns object of given type if
         option requests one argument.
         """
-        value = self.parsed[key]
+        value = self._parsed[key]
         if len(value) == 0: value = None
         elif len(value) == 1: value = value[0]
         return value
+
+    def getoperands(self):
+        """Returns list of operands passed to the program.
+        """
+        return self._operands
 
     def check(self):
         """Checks if input list is valid for this instance of Parser().
