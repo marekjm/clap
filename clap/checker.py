@@ -14,9 +14,6 @@ class Checker():
     """
     def __init__(self, parser):
         self._parser = parser
-        self.argv = parser.argv
-        self.options = parser.options
-        self.parser = parser
 
     def _checkunrecognized(self):
         """Checks if input list contains any unrecognized options.

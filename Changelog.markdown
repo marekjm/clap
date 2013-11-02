@@ -14,15 +14,18 @@ It's mostly useful for developers who use the CLAP library.
 
 ----
 
-#### Version 0.9.0 (2013-09-):
+#### Version 0.9.0 (2013-11-):
 
 From this version `clap.modes.Parser` is deprecated - single and nested parsers were unified and
 now you can use `clap.parser.Parser` with modes (the API was copied from `clap.modes.Parser`).
 
 
-* __new__:  `parser.modes.Parser().finalize()` method which will define the parser and parse it via a single call,
+* __new__:  `clap.modes.Parser().finalize()` method which will define the parser and parse it via a single call,
+* __new__:  `clap.shared` module containing functions and variables shared between various CLAP modules,
 
 * __upd__:  better help message generation,
+* __upd__:  moved option regular expression patterns from `clap.base` to `clap.shared`,
+* __upd__:  moved `lookslikeopt()` function from `clap.base` to `clap.shared`,
 
 * __rem__:  `lines` parameter from `Helper().help()` method - now it returns only list of strings,
 
