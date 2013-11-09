@@ -11,4 +11,4 @@ from clap import parser
 from clap import builder
 from clap import helper
 
-__version__ = '0.9.0'
+__version__ = '0.9.1'

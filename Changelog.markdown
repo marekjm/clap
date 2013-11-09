@@ -14,6 +14,18 @@ It's mostly useful for developers who use the CLAP library.
 
 ----
 
+#### Version 0.9.1 (2013-11-09):
+
+Deprecated module `clap.modes` was removed.
+If you haven't changed your code when update 0.9.0 arrived you must do it now.
+Now, `clap.parser.Parser` supports both single and
+nested parsers.
+
+* __rem__:  `clap.modes` module was removed,
+
+
+----
+
 #### Version 0.9.0 (2013-11-):
 
 From this version `clap.modes.Parser` is deprecated - single and nested parsers were unified and
