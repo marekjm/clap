@@ -39,8 +39,6 @@ def isoption(data):
             if not correct_contents: break
     return correct_type and correct_contents
 
-
-
 def isnestedparser(data):
     """Checks if given data can be treated as a representation of modes parser.
     """
@@ -86,7 +84,6 @@ def buildparser(data, argv=[]):
     p = clap.parser.Parser(argv=argv)
     for option in data: p.addOption(**option)
     return p
-
 
 def buildmodesparser(data, argv=[]):
     """Builds modes parser from dict.
