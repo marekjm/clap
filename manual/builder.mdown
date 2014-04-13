@@ -13,7 +13,7 @@ available using JSON builder API.
 Only thing that needs to be set up in native Python are *type-handlers* that are not built-in
 Python data types.
 These *type-handlers* are the callback functions which are used for `arguments`
-parameter in `clap.parser.Parser.add()`. In JSON they are referred to as strings and need
+parameter in `clap.parser.Parser.add()`. In JSON they are stored as strings and need
 to be replaced by real functions. `str`, `int` and `float` are always available.
 
 
@@ -21,7 +21,7 @@ to be replaced by real functions. `str`, `int` and `float` are always available.
 
 #### Building single-mode parser
 
-In singe-mode parser all options are global.
+In single-mode parser all options are global.
 This can be written as this:
 
     {

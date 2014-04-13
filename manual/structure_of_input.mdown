@@ -15,7 +15,7 @@ you in form that is easy to work with.
 
 Whole input is contained in `argv` variable but is logically divided into
 two main sections: *input* and *arguments*.
-As of version 0.7.1 they are not really splitted during input analyze but there exist special method
+As of version 0.7.1 they are not really splitted during input analysis but there is a special method
 `_getinput()` which will extract only the *input* part of argv.
 
 General structure is shown below (`foo` is the name of example program):
@@ -27,7 +27,7 @@ General structure is shown below (`foo` is the name of example program):
 
 This part consists of options (switches) and their arguments. It's finished when CLAP encounters a *breaker*
 (special two-hyphen string (`--`) meaning: terminate input analyzing HERE because from now on 
-only arguments will follow) or a *non-option* and *non-option-argument* string.
+only arguments will follow), or a *non-option* and *non-option-argument* string.
 Only this part is checked for mistakes since arguments are too program-specific and CLAP leaves
 their validation to users.
 

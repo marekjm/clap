@@ -45,7 +45,7 @@ Note that you don't've to add type handlers for `str`, `int` and `float` types.
 #### 1. Option
 
 Options are represented in JSON as dictionaries and appended to their parsers using
-the handy feature of dictionary expansion (or something like this I cannot force myself
+the handy feature of dictionary expansion (or something like this, I cannot force myself
 to memorize the name) - `parser.add(**option)`.
 
 Example option (covering all possible fields):
@@ -137,13 +137,13 @@ Example:
 
 Nested modes are created by assigning another dict representing mode parser to a mode name.
 
-Not that `__global__` mode must be a simple list of option and cannot be a modes-parser.
+Note that `__global__` mode must be a simple list of options and cannot be a modes-parser.
 
 
 ----
 
 ### Reference implementations
 
-In main directory of CLAP library there are files containing example in their names.
+In main directory of CLAP library there are files containing *example* in their names.
 They are reference implementations of builders and example JSON interfaces which you can read and
 make yourself more knowledgeable about usage of CLAP.
