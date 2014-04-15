@@ -14,8 +14,6 @@ builder = clap.builder.Builder('./modes-parser-example.json', argv=list(f))
 builder.build()
 
 ui = builder.get()
-print('ui.argv:', ui.argv)
-print('ui: available modes:', ', '.join(list(ui.modes.keys())), '\n')
 
 print('checking...', end='\t')
 try:
