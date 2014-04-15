@@ -4,7 +4,7 @@
             "short": "t",
             "long": "times",
             "arguments": ["int"],
-            "needs": ["--integer", "--string", "--float"]
+            "wants": ["--integer", "--string", "--float"]
         }
     ],
     "stuff": {
