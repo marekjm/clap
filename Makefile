@@ -24,3 +24,7 @@ local-install: ./clap/*.py
 
 clean:
 	rm -rv ./clap/__pycache__
+
+
+redclap-test:
+	python3 ./tests/redclap/tests.py --catch --failfast --verbose 
