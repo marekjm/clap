@@ -74,7 +74,7 @@ class Option():
                       }
 
     def __getitem__(self, key):
-        return self.meta[key]
+        return self._meta[key]
 
     def __iter__(self):
         return iter(self.meta)
@@ -99,7 +99,7 @@ class Option():
                 break
         return result
 
-    def _alias(self, name):
+    def alias(self, name):
         """Returns other name of the option (if any).
         If option has only one name returns empty string.
 
