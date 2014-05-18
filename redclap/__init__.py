@@ -5,8 +5,10 @@
 
 from . import errors
 from . import shared
-from . import formatter
 from . import option
+from . import mode
+from . import formatter
+from . import checker
 
 
 __version__ = '0.9.2'
