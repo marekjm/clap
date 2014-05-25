@@ -12,6 +12,7 @@ import redclap as clap
 
 #   enable debugging output which is basically huge number of print() calls
 DEBUG = False
+TODOS = False
 
 
 class FormatterTests(unittest.TestCase):
@@ -274,28 +275,30 @@ class RedCheckerTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(long='bar', arguments=['str']))
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
+        if TODOS:
+            warnings.warn('TODO')
+            input()
         # possibly change method from ._checkrequired() to .check() because ._checkarguments() may catch the misued argument in some cases
         # however, here it would not complain because the option is a valid string...
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
 
-    @unittest.skip('due to library being redesigned')
     def testRequiredNotWithAnotherOption(self):
         argv = ['--bar']
-        parser = clap.base.Base(argv)
-        parser.add(long='foo', required=True, not_with=['--bar'])
-        parser.add(short='b', long='bar')
-        checker = clap.checker.Checker(parser)
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
         checker._checkrequired()
 
-    @unittest.skip('due to library being redesigned')
     def testRequiredNotWithAnotherOptionNotFoundBecauseOfBreaker(self):
         argv = ['--baz', '--', '-b']
-        parser = clap.base.Base(argv)
-        parser.add(long='foo', required=True, not_with=['--bar'])
-        parser.add(short='b', long='bar')
-        parser.add(long='baz')
-        checker = clap.checker.Checker(parser)
-        if DEBUG: print(parser._getinput())
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
 
     @unittest.skip('due to library being redesigned')
@@ -306,7 +309,13 @@ class RedCheckerTests(unittest.TestCase):
         parser.add(long='bar')
         parser.add(long='baz')
         checker = clap.checker.Checker(parser)
-        if DEBUG: print(parser._getinput())
+        # NEW
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
         checker._checkrequires()
 
     @unittest.skip('due to library being redesigned')
@@ -318,6 +327,13 @@ class RedCheckerTests(unittest.TestCase):
         parser.add(long='baz')
         checker = clap.checker.Checker(parser)
         if DEBUG: print(parser._getinput())
+        # NEW
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequires)
 
     @unittest.skip('due to library being redesigned')
@@ -329,6 +345,13 @@ class RedCheckerTests(unittest.TestCase):
         parser.add(long='baz')
         checker = clap.checker.Checker(parser)
         if DEBUG: print(parser._getinput())
+        # NEW
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequires)
 
     @unittest.skip('due to library being redesigned')
@@ -344,6 +367,13 @@ class RedCheckerTests(unittest.TestCase):
             parser.feed(argv)
             checker = clap.checker.Checker(parser)
             if DEBUG: print(parser._getinput())
+            # NEW
+            mode = clap.mode.RedMode()
+            mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+            mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+            mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+            parser = clap.parser.Parser(mode).feed(argv)
+            checker = clap.checker.RedChecker(parser)
             checker._checkwants()
 
     @unittest.skip('due to library being redesigned')
@@ -356,6 +386,13 @@ class RedCheckerTests(unittest.TestCase):
         parser.feed(argv)
         checker = clap.checker.Checker(parser)
         if DEBUG: print(parser._getinput())
+        # NEW
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.WantedOptionNotFoundError, checker._checkwants)
 
     @unittest.skip('due to library being redesigned')
@@ -368,6 +405,13 @@ class RedCheckerTests(unittest.TestCase):
         parser.feed(argv)
         checker = clap.checker.Checker(parser)
         if DEBUG: print(parser._getinput())
+        # NEW
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.WantedOptionNotFoundError, checker._checkwants)
 
     @unittest.skip('due to library being redesigned')
@@ -378,6 +422,13 @@ class RedCheckerTests(unittest.TestCase):
         parser.add(long='bar')
         checker = clap.checker.Checker(parser)
         if DEBUG: print(parser._getinput())
+        # NEW
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.ConflictingOptionsError, checker._checkconflicts)
 
     @unittest.skip('due to library being redesigned')
@@ -389,6 +440,13 @@ class RedCheckerTests(unittest.TestCase):
         parser.feed(argv)
         checker = clap.checker.Checker(parser)
         if DEBUG: print(parser._getinput())
+        # NEW
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
         checker._checkconflicts()
 
 

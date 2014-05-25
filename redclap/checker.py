@@ -59,7 +59,7 @@ class RedChecker():
             check = option['required']
             for n in option['not_with']:
                 if not check: break
-                check = not self._parser._ininput(string=n)
+                check = not self._parser._strininput(string=n)
             if not check: continue
             if not self._parser._ininput(option=option): raise errors.RequiredOptionNotFoundError(option)
 
