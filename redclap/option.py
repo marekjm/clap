@@ -127,7 +127,7 @@ class Option():
         """
         return s == self['short'] or s == self['long']
 
-    def type(self):
+    def params(self):
         """Returns list of types of arguments for this option.
         Empty list indocates that this option takes no argument.
         """
