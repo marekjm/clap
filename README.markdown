@@ -23,7 +23,7 @@ create rich command line interfaces for Python 3 programs.
 *   support for options *required by* other options (e.g. `--key` requires `--value`),
 *   support for options *wanted by* other options (e.g. `--which` wants `--this` or `--that` or both),
 *   good set of exception with detailed error messages,
-*   ability to build interface in JSON and load it to your program,
+*   ability to build interface in JSON and load it in your program,
 
 
 ----
@@ -31,17 +31,6 @@ create rich command line interfaces for Python 3 programs.
 ## Manual
 
 There is a manual which you may be interested in located in `manual/` directory.
-
-
-----
-
-## Reference implementations
-
-There are reference/example implementations of interface using CLAP which you can check.
-Look for the files with `example` in their names in top-level directory.
-
-For more advanced example (with an example of error handling) check
-[`diacli`](https://github.com/marekjm/diacli) project.
 
 
 ----

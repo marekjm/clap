@@ -63,7 +63,7 @@ Options have:
 - list of other options the current one *requires* to be passed with it (all must be present),
 - list of other options the current one *wants* to be passed with it (at least one must be present),
 - list of other options the current one *conflicts with* (no one of them must be present),
-- list of types of arguments for this option (may be empty), it should be a list of two-tuples: `(type, descriptive_name_for_help)`,
+- list of types of parameters for this option (may be empty), it should be a list of two-tuples: `(type, descriptive_name_for_help)`,
 - boolean flag telling whether this option is required to be passed or not,
 - list of options the current one is not required to be passed (only one of them may be present),
 - boolean flag specifying whether this option is singular or plural (plural option means that each ocurence has semantic meaning),
@@ -102,7 +102,7 @@ This is specified with `__operands__` directive in mode's JSON represnetation in
 
 #### Operand types
 
-> NOTICE: this may be removed from the design
+> NOTICE: this may be removed from design
 
 On the command line, all operands are strings.
 CLAP lets programmers define types into which these operands should be converted, same as for options.
