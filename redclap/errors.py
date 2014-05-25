@@ -67,6 +67,7 @@ class BuilderError(Exception):
 class UIDesignError(Exception):
     """Raised by checker when it finds out some error in UI design.
     For example:
-    *   option requires another option which is unrecognized (I did it once),
+    * option requires another option which is unrecognized (I did it once),
+    * option uses type handler that is not registered in parser,
     """
     pass
