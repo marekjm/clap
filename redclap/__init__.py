@@ -9,6 +9,7 @@ from . import option
 from . import mode
 from . import formatter
 from . import checker
+from . import parser
 
 
 __version__ = '0.9.2'

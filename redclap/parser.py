@@ -64,6 +64,21 @@ class Parser:
             input = self._args[:index+1]
         return input
 
+    def _ininput(self, option):
+        """Check if given option is present in input.
+        """
+        is_in = False
+        i = 0
+        input = self._getinput()
+        while i < len(input):
+            s = input[i]
+            if option.match(s):
+                is_in = True
+                break
+            if shared.lookslikeopt(s) and self._mode.accepts(s): i += len(self._mode.getopt(s).params())
+            i += 1
+        return is_in
+
     def parse(self):
         """Parses given input.
         """
