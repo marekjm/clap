@@ -223,49 +223,59 @@ class RedCheckerTests(unittest.TestCase):
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.MissingArgumentError, checker._checkarguments)
 
-    @unittest.skip('due to library being redesigned')
     def testInvalidArgumentType(self):
         argv = ['--bar', '--foo', 'baz']
-        parser = clap.base.Base(argv)
-        parser.add(long='foo', arguments=[int])
-        parser.add(long='bar')
-        checker = clap.checker.Checker(parser)
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', arguments=['int']))
+        mode.addLocalOption(clap.option.Option(long='bar'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.InvalidArgumentTypeError, checker._checkarguments)
 
-    @unittest.skip('due to library being redesigned')
     def testInvalidArgumentTypeWhenMultipleArgumentsAreRequested(self):
         argv = ['--point', '0', 'y']
-        parser = clap.base.Base(argv)
-        parser.add(long='point', arguments=[int, int])
-        checker = clap.checker.Checker(parser)
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='point', arguments=['int', 'int']))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.InvalidArgumentTypeError, checker._checkarguments)
 
-    @unittest.skip('due to library being redesigned')
     def testAnotherOptionGivenAsArgument(self):
         argv = ['--foo', '--bar']
-        parser = clap.base.Base(argv)
-        parser.add(long='foo', arguments=[int])
-        parser.add(long='bar')
-        checker = clap.checker.Checker(parser)
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', arguments=['int']))
+        mode.addLocalOption(clap.option.Option(long='bar'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.MissingArgumentError, checker._checkarguments)
 
-    @unittest.skip('due to library being redesigned')
     def testRequiredOptionNotFound(self):
         argv = ['--bar']
-        parser = clap.base.Base(argv)
-        parser.add(long='foo', required=True)
-        parser.add(long='bar')
-        checker = clap.checker.Checker(parser)
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', required=True))
+        mode.addLocalOption(clap.option.Option(long='bar'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
 
-    @unittest.skip('due to library being redesigned')
     def testRequiredOptionNotFoundBecauseOfBreaker(self):
         argv = ['--bar', '--', '--foo']
-        parser = clap.base.Base(argv)
-        parser.add(long='foo', required=True)
-        parser.add(long='bar')
-        checker = clap.checker.Checker(parser)
-        if DEBUG: print(parser._getinput())
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', required=True))
+        mode.addLocalOption(clap.option.Option(long='bar'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
+        self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
+
+    def testRequiredOptionNotFoundBecauseMisusedAsAnArgumentToAnotherOption(self):
+        argv = ['--bar', '--foo']
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(long='foo', required=True))
+        mode.addLocalOption(clap.option.Option(long='bar', arguments=['str']))
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
+        # possibly change method from ._checkrequired() to .check() because ._checkarguments() may catch the misued argument in some cases
+        # however, here it would not complain because the option is a valid string...
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
 
     @unittest.skip('due to library being redesigned')
