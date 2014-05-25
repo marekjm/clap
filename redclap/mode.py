@@ -11,49 +11,6 @@ class RedMode:
     def __init__(self):
         self._options = {'local': [], 'global': []}
         self._modes = {}
-        self._operands = []
-        self._args = []
-
-    def feedargs(self, args):
-        """Pass arguments to mode.
-        """
-        self._args = args
-
-    def getargs(self):
-        """Return list of arguments.
-        """
-        return self._args
-
-    def _getinput(self):
-        """Returns list of options and arguments until '--' string or
-        first non-option and non-option-argument string.
-        Simple description: returns input without operands.
-        """
-        index, i = -1, 0
-        input = []
-        while i < len(self._args):
-            item = self._args[i]
-            #   if a breaker is encountered -> break
-            if item == '--': break
-            #   if non-option string is encountered and it's not an argument -> break
-            if i == 0 and not shared.lookslikeopt(item): break
-            if i > 0 and not shared.lookslikeopt(item) and not self.type(self._args[i-1]): break
-            #   if non-option string is encountered and it's an argument
-            #   increase counter by the number of arguments the option requests and
-            #   proceed futher
-            if i > 0 and not shared.lookslikeopt(item) and self.type(self._args[i-1]):
-                i += len(self.type(self._args[i-1]))-1
-            index = i
-            i += 1
-        if index >= 0:
-            #   if index is at least equal to zero this means that some input was found
-            input = self._args[:index+1]
-        return input
-
-    def operands(self):
-        """Returns copy of list of operands.
-        """
-        return self._operands[:]
 
     def addMode(self, name, mode):
         """Adds child mode.
@@ -88,14 +45,15 @@ class RedMode:
         self._options['global'].append(o)
         return self
 
-    def propagate(self):
-        """Propagate global options to child modes.
+    def alias(self, o):
+        """Returns alias (if found) for given option (string).
         """
-        for mode in self._modes:
-            for opt in self._options['global']:
-                self._modes[mode].addGlobalOption(opt)
-            self._modes[mode].propagate()
-        return self
+        alias = ''
+        for i in self.options():
+            if i.match(o):
+                alias = i.alias(o)
+                break
+        return alias
 
     def getopt(self, name):
         """Returns option with given name.
@@ -118,6 +76,11 @@ class RedMode:
                 break
         return accepts
 
+    def params(self, option):
+        """Returns list of arguments (types) given option takes.
+        """
+        return self.getopt(option).params()
+
     def options(self, group=''):
         """Group may be 'local', 'global' or empty string.
         Empty string means 'local and global'.
@@ -127,3 +90,12 @@ class RedMode:
         elif group == 'global': opts = self._options[group]
         else: raise TypeError('invalid option group: "{0}"'.format(group))
         return opts
+
+    def propagate(self):
+        """Propagate global options and
+        type handlers to child modes.
+        """
+        for mode in self._modes:
+            for opt in self._options['global']: self._modes[mode].addGlobalOption(opt)
+            self._modes[mode].propagate()
+        return self
