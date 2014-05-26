@@ -10,6 +10,7 @@ class RedMode:
     """
     def __init__(self):
         self._options = {'local': [], 'global': []}
+        self._operands = {'range': {'least': None, 'most': None}, 'types': []}
         self._modes = {}
 
     def addMode(self, name, mode):
@@ -99,3 +100,27 @@ class RedMode:
             for opt in self._options['global']: self._modes[mode].addGlobalOption(opt)
             self._modes[mode].propagate()
         return self
+
+    def _setoperandsrange(self, least, most):
+        """Sets range of operands.
+        Both arguments can be integers or None.
+        None has different meaning in 
+        """
+        self._operands['range']['least'] = least
+        self._operands['range']['most'] = most
+
+    def setOperandsRange(self, no):
+        """Sets range of operands.
+        """
+        least, most = None, None
+        if len(no) == 0:
+            pass
+        elif len(no) == 1 and no[0] >= 0:
+            most = no[0]
+        elif len(no) == 1 and no[0] < 0:
+            least = -no[0]
+        elif len(no) == 2 and no[0] >= 0 and no[1] >= 0:
+            least, most = no[0], no[1]
+        else:
+            raise errors.OperandRangeError('provided sequence is invalid for operands range: {0}'.format(no))
+        self._setoperandsrange(least, most)
