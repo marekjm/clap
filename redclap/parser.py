@@ -5,7 +5,8 @@ from . import shared
 
 
 class Parser:
-    """
+    """Object that, after being fed with command line arguments and mode,
+    parses the arguments according to the mode.
     """
     def __init__(self, mode, argv=[]):
         self._args = argv
@@ -80,7 +81,7 @@ class Parser:
         return is_in
 
     def _strininput(self, string):
-        """Check if given option is present in input.
+        """Check if given string is present in input.
         """
         is_in = False
         i = 0
