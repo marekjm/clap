@@ -91,13 +91,6 @@ class ModeTests(unittest.TestCase):
         self.assertEqual('-a', mode.alias('--all'))
         self.assertEqual('--all', mode.alias('-a'))
 
-    def testAddingModes(self):
-        mode = clap.mode.RedMode()
-        mode.addMode('foo', clap.mode.RedMode())
-        mode.addMode('bar', clap.mode.RedMode())
-        self.assertTrue(mode.hasmode('foo'))
-        self.assertTrue(mode.hasmode('bar'))
-
     def testAddingGlobalOptions(self):
         mode = clap.mode.RedMode()
         mode.addMode('foo', clap.mode.RedMode())
@@ -106,6 +99,119 @@ class ModeTests(unittest.TestCase):
         self.assertTrue(mode.accepts('--verbose'))
         self.assertTrue(mode.getmode('foo').accepts('--verbose'))
         self.assertTrue(mode.getmode('bar').accepts('--verbose'))
+
+    def testAddingModes(self):
+        mode = clap.mode.RedMode()
+        mode.addMode('foo', clap.mode.RedMode())
+        mode.addMode('bar', clap.mode.RedMode())
+        self.assertTrue(mode.hasmode('foo'))
+        self.assertTrue(mode.hasmode('bar'))
+
+    def testRemovingLocalOption(self):
+        """Be careful when manually building interfaces and
+        removing options.
+        This may lead to UIDesignError-s being raised!
+        """
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
+        self.assertTrue(mode.accepts('--foo'))
+        mode.removeLocalOption(name='--foo')
+        self.assertFalse(mode.accepts('--foo'))
+
+    def testRemovingGlobalOption(self):
+        """Be careful when manually building interfaces and
+        removing options.
+        This may lead to UIDesignError-s being raised!
+        """
+        mode = clap.mode.RedMode()
+        mode.addGlobalOption(clap.option.Option(short='f', long='foo'))
+        self.assertTrue(mode.accepts('--foo'))
+        mode.removeGlobalOption(name='--foo')
+        self.assertFalse(mode.accepts('--foo'))
+
+    @unittest.skip('due to library being redesigned - taken from old BaseTests')
+    def testGettingEmptyInput(self):
+        argvs = [   ['--', '--foo', '--bar', 'baz', 'bax'],
+                    ['bax', '--foo', '--bar', 'baz'],
+                    ['bax', 'foo', 'bar', 'baz'],
+                    ]
+        base = clap.base.Base()
+        base.add(long='foo')
+        base.add(long='bar', arguments=[str])
+        for argv in argvs:
+            base.feed(argv)
+            self.assertEqual([], base._getinput())
+
+    @unittest.skip('due to library being redesigned - taken from old BaseTests')
+    def testGettingInput(self):
+        argv = ['--foo', '--bar', 'baz', 'bax']
+        base = clap.base.Base(argv)
+        base.add(long='foo')
+        base.add(long='bar', arguments=[str])
+        self.assertEqual(['--foo', '--bar', 'baz'], base._getinput())
+
+    @unittest.skip('due to library being redesigned - taken from old BaseTests')
+    def testGettingInputWhenOptionsRequestMultipleArguments(self):
+        argv = ['--foo', '--point', '0', '0', '--bar', 'baz']
+        base = clap.base.Base(argv)
+        base.add(long='foo')
+        base.add(long='bar')
+        base.add(long='point', arguments=[int, int])
+        self.assertEqual(['--foo', '--point', '0', '0', '--bar'], base._getinput())
+
+    @unittest.skip('due to library being redesigned - taken from old BaseTests')
+    def testGettingInputWithBreakerPresent(self):
+        argv = ['--foo', '--', '--bar', 'baz', 'bax']
+        base = clap.base.Base(argv)
+        base.add(long='foo')
+        base.add(long='bar', arguments=[str])
+        self.assertEqual(['--foo'], base._getinput())
+
+    @unittest.skip('due to library being redesigned - taken from old BaseTests')
+    def testCheckingIfOptionIsInInputUsingString(self):
+        argv = ['--foo', '--bar', 'baz']
+        base = clap.base.Base(argv)
+        base.add(short='f', long='foo')
+        base.add(short='b', long='bar', arguments=[str])
+        self.assertEqual(True, base._ininput(string='--foo'))
+        self.assertEqual(True, base._ininput(string='-b'))
+
+    @unittest.skip('due to library being redesigned - taken from old BaseTests')
+    def testCheckingIfOptionIsInInputUsingOptionObject(self):
+        argv = ['-f', '--bar', 'baz']
+        base = clap.base.Base(argv)
+        foo = clap.option.Option(short='f', long='foo')
+        bar = clap.option.Option(short='b', long='bar', arguments=[str])
+        base._append(foo)
+        base._append(bar)
+        self.assertEqual(True, base._ininput(option=foo))
+        self.assertEqual(True, base._ininput(option=bar))
+
+    @unittest.skip('due to library being redesigned - taken from old BaseTests')
+    def testCheckingIfOptionIsInInputWithBreaker(self):
+        argv = ['--foo', '--', '--bar', 'baz']
+        base = clap.base.Base(argv)
+        base.add(long='foo')
+        base.add(long='bar', arguments=[str])
+        self.assertEqual(True, base._ininput(string='--foo'))
+        self.assertEqual(False, base._ininput(string='--bar'))
+
+    @unittest.skip('due to library being redesigned - taken from old BaseTests')
+    def testOptionRecognition(self):
+        tests = [('-a', True),
+                 ('--foo', True),
+                 ('--foo=bar', True),
+                 ('-abc', True),
+                 ('a', False),
+                 ('foo', False),
+                 ('--a', False),
+                 ('-a=foo', False),
+                 ('--', False),
+                 ('-', False),
+                 ]
+        for opt, result in tests:
+            if DEBUG: print(opt, result)
+            self.assertEqual(clap.shared.lookslikeopt(opt), result)
 
 
 class RedParserOptionsTests(unittest.TestCase):
@@ -582,121 +688,6 @@ class RedCheckerOperandCheckingTests(unittest.TestCase):
                 if DEBUG: print('fail checking range {0} with input: {1}'.format(r, parser._getoperands()))
                 checker = clap.checker.RedChecker(parser)
                 self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
-
-
-@unittest.skip('due to library being redesigned')
-class BaseTests(unittest.TestCase):
-    def testAddingNewOption(self):
-        base = clap.base.Base([])
-        base.add(short='f', long='foo', arguments=[str],
-                 required=True, not_with=['-s'],
-                 requires=['--bar'], wants=['--baz', '--bax'],
-                 conflicts=['--bay'])
-        option0 = clap.option.Option(short='f', long='foo',
-                                     arguments=[str], required=True, not_with=['-s'],
-                                     requires=['--bar'], wants=['--baz', '--bax'],
-                                     conflicts=['--bay'])
-        option1 = clap.option.Option(short='b', long='bar',
-                                     arguments=[int],
-                                     wants=['--baz', '--bax'])
-        self.assertIn(option0, base._options)
-        self.assertNotIn(option1, base._options)
-
-    def testRemovingOption(self):
-        base = clap.base.Base([])
-        base.add(short='f', long='foo', arguments=[str],
-                 required=True, not_with=['-s'],
-                 requires=['--bar'], wants=['--baz', '--bax'],
-                 conflicts=['--bay'])
-        option0 = clap.option.Option(short='f', long='foo',
-                                     arguments=[str], required=True, not_with=['-s'],
-                                     requires=['--bar'], wants=['--baz', '--bax'],
-                                     conflicts=['--bay'])
-        option1 = clap.option.Option(short='b', long='bar',
-                                     arguments=[int],
-                                     wants=['--baz', '--bax'])
-        base.add(short='b', long='bar', arguments=[int], wants=['--baz', '--bax'])
-        self.assertIn(option0, base._options)
-        self.assertIn(option1, base._options)
-        base.remove(short='b')
-        self.assertIn(option0, base._options)
-        self.assertNotIn(option1, base._options)
-
-    def testGettingEmptyInput(self):
-        argvs = [   ['--', '--foo', '--bar', 'baz', 'bax'],
-                    ['bax', '--foo', '--bar', 'baz'],
-                    ['bax', 'foo', 'bar', 'baz'],
-                    ]
-        base = clap.base.Base()
-        base.add(long='foo')
-        base.add(long='bar', arguments=[str])
-        for argv in argvs:
-            base.feed(argv)
-            self.assertEqual([], base._getinput())
-
-    def testGettingInput(self):
-        argv = ['--foo', '--bar', 'baz', 'bax']
-        base = clap.base.Base(argv)
-        base.add(long='foo')
-        base.add(long='bar', arguments=[str])
-        self.assertEqual(['--foo', '--bar', 'baz'], base._getinput())
-
-    def testGettingInputWhenOptionsRequestMultipleArguments(self):
-        argv = ['--foo', '--point', '0', '0', '--bar', 'baz']
-        base = clap.base.Base(argv)
-        base.add(long='foo')
-        base.add(long='bar')
-        base.add(long='point', arguments=[int, int])
-        self.assertEqual(['--foo', '--point', '0', '0', '--bar'], base._getinput())
-
-    def testGettingInputWithBreakerPresent(self):
-        argv = ['--foo', '--', '--bar', 'baz', 'bax']
-        base = clap.base.Base(argv)
-        base.add(long='foo')
-        base.add(long='bar', arguments=[str])
-        self.assertEqual(['--foo'], base._getinput())
-
-    def testCheckingIfOptionIsInInputUsingString(self):
-        argv = ['--foo', '--bar', 'baz']
-        base = clap.base.Base(argv)
-        base.add(short='f', long='foo')
-        base.add(short='b', long='bar', arguments=[str])
-        self.assertEqual(True, base._ininput(string='--foo'))
-        self.assertEqual(True, base._ininput(string='-b'))
-
-    def testCheckingIfOptionIsInInputUsingOptionObject(self):
-        argv = ['-f', '--bar', 'baz']
-        base = clap.base.Base(argv)
-        foo = clap.option.Option(short='f', long='foo')
-        bar = clap.option.Option(short='b', long='bar', arguments=[str])
-        base._append(foo)
-        base._append(bar)
-        self.assertEqual(True, base._ininput(option=foo))
-        self.assertEqual(True, base._ininput(option=bar))
-
-    def testCheckingIfOptionIsInInputWithBreaker(self):
-        argv = ['--foo', '--', '--bar', 'baz']
-        base = clap.base.Base(argv)
-        base.add(long='foo')
-        base.add(long='bar', arguments=[str])
-        self.assertEqual(True, base._ininput(string='--foo'))
-        self.assertEqual(False, base._ininput(string='--bar'))
-
-    def testOptionRecognition(self):
-        tests = [('-a', True),
-                 ('--foo', True),
-                 ('--foo=bar', True),
-                 ('-abc', True),
-                 ('a', False),
-                 ('foo', False),
-                 ('--a', False),
-                 ('-a=foo', False),
-                 ('--', False),
-                 ('-', False),
-                 ]
-        for opt, result in tests:
-            if DEBUG: print(opt, result)
-            self.assertEqual(clap.shared.lookslikeopt(opt), result)
 
 
 @unittest.skip('due to library being redesigned')

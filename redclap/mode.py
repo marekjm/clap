@@ -47,6 +47,22 @@ class RedMode:
         self._options['global'].append(o)
         return self
 
+    def removeLocalOption(self, name):
+        """Remove local option matching the name given.
+        """
+        for i in self._options['local']:
+            if i.match(name):
+                self._options['local'].remove(i)
+                break
+
+    def removeGlobalOption(self, name):
+        """Remove global option matching the name given.
+        """
+        for i in self._options['global']:
+            if i.match(name):
+                self._options['global'].remove(i)
+                break
+
     def alias(self, o):
         """Returns alias (if found) for given option (string).
         """
