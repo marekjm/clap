@@ -82,11 +82,6 @@ If a mode has a defined list of types for its operands they are required.
 If a mode has an empty list of operands it accepts whatever operands are given to it (and may freely discard them).
 If a mode has boolean false in the place of list of operands it accepts no operands.
 
-Operand converters MUST BE functions taking single string as their parameter and:
-
-- returning desired type upon successful conversion,
-- raising `ValueError` upon unsuccessful conversion,
-
 
 ----
 
@@ -180,7 +175,7 @@ If list is empty, CLAP will accept any arguments.
 
 **`[<int>]`**
 
-If list contains one integer and it is positive, CLAP will accept *at most* `<int>` operands.
+If list contains one integer and it is not negative, CLAP will accept *at most* `<int>` operands.
 Useful trick is to set *no* rule to `[0]` which will cause CLAP to accept no operands.
 
 **`[-<int>]**
@@ -189,13 +184,25 @@ If list contains one integer and it is negative, CLAP will accept *at least* `<i
 
 **`[<int>, <int>]`**
 
-If list contains two integers and both are positive, CLAP will accept any number of operands between these two integers (inclusive).
+If list contains two integers and both are not negative, CLAP will accept any number of operands between these two integers (inclusive).
 This means that `[0, 2]` sequence will cause CLAP to accept 0, 1 or 2 operands.
 
-**`[-<int>, -<int>]`**
+**`[(<int>){3,}]` and other sequences**
 
-If list contains two integers and both are negative, the sequence is invalid.
+Sequences containing:
 
-**`[<int>, <int>, <int>...]`**
+- two integers that are both not positive,
+- three or more integers,
 
-Lists containing three or more integers are invalid.
+are invalid.
+
+
+----
+
+### Types
+
+RedCLAP supports custom types to be used for operands and options.
+Type converters MUST BE functions taking single string as their parameter and:
+
+- returning desired type upon successful conversion,
+- raising `ValueError` upon unsuccessful conversion,
