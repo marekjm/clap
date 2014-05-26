@@ -65,6 +65,14 @@ class Parser:
             input = self._args[:index+1]
         return input
 
+    def _getoperands(self):
+        """Returns list of operands passed.
+        """
+        n = len(self._getinput())
+        opers = self._args[n:]
+        if opers: (opers.pop(0) if opers[0] == '--' else None)
+        return opers
+
     def _ininput(self, option):
         """Check if given option is present in input.
         """

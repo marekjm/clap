@@ -112,6 +112,7 @@ class RedMode:
 
     def setOperandsRange(self, no=()):
         """Sets range of operands.
+        Valid `no` is a sequence - tuple or list - of zero, one, or two integers.
         """
         least, most = None, None
         if len(no) == 0:
