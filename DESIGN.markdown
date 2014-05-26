@@ -187,11 +187,11 @@ If list contains one integer and it is negative, CLAP will accept *at least* `<i
 If list contains two integers and both are not negative, CLAP will accept any number of operands between these two integers (inclusive).
 This means that `[0, 2]` sequence will cause CLAP to accept 0, 1 or 2 operands.
 
-**`[(<int>){3,}]` and other sequences**
+**`[-<int>, -<int>]` and other sequences**
 
 Sequences containing:
 
-- two integers that are both not positive,
+- two integers that are not both positive,
 - three or more integers,
 
 are invalid.
