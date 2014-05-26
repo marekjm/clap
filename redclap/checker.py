@@ -82,10 +82,10 @@ class RedChecker():
         for i in self._parser._mode.options():
             alias_present = self._parser._whichaliasin(i)
             if not self._parser._ininput(i) or not i['wants']: continue
-            if not self._parser._mode.accepts(str(i)):
-                raise errors.UIDesignError('\'{0}\' wants unrecognized option \'{1}\''.format(alias_present, n))
             fail = True
             for n in i['wants']:
+                if not self._parser._mode.accepts(str(n)):
+                    raise errors.UIDesignError('\'{0}\' wants unrecognized option \'{1}\''.format(alias_present, n))
                 if self._parser._ininput(option=self._parser._mode.getopt(n)):
                     fail = False
                     break
@@ -95,13 +95,15 @@ class RedChecker():
     def _checkconflicts(self):
         """Check for conflicting options.
         """
-        for i in self._parser._options:
-            if i['conflicts'] and self._parser._ininput(i):
-                conflicted = self._parser._variantin(i)
-                for c in i['conflicts']:
-                    conflicting = self._parser._ininput(string=c)
-                    if conflicting:
-                        raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, self._parser._variantin(string=c)))
+        for i in self._parser._mode.options():
+            conflicted = self._parser._whichaliasin(i)
+            if not self._parser._ininput(i) or not i['conflicts']: continue
+            for c in i['conflicts']:
+                if not self._parser._mode.accepts(str(c)):
+                    raise errors.UIDesignError('\'{0}\' conflicts with unrecognized option \'{1}\''.format(conflicted, c))
+                conflicting = self._parser._whichaliasin(self._parser._mode.getopt(c))
+                if conflicting:
+                    raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, conflicting))
 
     def check(self):
         """Performs a check.

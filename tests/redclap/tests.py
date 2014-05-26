@@ -193,7 +193,7 @@ class RedParserTests(unittest.TestCase):
         self.assertEqual(['foo'], parser.getoperands())
 
 
-class RedCheckerTests(unittest.TestCase):
+class RedCheckerOptionCheckingTests(unittest.TestCase):
     def testUnrecognizedOptions(self):
         argv = ['--foo', '--bar', '--baz']
         mode = clap.mode.RedMode()
@@ -379,40 +379,37 @@ class RedCheckerTests(unittest.TestCase):
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.WantedOptionNotFoundError, checker._checkwants)
 
-    @unittest.skip('due to library being redesigned')
     def testConflicts(self):
-        argv = ['--foo', '--bar']
-        parser = clap.base.Base(argv=argv)
-        parser.add(long='foo', conflicts=['--bar'])
-        parser.add(long='bar')
-        checker = clap.checker.Checker(parser)
-        if DEBUG: print(parser._getinput())
-        # NEW
+        argvariants = [
+                ['--foo', '--bar'],
+                ['-f', '--bar'],
+                ['--foo', '-b'],
+                ['-f', '-b'],
+                ]
         mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='f', long='foo', conflicts=['--bar']))
         mode.addLocalOption(clap.option.Option(short='b', long='bar'))
-        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
-        parser = clap.parser.Parser(mode).feed(argv)
-        checker = clap.checker.RedChecker(parser)
-        self.assertRaises(clap.errors.ConflictingOptionsError, checker._checkconflicts)
+        for argv in argvariants:
+            parser = clap.parser.Parser(mode).feed(argv)
+            checker = clap.checker.RedChecker(parser)
+            if DEBUG: print('checking:', ' '.join(argv))
+            self.assertRaises(clap.errors.ConflictingOptionsError, checker._checkconflicts)
 
-    @unittest.skip('due to library being redesigned')
     def testConflictsNotRaisedBecauseOfBreaker(self):
-        argv = ['--foo', '--', '--bar']
-        parser = clap.base.Base()
-        parser.add(long='foo', conflicts=['--bar'])
-        parser.add(long='bar')
-        parser.feed(argv)
-        checker = clap.checker.Checker(parser)
-        if DEBUG: print(parser._getinput())
-        # NEW
+        argvariants = [
+                ['--foo', '--', '--bar'],
+                ['-f', '--', '--bar'],
+                ['--foo', '--', '-b'],
+                ['-f', '--', '-b'],
+                ]
         mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='f', long='foo', conflicts=['--bar']))
         mode.addLocalOption(clap.option.Option(short='b', long='bar'))
-        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
-        parser = clap.parser.Parser(mode).feed(argv)
-        checker = clap.checker.RedChecker(parser)
-        checker._checkconflicts()
+        for argv in argvariants:
+            parser = clap.parser.Parser(mode).feed(argv)
+            checker = clap.checker.RedChecker(parser)
+            if DEBUG: print('checking:', ' '.join(argv))
+            checker._checkconflicts()
 
 
 @unittest.skip('due to library being redesigned')
