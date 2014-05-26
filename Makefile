@@ -28,3 +28,6 @@ clean:
 
 redclap-test:
 	python3 ./tests/redclap/tests.py --catch --failfast --verbose 
+
+redclap-test-builder:
+	python3 ./tests/redclap/jsonbuildertests.py --catch --failfast --verbose 
