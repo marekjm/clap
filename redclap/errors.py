@@ -52,6 +52,12 @@ class InvalidOperandTypeError(Exception):
     pass
 
 
+class InvalidOperandRangeError(Exception):
+    """Raised when operand has invalid type.
+    """
+    pass
+
+
 class ConflictingOptionsError(Exception):
     """Raised when two or more conflicting options are found together.
     """
