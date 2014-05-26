@@ -23,4 +23,4 @@ def lookslikeopt(s):
             regex_opt_long.match(s) or
             regex_longopt_with_equal_sign.match(s) or
             regex_connected_shorts.match(s)
-            )
+            ) is not None
