@@ -79,16 +79,18 @@ class RedChecker():
     def _checkwants(self):
         """Check for wanted options.
         """
-        for i in self._parser._options:
+        for i in self._parser._mode.options():
+            alias_present = self._parser._whichaliasin(i)
             if not self._parser._ininput(i) or not i['wants']: continue
+            if not self._parser._mode.accepts(str(i)):
+                raise errors.UIDesignError('\'{0}\' wants unrecognized option \'{1}\''.format(alias_present, n))
             fail = True
             for n in i['wants']:
-                if self._parser._ininput(string=n):
+                if self._parser._ininput(option=self._parser._mode.getopt(n)):
                     fail = False
                     break
             if fail:
-                needs = self._parser._variantin(i)
-                raise errors.WantedOptionNotFoundError('{0} -> {1}'.format(needs, ', '.join(i['wants'])))
+                raise errors.WantedOptionNotFoundError('{0} -> {1}'.format(alias_present, ', '.join(i['wants'])))
 
     def _checkconflicts(self):
         """Check for conflicting options.

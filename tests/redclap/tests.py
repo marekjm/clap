@@ -319,97 +319,61 @@ class RedCheckerTests(unittest.TestCase):
             if DEBUG: print('checking:', ' '.join(argv))
             checker._checkrequires()
 
-    @unittest.skip('due to library being redesigned')
     def testOptionRequiredByAnotherOptionNotFound(self):
         argv = ['--foo', '--bar']
-        parser = clap.base.Base(argv)
-        parser.add(long='foo', requires=['--bar', '--baz'])
-        parser.add(long='bar')
-        parser.add(long='baz')
-        checker = clap.checker.Checker(parser)
-        if DEBUG: print(parser._getinput())
-        # NEW
         mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='f', long='foo', requires=['--bar', '--baz']))
         mode.addLocalOption(clap.option.Option(short='b', long='bar'))
         mode.addLocalOption(clap.option.Option(short='B', long='baz'))
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequires)
 
-    @unittest.skip('due to library being redesigned')
     def testOptionRequiredByAnotherOptionNotFoundBecauseOfBreaker(self):
         argv = ['--foo', '--bar', '--', '--baz']
-        parser = clap.base.Base(argv)
-        parser.add(long='foo', requires=['--bar', '--baz'])
-        parser.add(long='bar')
-        parser.add(long='baz')
-        checker = clap.checker.Checker(parser)
-        if DEBUG: print(parser._getinput())
-        # NEW
         mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='f', long='foo', requires=['--bar', '--baz']))
         mode.addLocalOption(clap.option.Option(short='b', long='bar'))
         mode.addLocalOption(clap.option.Option(short='B', long='baz'))
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequires)
 
-    @unittest.skip('due to library being redesigned')
     def testOptionWantedByAnotherOption(self):
-        argv_both = ['--bar', '--foo', '--baz']
-        argv_only_bar = ['--foo', '--bar', '42']
-        argv_only_baz = ['--baz', '--foo']
-        parser = clap.base.Base()
-        parser.add(long='foo', wants=['--bar', '--baz'])
-        parser.add(long='bar', arguments=[int])
-        parser.add(long='baz')
-        for argv in [argv_both, argv_only_bar, argv_only_baz]:
-            parser.feed(argv)
-            checker = clap.checker.Checker(parser)
-            if DEBUG: print(parser._getinput())
-            # NEW
-            mode = clap.mode.RedMode()
-            mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
-            mode.addLocalOption(clap.option.Option(short='b', long='bar'))
-            mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        argvariants = [
+                ['--foo', '--bar', '42', '--baz'],  # both wanted present:: --bar and --baz
+                ['--foo', '-b', '42', '--baz'],     # both wanted present:: --bar and --baz
+                ['--foo', '--bar', '42', '-B'],     # both wanted present:: --bar and --baz
+                ['--foo', '--bar', '42'],           # one wanted present: --bar
+                ['--foo', '-b', '42'],              # one wanted present: --bar
+                ['--foo', '--baz'],                 # one wanted present: --baz
+                ['--foo', '-B'],                    # one wanted present: --baz
+                ]
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='f', long='foo', wants=['--bar', '--baz']))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar', arguments=['int']))
+        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        for argv in argvariants:
             parser = clap.parser.Parser(mode).feed(argv)
             checker = clap.checker.RedChecker(parser)
+            if DEBUG: print('checking:', ' '.join(argv))
             checker._checkwants()
 
-    @unittest.skip('due to library being redesigned')
-    def testOptionNeededByAnotherOptionNotFound(self):
+    def testOptionWantedByAnotherOptionNotFound(self):
         argv = ['--foo']
-        parser = clap.base.Base()
-        parser.add(long='foo', wants=['--bar', '--baz'])
-        parser.add(long='bar', arguments=[int])
-        parser.add(long='baz')
-        parser.feed(argv)
-        checker = clap.checker.Checker(parser)
-        if DEBUG: print(parser._getinput())
-        # NEW
         mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
-        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='f', long='foo', wants=['--bar', '--baz']))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar', arguments=['int']))
         mode.addLocalOption(clap.option.Option(short='B', long='baz'))
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.WantedOptionNotFoundError, checker._checkwants)
 
-    @unittest.skip('due to library being redesigned')
-    def testOptionNeededByAnotherOptionNotFoundBecauseOfBreaker(self):
+    def testOptionWantedByAnotherOptionNotFoundBecauseOfBreaker(self):
         argv = ['--foo', '--', '--bar']
-        parser = clap.base.Base()
-        parser.add(long='foo', wants=['--bar', '--baz'])
-        parser.add(long='bar', arguments=[int])
-        parser.add(long='baz')
-        parser.feed(argv)
-        checker = clap.checker.Checker(parser)
-        if DEBUG: print(parser._getinput())
-        # NEW
         mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
-        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='f', long='foo', wants=['--bar', '--baz']))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar', arguments=['int']))
         mode.addLocalOption(clap.option.Option(short='B', long='baz'))
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
