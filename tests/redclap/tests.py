@@ -129,6 +129,8 @@ class ModeTests(unittest.TestCase):
         mode.removeGlobalOption(name='--foo')
         self.assertFalse(mode.accepts('--foo'))
 
+
+class RedParserGeneralTests(unittest.TestCase):
     def testGettingInputAndOperands(self):
         argvariants = [
                 (['--', '--foo', '--bar', 'baz', 'bax'], [], ['--foo', '--bar', 'baz', 'bax']),
@@ -149,31 +151,23 @@ class ModeTests(unittest.TestCase):
             self.assertEqual(input, parser._getinput())
             self.assertEqual(operands, parser._getoperands())
 
-    @unittest.skip('due to library being redesigned - taken from old BaseTests')
-    def testGettingInputWhenOptionsRequestMultipleArguments(self):
-        argv = ['--foo', '--point', '0', '0', '--bar', 'baz']
-        base = clap.base.Base(argv)
-        base.add(long='foo')
-        base.add(long='bar')
-        base.add(long='point', arguments=[int, int])
-        self.assertEqual(['--foo', '--point', '0', '0', '--bar'], base._getinput())
-
-    @unittest.skip('due to library being redesigned - taken from old BaseTests')
-    def testGettingInputWithBreakerPresent(self):
-        argv = ['--foo', '--', '--bar', 'baz', 'bax']
-        base = clap.base.Base(argv)
-        base.add(long='foo')
-        base.add(long='bar', arguments=[str])
-        self.assertEqual(['--foo'], base._getinput())
-
-    @unittest.skip('due to library being redesigned - taken from old BaseTests')
-    def testCheckingIfOptionIsInInputUsingString(self):
-        argv = ['--foo', '--bar', 'baz']
-        base = clap.base.Base(argv)
-        base.add(short='f', long='foo')
-        base.add(short='b', long='bar', arguments=[str])
-        self.assertEqual(True, base._ininput(string='--foo'))
-        self.assertEqual(True, base._ininput(string='-b'))
+    def testGettingInputAndOperandsWhenOptionRequestsArguments(self):
+        argvariants = [
+                (['--foo', '--point', '0', '1', '--bar'], None, []),
+                (['--foo', '--point', '0', '1', '--', '42', 'towels'], ['--foo', '--point', '0', '1'], ['42', 'towels']),
+                ]
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        mode.addLocalOption(clap.option.Option(short='p', long='point', arguments=['int', 'int']))
+        parser = clap.parser.Parser(mode)
+        for argv, input, operands in argvariants:
+            if input is None: input = argv[:]
+            if operands is None: operands = argv[:]
+            parser.feed(argv)
+            self.assertEqual(input, parser._getinput())
+            self.assertEqual(operands, parser._getoperands())
 
     @unittest.skip('due to library being redesigned - taken from old BaseTests')
     def testCheckingIfOptionIsInInputUsingOptionObject(self):
