@@ -105,8 +105,26 @@ class RedChecker():
                 if conflicting:
                     raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, conflicting))
 
+    def _checkoperandsrange(self):
+        """Checks whether operands given match specified range.
+        """
+        got = len(self._parser._getoperands())
+        least, most = self._parser._mode.getOperandsRange()
+        fail = False
+        if least is not None and got < least:
+            #print('FAIL: least fail: ({0}, {1})'.format(least, most))
+            fail = True
+        if most is not None and got > most:
+            #print('FAIL: most fail: ({0}, {1})'.format(least, most))
+            fail = True
+        if fail:
+            if least is not None and most is None: msg = 'expected at least {0} operands but got {1}'.format(least, got)
+            elif least is None and most is not None: msg = 'expected at most {0} operands but got {1}'.format(most, got)
+            else: msg = 'expected beatween {0} and {1} operands but got {2}'.format(least, most, got)
+            raise errors.InvalidOperandRangeError(msg)
+
     def check(self):
-        """Performs a check.
+        """Validates if the given input is correct for given UI.
         """
         self._checkunrecognized()
         self._checkconflicts()
@@ -114,6 +132,7 @@ class RedChecker():
         self._checkrequired()
         self._checkrequires()
         self._checkwants()
+        self._checkoperandsrange()
 
 
 class Checker():
