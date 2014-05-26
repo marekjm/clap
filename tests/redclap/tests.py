@@ -129,26 +129,25 @@ class ModeTests(unittest.TestCase):
         mode.removeGlobalOption(name='--foo')
         self.assertFalse(mode.accepts('--foo'))
 
-    @unittest.skip('due to library being redesigned - taken from old BaseTests')
-    def testGettingEmptyInput(self):
-        argvs = [   ['--', '--foo', '--bar', 'baz', 'bax'],
-                    ['bax', '--foo', '--bar', 'baz'],
-                    ['bax', 'foo', 'bar', 'baz'],
-                    ]
-        base = clap.base.Base()
-        base.add(long='foo')
-        base.add(long='bar', arguments=[str])
-        for argv in argvs:
-            base.feed(argv)
-            self.assertEqual([], base._getinput())
-
-    @unittest.skip('due to library being redesigned - taken from old BaseTests')
-    def testGettingInput(self):
-        argv = ['--foo', '--bar', 'baz', 'bax']
-        base = clap.base.Base(argv)
-        base.add(long='foo')
-        base.add(long='bar', arguments=[str])
-        self.assertEqual(['--foo', '--bar', 'baz'], base._getinput())
+    def testGettingInputAndOperands(self):
+        argvariants = [
+                (['--', '--foo', '--bar', 'baz', 'bax'], [], ['--foo', '--bar', 'baz', 'bax']),
+                (['bax', '--foo', '--bar', 'baz'], [], None),
+                (['bax', 'foo', 'bar', 'baz'], [], None),
+                (['--foo', '--bar', '--baz'], None, []),
+                (['--foo', '--bar', '--baz', '--'], ['--foo', '--bar', '--baz'], []),
+                ]
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        parser = clap.parser.Parser(mode)
+        for argv, input, operands in argvariants:
+            if input is None: input = argv[:]
+            if operands is None: operands = argv[:]
+            parser.feed(argv)
+            self.assertEqual(input, parser._getinput())
+            self.assertEqual(operands, parser._getoperands())
 
     @unittest.skip('due to library being redesigned - taken from old BaseTests')
     def testGettingInputWhenOptionsRequestMultipleArguments(self):
