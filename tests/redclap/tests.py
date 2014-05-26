@@ -134,10 +134,12 @@ class RedParserGeneralTests(unittest.TestCase):
     def testGettingInputAndOperands(self):
         argvariants = [
                 (['--', '--foo', '--bar', 'baz', 'bax'], [], ['--foo', '--bar', 'baz', 'bax']),
-                (['bax', '--foo', '--bar', 'baz'], [], None),
-                (['bax', 'foo', 'bar', 'baz'], [], None),
+                (['spam', '--foo', '--bar'], [], None),
+                (['42', '--foo', '--bar'], [], None),
+                (['42', 'towels'], [], None),
                 (['--foo', '--bar', '--baz'], None, []),
                 (['--foo', '--bar', '--baz', '--'], ['--foo', '--bar', '--baz'], []),
+                (['-f', '--bar', 'spam', '--baz'], ['-f', '--bar'], ['spam', '--baz']),
                 ]
         mode = clap.mode.RedMode()
         mode.addLocalOption(clap.option.Option(short='f', long='foo'))
@@ -169,27 +171,26 @@ class RedParserGeneralTests(unittest.TestCase):
             self.assertEqual(input, parser._getinput())
             self.assertEqual(operands, parser._getoperands())
 
-    @unittest.skip('due to library being redesigned - taken from old BaseTests')
-    def testCheckingIfOptionIsInInputUsingOptionObject(self):
-        argv = ['-f', '--bar', 'baz']
-        base = clap.base.Base(argv)
+    def testCheckingIfOptionIsInInput(self):
+        argvariants = [
+                ['--foo', '--bar'],
+                ['-f', '--bar', 'spam', '--baz'],
+                ['-f', '--bar', '0', '--baz'],
+                ['-f', '--bar', '--', '--baz'],
+                ]
+        mode = clap.mode.RedMode()
         foo = clap.option.Option(short='f', long='foo')
-        bar = clap.option.Option(short='b', long='bar', arguments=[str])
-        base._append(foo)
-        base._append(bar)
-        self.assertEqual(True, base._ininput(option=foo))
-        self.assertEqual(True, base._ininput(option=bar))
+        bar = clap.option.Option(short='b', long='bar')
+        baz = clap.option.Option(short='B', long='baz')
+        mode.addLocalOption(foo).addLocalOption(bar).addLocalOption(baz)
+        parser = clap.parser.Parser(mode)
+        for argv in argvariants:
+            parser.feed(argv)
+            if DEBUG: print('checking argv "{0}" with input part: "{1}"'.format(' '.join(argv), ' '.join(parser._getinput())))
+            self.assertTrue(parser._ininput(option=foo))
+            self.assertTrue(parser._ininput(option=bar))
+            self.assertFalse(parser._ininput(option=baz))
 
-    @unittest.skip('due to library being redesigned - taken from old BaseTests')
-    def testCheckingIfOptionIsInInputWithBreaker(self):
-        argv = ['--foo', '--', '--bar', 'baz']
-        base = clap.base.Base(argv)
-        base.add(long='foo')
-        base.add(long='bar', arguments=[str])
-        self.assertEqual(True, base._ininput(string='--foo'))
-        self.assertEqual(False, base._ininput(string='--bar'))
-
-    @unittest.skip('due to library being redesigned - taken from old BaseTests')
     def testOptionRecognition(self):
         tests = [('-a', True),
                  ('--foo', True),
@@ -202,9 +203,9 @@ class RedParserGeneralTests(unittest.TestCase):
                  ('--', False),
                  ('-', False),
                  ]
-        for opt, result in tests:
-            if DEBUG: print(opt, result)
-            self.assertEqual(clap.shared.lookslikeopt(opt), result)
+        for opt, expected in tests:
+            if DEBUG: print('string "{0}" should {1}be considered an option string'.format(opt, ('' if expected else 'not ')))
+            self.assertEqual(clap.shared.lookslikeopt(opt), expected)
 
 
 class RedParserOptionsTests(unittest.TestCase):
@@ -681,64 +682,6 @@ class RedCheckerOperandCheckingTests(unittest.TestCase):
                 if DEBUG: print('fail checking range {0} with input: {1}'.format(r, parser._getoperands()))
                 checker = clap.checker.RedChecker(parser)
                 self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
-
-
-@unittest.skip('due to library being redesigned')
-class BuilderTests(unittest.TestCase):
-    def testTypeRecognitionOption(self):
-        data = {'short': 'p',
-                'arguments': [int, int]
-                }
-        self.assertEqual(True, clap.builder.isoption(data))
-
-    def testTypeRecognitionParser(self):
-        data = [ {'short': 'p',
-                 'arguments': [int, int]
-                 }
-                 ]
-        self.assertEqual(True, clap.builder.isparser(data))
-
-    def testTypeRecognitionNestedParser(self):
-        data = {
-                'foo': [
-                    {
-                        'short': 'p',
-                        'arguments': [int, int]
-                    }
-                    ],
-                '__global__': [
-                        {
-                            'short': 'o',
-                            'long': 'output',
-                            'arguments': [str]
-                        }
-                    ]
-                }
-        self.assertEqual(True, clap.builder.isparser(data))
-
-    def testBuildingSingleParserDefinedAsNestedWithAllOptionsGlobal(self):
-        parser = clap.parser.Parser()
-        parser.addOption(short='s', long='string', arguments=[str])
-        parser.addOption(short='i', long='integer', arguments=[int])
-        parser.addOption(short='f', long='float', arguments=[float])
-        built = clap.builder.Builder(path='./testfiles/single_parser_defined_as_nested_with_all_opts_global.json').build()
-        self.assertEqual(parser.finalize(), built.finalize())
-
-    def testBuildingSingleParserDefinedAsListOfOptions(self):
-        parser = clap.parser.Parser()
-        parser.addOption(short='s', long='string', arguments=[str])
-        parser.addOption(short='i', long='integer', arguments=[int])
-        parser.addOption(short='f', long='float', arguments=[float])
-        built = clap.builder.Builder(path='./testfiles/single_parser_defined_as_list_of_options.json').build()
-        self.assertEqual(parser.finalize().getopts(), built.finalize().getopts())
-
-    def testBuildingMultipleModeParser(self):
-        parser = clap.parser.Parser()
-        parser.addMode('foo', clap.parser.Parser().addOption(short='f', long='foo'))
-        parser.addMode('bar', clap.parser.Parser().addOption(short='b', long='bar'))
-        parser.addOption(short='B', long='baz')
-        built = clap.builder.Builder(path='./testfiles/multiple_modes_parser.json').build()
-        self.assertEqual(sorted(parser.finalize()._modes.keys()), sorted(built.finalize()._modes.keys()))
 
 
 if __name__ == '__main__':
