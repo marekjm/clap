@@ -20,21 +20,18 @@ class FormatterTests(unittest.TestCase):
         argv = ['--foo=bar', '--', '--baz=bax']
         f = clap.formatter.Formatter(argv)
         f._splitequal()
-        if DEBUG: print('\'{0}\' -> \'{1}\''.format(' '.join(argv), ' '.join(f.formatted)))
         self.assertEqual(list(f), ['--foo', 'bar', '--', '--baz=bax'])
 
     def testSplittingConnectedShortOptions(self):
         argv = ['-abc', '--', '-def']
         f = clap.formatter.Formatter(argv)
         f._splitshorts()
-        if DEBUG: print('\'{0}\' -> \'{1}\''.format(' '.join(argv), ' '.join(f.formatted)))
         self.assertEqual(list(f), ['-a', '-b', '-c', '--', '-def'])
 
     def testGeneralFormating(self):
         argv = ['-abc', 'eggs', '--bar', '--ham', 'good', '--food=spam', '--', '--bax=bay']
         f = clap.formatter.Formatter(argv)
         f.format()
-        if DEBUG: print('\'{0}\' -> \'{1}\''.format(' '.join(argv), ' '.join(f.formatted)))
         self.assertEqual(list(f), ['-a', '-b', '-c', 'eggs', '--bar', '--ham', 'good', '--food', 'spam', '--', '--bax=bay'])
 
 
@@ -301,22 +298,26 @@ class RedCheckerTests(unittest.TestCase):
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
 
-    @unittest.skip('due to library being redesigned')
     def testOptionRequiredByAnotherOption(self):
-        argv = ['--foo', '--bar', '--baz']
-        parser = clap.base.Base(argv)
-        parser.add(long='foo', requires=['--bar', '--baz'])
-        parser.add(long='bar')
-        parser.add(long='baz')
-        checker = clap.checker.Checker(parser)
-        # NEW
+        argvariants = [
+                ['--foo', '--bar', '--baz'],
+                ['-f', '--bar', '--baz'],
+                ['--foo', '-b', '--baz'],
+                ['--foo', '--bar', '-B'],
+                ['-f', '-b', '--baz'],
+                ['-f', '--bar', '-B'],
+                ['--foo', '-b', '-B'],
+                ['-f', '-b', '-B'],
+                ]
         mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(short='f', long='foo', requires=['--bar', '--baz']))
         mode.addLocalOption(clap.option.Option(short='b', long='bar'))
         mode.addLocalOption(clap.option.Option(short='B', long='baz'))
-        parser = clap.parser.Parser(mode).feed(argv)
-        checker = clap.checker.RedChecker(parser)
-        checker._checkrequires()
+        for argv in argvariants:
+            parser = clap.parser.Parser(mode).feed(argv)
+            checker = clap.checker.RedChecker(parser)
+            if DEBUG: print('checking:', ' '.join(argv))
+            checker._checkrequires()
 
     @unittest.skip('due to library being redesigned')
     def testOptionRequiredByAnotherOptionNotFound(self):

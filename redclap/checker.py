@@ -66,13 +66,14 @@ class RedChecker():
     def _checkrequires(self):
         """Check if all options required by other options are present.
         """
-        for option in self._parser._options:
+        for option in self._parser._mode.options():
             if not self._parser._ininput(option): continue
             for n in option['requires']:
-                if not self._parser._ininput(string=n):
-                    needs = self._parser._variantin(option)
-                    if not self._parser.accepts(n):
-                        raise errors.UIDesignError('\'{0}\' requires unrecognized option \'{1}\''.format(needs, n))
+                if not self._parser._mode.accepts(n):
+                    raise errors.UIDesignError('\'{0}\' requires unrecognized option \'{1}\''.format(needs, n))
+                n = self._parser._mode.getopt(n)
+                if not self._parser._ininput(option=n):
+                    needs = self._parser._whichaliasin(option)
                     raise errors.RequiredOptionNotFoundError('{0} -> {1}'.format(needs, n))
 
     def _checkwants(self):

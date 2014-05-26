@@ -94,6 +94,28 @@ class Parser:
             i += 1
         return is_in
 
+    def _whichaliasin(self, option):
+        """Returns which variant of option (long or short) is present in input.
+        Used internaly when checking input. Empty string indicates that no variant
+        is present (option is not present).
+
+        `option` takes precendence over `string`.
+
+        :param option: option name
+        :type option: str
+        """
+        input = self._getinput()
+        #if string:
+        #    name = string
+        #    alias = self.alias(string)
+        if option:
+            name = str(option)
+            alias = option.alias(name)
+        variant = ''
+        if name in input: variant = name
+        if alias and (alias in input): variant = alias
+        return variant
+
     def parse(self):
         """Parses given input.
         """
