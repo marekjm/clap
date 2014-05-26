@@ -3,6 +3,7 @@
 
 
 from . import shared
+from . import errors
 
 
 class RedMode:
@@ -109,7 +110,7 @@ class RedMode:
         self._operands['range']['least'] = least
         self._operands['range']['most'] = most
 
-    def setOperandsRange(self, no):
+    def setOperandsRange(self, no=()):
         """Sets range of operands.
         """
         least, most = None, None
@@ -122,5 +123,10 @@ class RedMode:
         elif len(no) == 2 and no[0] >= 0 and no[1] >= 0:
             least, most = no[0], no[1]
         else:
-            raise errors.OperandRangeError('provided sequence is invalid for operands range: {0}'.format(no))
+            raise errors.InvalidOperandRangeError('provided sequence is invalid for operands range: {0}'.format(no))
         self._setoperandsrange(least, most)
+
+    def getOperandsRange(self):
+        """Returns operands range.
+        """
+        return (self._operands['range']['least'], self._operands['range']['most'])

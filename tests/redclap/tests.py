@@ -107,7 +107,7 @@ class ModeTests(unittest.TestCase):
         self.assertTrue(mode.getmode('bar').accepts('--verbose'))
 
 
-class RedParserTests(unittest.TestCase):
+class RedParserOptionsTests(unittest.TestCase):
     def testFeedingArgsToParser(self):
         mode = clap.mode.RedMode()
         parser = clap.parser.Parser(mode)
@@ -191,6 +191,39 @@ class RedParserTests(unittest.TestCase):
         self.assertEqual(42, parser.get('-i', tuplise=False))
         self.assertEqual(4.2, parser.get('-f', tuplise=False))
         self.assertEqual(['foo'], parser.getoperands())
+
+
+class RedParserOperandsTests(unittest.TestCase):
+    def testSettingRangeAny(self):
+        mode = clap.mode.RedMode()
+        mode.setOperandsRange(no=[])
+        self.assertEqual((None, None), mode.getOperandsRange())
+        mode.setOperandsRange()
+        self.assertEqual((None, None), mode.getOperandsRange())
+
+    def testSettingRangeBetween(self):
+        mode = clap.mode.RedMode()
+        mode.setOperandsRange(no=[1, 2])
+        self.assertEqual((1, 2), mode.getOperandsRange())
+
+    def testSettingRangeAtLeast(self):
+        mode = clap.mode.RedMode()
+        mode.setOperandsRange(no=[-2])
+        self.assertEqual((2, None), mode.getOperandsRange())
+
+    def testSettingRangeAtMost(self):
+        mode = clap.mode.RedMode()
+        mode.setOperandsRange(no=[2])
+        self.assertEqual((None, 2), mode.getOperandsRange())
+
+    def testSettingRangeInvalid(self):
+        mode = clap.mode.RedMode()
+        ranges = [
+                [-1, -1],
+                [1, 2, 3]
+                ]
+        for i in ranges:
+            self.assertRaises(clap.errors.InvalidOperandRangeError, mode.setOperandsRange, i)
 
 
 class RedCheckerOptionCheckingTests(unittest.TestCase):
@@ -410,6 +443,12 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
             checker = clap.checker.RedChecker(parser)
             if DEBUG: print('checking:', ' '.join(argv))
             checker._checkconflicts()
+
+
+class RedCheckerOperandCheckingTests(unittest.TestCase):
+    @unittest.skip('needs implementing')
+    def testOperands(self):
+        pass
 
 
 @unittest.skip('due to library being redesigned')
