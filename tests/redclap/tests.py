@@ -262,8 +262,8 @@ class RedParserOptionsTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(short='f', long='foo', arguments=['str']))
         parser = clap.parser.Parser(mode).feed(['--foo', 'spam']).parse()
         self.assertTrue('--foo' in parser)
-        self.assertEqual(('spam',), parser.get('--foo'))
-        self.assertEqual(('spam',), parser.get('-f'))
+        self.assertEqual('spam', parser.get('--foo'))
+        self.assertEqual('spam', parser.get('-f'))
 
     def testParsingOptionWithMultipleArguments(self):
         mode = clap.mode.RedMode()

@@ -185,18 +185,14 @@ class Parser:
         direct values for options taking one argumet or less.
         """
         value = self._parsed['options'][key]
-        if value is None: return None
-        # if type of the value is int this must mean it is a plural option that takes no arguments,
-        # otherwise the type would be list or the value would be None
-        # such options are always returned as integers so...
-        if type(value) is int:
-            # ... we wrap the integer in list so the len() of it can be counted in the un-tuple-ification step
-            # and set tuplise to false so the value will be popped form list and returned directly
-            value, tuplise = [value], False
-        if tuplise and type(value) is list and self._mode.getopt(key)['plural']:
-            value = [tuple(v) for v in value]
+        # if value is None there is no point in analysing it further
+        if value is None: return value
+        # if option is plural and does not take any arguments, return counter nubmer of occurences
+        if self._mode.getopt(key)['plural'] and not self._mode.getopt(key).params(): return value
+        # if option takes single argument, return it directly
+        if len(value) == 1: return value[0]
+        if tuplise and self._mode.getopt(key)['plural']: value = [tuple(v) for v in value]
         elif tuplise: value = tuple(value)
-        if len(value) == 1 and not tuplise: value = value.pop(0)
         return value
 
     def getoperands(self):
