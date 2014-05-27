@@ -1,6 +1,8 @@
 {
-    "__modes__": {},
-    "__local__": [],
-    "__global__": [],
-    "__help__": ""
+    "modes": {},
+    "options": {
+        "local": [],
+        "global": []
+    },
+    "help": ""
 }
