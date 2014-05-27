@@ -239,6 +239,24 @@ class RedParserOptionsTests(unittest.TestCase):
         self.assertEqual(None, parser.get('--debug'))
         self.assertEqual(None, parser.get('-d'))
 
+    def testParsingPluralOptionsWithoutArguments(self):
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='v', long='verbose', plural=True))
+        parser = clap.parser.Parser(mode).feed(['--verbose', '--verbose', '-v']).parse()
+        self.assertTrue('--verbose' in parser)
+        self.assertTrue('-v' in parser)
+        self.assertEqual(3, parser.get('--verbose'))
+        self.assertEqual(3, parser.get('-v'))
+
+    def testParsingPluralOptionsWithArguments(self):
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='f', long='foo', plural=True, arguments=['int']))
+        parser = clap.parser.Parser(mode).feed(['--foo', '0', '-f', '1']).parse()
+        self.assertTrue('--foo' in parser)
+        self.assertTrue('-f' in parser)
+        self.assertEqual([(0,), (1,)], parser.get('--foo'))
+        self.assertEqual([(0,), (1,)], parser.get('-f'))
+
     def testParsingOptionWithOneArgument(self):
         mode = clap.mode.RedMode()
         mode.addLocalOption(clap.option.Option(short='f', long='foo', arguments=['str']))

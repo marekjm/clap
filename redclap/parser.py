@@ -3,6 +3,10 @@
 
 from . import shared
 
+try: from clap_typehandlers import TYPEHANDLERS
+except ImportError: TYPEHANDLERS = {}
+finally: pass
+
 
 class Parser:
     """Object that, after being fed with command line arguments and mode,
@@ -12,15 +16,18 @@ class Parser:
         self._args = argv
         self._mode, self._current = mode, mode
         self._parsed = {'options': {}, 'operands': []}
-        self._typehandlers = {'str': str,
-                              'int': int,
-                              'float': float,
-                              }
+        self._typehandlers = {'str': str, 'int': int, 'float': float}
+        self._loadtypehandlers()
 
     def __contains__(self, option):
         """Checks if parser contains given option.
         """
         return option in self._parsed['options']
+
+    def _loadtypehandlers(self):
+        """Loads typehandlers from TYPEHANDLERS dict.
+        """
+        for name, callback in TYPEHANDLERS.items(): self._typehandlers[name] = callback
 
     def feed(self, argv):
         """Feed argv to parser.
@@ -153,16 +160,43 @@ class Parser:
             i += 1
         operands = self._args[i:]
         if operands and operands[0] == '--': operands.pop(0)
-        self._parsed['options'] = dict(options)
+        for opt, args in options:
+            if self._mode.getopt(opt)['plural'] and self._mode.getopt(opt).params():
+                if opt not in self._parsed['options']: self._parsed['options'][opt] = []
+                self._parsed['options'][opt].append(args)
+            elif self._mode.getopt(opt)['plural'] and not self._mode.getopt(opt).params():
+                if opt not in self._parsed['options']: self._parsed['options'][opt] = 0
+                self._parsed['options'][opt] += 1
+            else:
+                self._parsed['options'][opt] = args
         self._parsed['operands'] = operands
         return self
 
     def get(self, key, tuplise=True):
-        """Returns tuple of arguments passed to an option.
+        """Returns arguments passed to an option.
+        - options that take no arguments return None.
+        - options that are plural AND take no argument return number of times they were passed.
+        - options that take at least one argument return tuple containing their arguments.
+        - options that take at least one argument AND are plural return list of tuples containing arguments passed
+          with each occurence of the option in input.
+        
+        Tuple-isation can be switched off by passing 'tuplise` parameter as false;
+        in such case lists are returned for options that take at least two arguments and
+        direct values for options taking one argumet or less.
         """
         value = self._parsed['options'][key]
-        if value is not None and tuplise: value = tuple(value)
-        if value is not None and len(value) == 1 and not tuplise: value = value.pop(0)
+        if value is None: return None
+        # if type of the value is int this must mean it is a plural option that takes no arguments,
+        # otherwise the type would be list or the value would be None
+        # such options are always returned as integers so...
+        if type(value) is int:
+            # ... we wrap the integer in list so the len() of it can be counted in the un-tuple-ification step
+            # and set tuplise to false so the value will be popped form list and returned directly
+            value, tuplise = [value], False
+        if tuplise and type(value) is list and self._mode.getopt(key)['plural']:
+            value = [tuple(v) for v in value]
+        elif tuplise: value = tuple(value)
+        if len(value) == 1 and not tuplise: value = value.pop(0)
         return value
 
     def getoperands(self):
