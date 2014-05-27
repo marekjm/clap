@@ -174,25 +174,23 @@ class Parser:
 
     def get(self, key, tuplise=True):
         """Returns arguments passed to an option.
-        - options that take no arguments return None.
-        - options that are plural AND take no argument return number of times they were passed.
-        - options that take at least one argument return tuple containing their arguments.
+        - options that take no arguments return None,
+        - options that are plural AND take no argument return number of times they were passed,
+        - options that take exactly one argument return it directly,
+        - options that take at least two arguments return tuple containing their arguments,
         - options that take at least one argument AND are plural return list of tuples containing arguments passed
-          with each occurence of the option in input.
+          to each occurence of the option in input,
         
         Tuple-isation can be switched off by passing 'tuplise` parameter as false;
         in such case lists are returned for options that take at least two arguments and
         direct values for options taking one argumet or less.
         """
+        option = self._mode.getopt(key)
         value = self._parsed['options'][key]
-        # if value is None there is no point in analysing it further
-        if value is None: return value
-        # if option is plural and does not take any arguments, return counter nubmer of occurences
-        if self._mode.getopt(key)['plural'] and not self._mode.getopt(key).params(): return value
-        # if option takes single argument, return it directly
-        if len(value) == 1: return value[0]
-        if tuplise and self._mode.getopt(key)['plural']: value = [tuple(v) for v in value]
-        elif tuplise: value = tuple(value)
+        if option.isplural() and not option.params(): return value
+        if not option.params(): return None
+        if len(option.params()) == 1 and not option.isplural(): return value[0]
+        if tuplise: value = ([tuple(v) for v in value] if option.isplural() else tuple(value))
         return value
 
     def getoperands(self):

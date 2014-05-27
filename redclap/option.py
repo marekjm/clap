@@ -133,3 +133,8 @@ class Option():
         """
         t = self['arguments']
         return t
+
+    def isplural(self):
+        """Returns true if option is plural, false otherwise.
+        """
+        return self._meta['plural']
