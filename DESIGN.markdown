@@ -201,8 +201,128 @@ are invalid.
 
 ### Types
 
-RedCLAP supports custom types to be used for operands and options.
+Options can take arguments.
+These arguments must have a defined type as the number of arguments taken is length of the list of argument types.
+
+#### Built-in types
+
+Just as the original CLAP, RedCLAP supportsd these types by default:
+
+- `str`: string arguments,
+- `int`: decimal integers,
+- `float`: decimal floating point numbers,
+
+
+#### Custom types
+
+RedCLAP - just as original CLAP - supports custom types to be used for operands and options.
 Type converters MUST BE functions taking single string as their parameter and:
 
 - returning desired type upon successful conversion,
 - raising `ValueError` upon unsuccessful conversion,
+
+
+##### Adding custom type handlers
+
+Type handlers have to be added to every parser indivdually, via API of the parser object.
+
+Other solution if to put special `clap_typehandlers.py` file in one of the `$PYTHONPATH` directories.
+This file MUST contain `TYPEHANDLERS` dictionary from which handlers will be pulled to parsers.
+
+Example `clap_typehandlers.py` file:
+
+```
+def hexadecimal(n):
+    return int(n, 16)
+
+def octal(n):
+    return int(n, 8)
+
+TYPEHANDLERS = {
+                'hex': hexadecimal,
+                'oct': octal,
+               }
+```
+
+If such file is placed in such a diretory that RedCLAP will be able to import it, it will do and
+all type handlers set there will be available to all RedCLAP programs.
+
+----
+
+## JSON representations of UIs
+
+RedCLAP UIs can be saved as JSON encoded files and
+built dynamically.
+This provides for easier interface building as a developer can create the UI structire in a declarative way and
+let the code do the heavy lifting.
+
+Only thing that is required and must be done in code is to set handlers for custom types.
+However, if `clap_typehandlers` is used it may not be necessary.
+
+
+### Modes
+
+Example bare-bones (taking no options and having no sub-modes) UI written as JSON:
+
+```
+{
+    "modes": [],
+    "options": {
+        "local": [],
+        "global": []
+    },
+    "help": ""
+}
+```
+
+Explanations:
+
+- `"mode"`: is a list of child modes (modes can be nested to any level of depth),
+- `"options"`: is a dictionary with two possible keys `local` and `global` (every other key is discarded),
+    - `"local"`: is a list of local options (that *will not* be propagated to child modes),
+    - `"global"`: is a list of global options (that *will* be propagated to child modes),
+- `"help"`: is a string containing help message for this mode,
+
+
+### Options
+
+Options are described in form of JSON dictionaries.
+
+All available keys are listed here:
+
+- `short` (*string*): short name of the option,
+- `long` (*string*): long name of the option,
+- `arguments` (*list of strings*): list of types of arguments the option takes, every argument is required,
+- `requires` (*list of strings*): list of options this option requires to be passed alongside it (input is valid only if all of them are found),
+- `wants` (*list of strings*): list of options this option wants to be passed alongside it (input is valid even if only one of them is found),
+- `conflicts` (*list of strings*): list of options this option has conflict with (input is invalid even if only one of them is found),
+- `required` (*Boolean*): specifies wheter the option is required or not,
+- `not_with` (*list of strings*): list of options that (if passed) render this option not required,
+- `plural` (*Boolean*): if true, each use of the option is counted or acumulated (check code of parser for exact behaviour),
+- `help` (*string*): help message for this option,
+
+**Note regarding plural options:** plural options are tricky beasts and RedCLAP does some magic to support them in a reasonable way.
+It is advisable to check the code of `.get()` method in the final object given after the input is parsed to get understanding of the exact behaviour of them.
+
+The only required keys are `short` or `long`, and if one of them is present the other one is optional.
+If a key not present on this list will be found in the dictionary it will cause an exception to be raised or be discarded,
+check the code of builder for exact behaviour.
+
+Examples of options described in JSON:
+
+*Most basic; specifing only short name*
+
+```
+{"short": "f"}
+```
+
+*Slightly more advanced; specifing  short and long names, list of arguments and a help string*
+
+```
+{
+    "short": "o",
+    "long": "output",
+    "arguments": ["str"],
+    "help": "specifies output path"
+}
+```
