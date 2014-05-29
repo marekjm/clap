@@ -148,3 +148,14 @@ class RedMode:
         """Returns operands range.
         """
         return (self._operands['range']['least'], self._operands['range']['most'])
+
+    def setOperandsTypes(self, types):
+        """Sets a list of operands types.
+        Length of this list must be compatible with set range of operands.
+        """
+        self._operands['types'] = types
+
+    def getOperandsTypes(self):
+        """Return list of types of operands.
+        """
+        return self._operands['types']
