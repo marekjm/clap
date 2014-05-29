@@ -199,6 +199,52 @@ are invalid.
 
 ----
 
+### Nested modes
+
+Modes can be nested.
+
+However, there is a problem due to the fact that nested modes appear *after* operands of their parent mode and
+sometimes it may be hard to distinguish what is an operand and what is nested node.
+This problem has two possible solutions:
+
+- to disallow operands in modes that are not the final leafs of a mode-tree,
+- to define rules specifying when, and when not, to check for child modes,
+
+RedCLAP uses the second solution. **NOTE:NOT IMPLEMENTED**
+
+#### Detecting nested modes
+
+Detection of nested modes is not performed when:
+
+- current mode has no child modes,
+- the `--` sybmol has appeared in the input,
+- current mode has no upper range if operands,
+
+**NOTE:NOT IMPLEMENTED**
+
+> As for now, RedCLAP has not implemented nested modes.
+> This is because the author has not yet managed to design a reliable algorithm to define
+> when something is a mode and when an operand, and how - at the same time - to deal with
+> non-fixed ranges of operands.
+
+**Open problems:**
+
+- how to define when to stop iterating when range is not-fixed,
+    - on first string above minimal number of accepted operands that can be accepted as child mode (*first safe match counts* strategy)?
+    - on the very first string that can be accepted as child mode (*first match counts* strategy)?
+    - look ahead if any further item could be accepted as a child mode and if not go back to the first found (*latest match counts* strategy)?
+    - look ahead and check if the next item looks like an option that could be accepted by the child mode (if the item can be acc. as a child mode)?
+- how to define when an item should be classified as an unkown mode (in the non-fixed range; with fixed ranges it's easy: if first item after the upper range
+  looks like a mode and is not recognized - raise an error),
+    - if an item looking like an option is found at non-zero index and the previous item looks like mode but is not accepted as one?
+    - if an item looking like an option is found at non-zero index and the previous item looks like mode but is not accepted as one but only above minimal number of operands?
+- probably more,
+
+For now, there are **no** nested modes in RedCLAP as these are tricky to implement properly and to act in a predictable, reliable way.
+
+
+----
+
 ### Types
 
 Options can take arguments.
