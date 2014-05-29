@@ -16,6 +16,7 @@ class Parser:
         self._args = argv
         self._mode, self._current = mode, mode
         self._parsed = {'options': {}, 'operands': []}
+        self._breaker = False
         self._typehandlers = {'str': str, 'int': int, 'float': float}
         self._loadtypehandlers()
 
@@ -62,7 +63,7 @@ class Parser:
             if i > 0 and not shared.lookslikeopt(item) and not self._mode.params(self._args[i-1]): break
             #   if non-option string is encountered and it's an argument
             #   increase counter by the number of arguments the option requests and
-            #   proceed futher
+            #   proceed further
             if i > 0 and not shared.lookslikeopt(item) and self._mode.params(self._args[i-1]):
                 i += len(self._mode.params(self._args[i-1]))-1
             index = i
@@ -76,9 +77,10 @@ class Parser:
         """Returns list of operands passed.
         """
         n = len(self._getinput())
-        opers = self._args[n:]
-        if opers: (opers.pop(0) if opers[0] == '--' else None)
-        return opers
+        operands = self._args[n:]
+        if operands: self._breaker = (operands[0] == '--')
+        if self._breaker: operands.pop(0)
+        return operands
 
     def _ininput(self, option):
         """Check if given option is present in input.
