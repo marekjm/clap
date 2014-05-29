@@ -105,6 +105,21 @@ class RedChecker():
                 if conflicting:
                     raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, conflicting))
 
+    def _checkoperandscompat(self):
+        """Checks if operands types list length is compatible with specified range of operands.
+        """
+        types = self._parser._mode.getOperandsTypes()
+        if not types: return
+        least, most = self._parser._mode.getOperandsRange()
+        if most is not None and most < len(types):
+            raise errors.UIDesignError('upper range of operands not compatible with given list of operand types: list of types too long: expected at most {0} but got {1}'.format(most, len(types)))
+        if least is not None and most is not None and least == most and (least % len(types)):
+            raise errors.UIDesignError('requested fixed number of operands not compatible with given list of operand types: should be a number divisible by {0} but is {1}'.format(len(types), least))
+        if least is not None and (least > len(types)) and (least % len(types)):
+            raise errors.UIDesignError('lower range of operands not compatible with given list of operand types: should be a number divisible by {0} but is {1}'.format(len(types), least))
+        if most is not None and (most > len(types)) and (most % len(types)):
+            raise errors.UIDesignError('upper range of operands not compatible with given list of operand types: should be a number divisible by {0} but is {1}'.format(len(types), most))
+
     def _checkoperandsrange(self):
         """Checks whether operands given match specified range.
         """
@@ -112,19 +127,29 @@ class RedChecker():
         least, most = self._parser._mode.getOperandsRange()
         fail = False
         if least is not None and got < least:
-            #print('FAIL: least fail: ({0}, {1})'.format(least, most))
-            fail = True
+            msg = 'expected at least {0} operands but got {1}'.format(least, got)
+            raise errors.InvalidOperandRangeError(msg)
         if most is not None and got > most:
-            #print('FAIL: most fail: ({0}, {1})'.format(least, most))
-            fail = True
-        if fail:
-            if least is not None and most is None: msg = 'expected at least {0} operands but got {1}'.format(least, got)
-            elif least is None and most is not None: msg = 'expected at most {0} operands but got {1}'.format(most, got)
-            else: msg = 'expected beatween {0} and {1} operands but got {2}'.format(least, most, got)
+            msg = 'expected at most {0} operands but got {1}'.format(most, got)
+            raise errors.InvalidOperandRangeError(msg)
+        if least is None and most is None and self._parser._mode.getOperandsTypes():
+            typeslen = len(self._parser._mode.getOperandsTypes())
+            if got % typeslen and got > typeslen:
+                msg = 'expected number of operands divisible by {0} but got {1}'.format(typeslen, got)
+                raise errors.InvalidOperandRangeError(msg)
+            elif got < typeslen:
+                msg = 'expected at least {0} operands but got {1}'.format(typeslen, got)
+                raise errors.InvalidOperandRangeError(msg)
+        if least is not None and least == most and got != least:
+            msg = 'expected exactly {0} operands but got {2}'.format(least, got)
             raise errors.InvalidOperandRangeError(msg)
 
-    def check(self):
-        """Validates if the given input is correct for given UI.
+    def check(self, rangecompat=True):
+        """Validates if the given input is correct for given UI and
+        detects some errors with UI design.
+
+        - `rangecompat`: pass as false to disable if list of types and range of opperands are mutually compatible,
+            sometimes this check may not be needed,
         """
         self._checkunrecognized()
         self._checkconflicts()
@@ -132,6 +157,7 @@ class RedChecker():
         self._checkrequired()
         self._checkrequires()
         self._checkwants()
+        if rangecompat: self._checkoperandscompat()
         self._checkoperandsrange()
 
 
