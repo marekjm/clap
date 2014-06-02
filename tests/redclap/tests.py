@@ -569,6 +569,24 @@ class RedParserOperandsTests(unittest.TestCase):
         mode.setOperandsTypes(types)
         self.assertEqual(types, mode.getOperandsTypes())
 
+    def testGettingOperandsEnclosed(self):
+        argv = ['--foo', '--', '--bar', 'baz', '---', '--baz', 'this', 'is', 'discarded']
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        self.assertEqual(['--bar', 'baz'], parser._getoperands())
+
+    def testGettingOperandsEnclosingNotWorkingWhenThereIsNoTerminator(self):
+        argv = ['--foo', '--bar', 'baz', '---', '--baz', 'this', 'is', 'not', 'discarded']
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(short='B', long='baz'))
+        parser = clap.parser.Parser(mode).feed(argv)
+        self.assertEqual(['baz', '---', '--baz', 'this', 'is', 'not', 'discarded'], parser._getoperands())
+
 
 class RedCheckerOperandCheckingTests(unittest.TestCase):
     def testOperandRangeAny(self):
@@ -608,12 +626,12 @@ class RedCheckerOperandCheckingTests(unittest.TestCase):
             parser = clap.parser.Parser(mode)
             for argv in argvariants:
                 parser.feed(argv)
-                if DEBUG: print('checking range {0} with input: {1}'.format(r, parser._getoperands()))
+                if DEBUG: print('checking range {0} with operands: {1} (argv: {2})'.format(r, parser._getoperands(), argv))
                 checker = clap.checker.RedChecker(parser)
                 checker._checkoperandsrange()
             for argv in failvariants:
                 parser.feed(argv)
-                if DEBUG: print('fail checking range {0} with input: {1}'.format(r, parser._getoperands()))
+                if DEBUG: print('fail checking range {0} with operands: {1} (argv: {2})'.format(r, parser._getoperands(), argv))
                 checker = clap.checker.RedChecker(parser)
                 self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
 
@@ -789,6 +807,7 @@ class RedCheckerOperandCheckingTests(unittest.TestCase):
             if DEBUG: print('fail checking range based only on list of types ({0}) with input: {1}'.format(len(mode.getOperandsTypes()), parser._getoperands()))
             checker = clap.checker.RedChecker(parser)
             self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
+
 
 if __name__ == '__main__':
     unittest.main()

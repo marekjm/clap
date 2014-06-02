@@ -79,8 +79,14 @@ class Parser:
         n = len(self._getinput())
         operands = self._args[n:]
         if operands: self._breaker = (operands[0] == '--')
-        if self._breaker: operands.pop(0)
+        if self._breaker and operands: operands.pop(0)
+        operands = (operands[:operands.index('---')] if ('---' in operands and self._breaker) else operands[:])
         return operands
+
+    def _getheuroperands(self):
+        """Returns two-tuple: (operands-for-current-mode, items-for-child-mode).
+        Uses simple algorithms to detect nested modes and split the operands.
+        """
 
     def _ininput(self, option):
         """Check if given option is present in input.
