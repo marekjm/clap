@@ -72,15 +72,54 @@ Options have:
 ### Operands
 
 Operands are whatever non-option-looking-strings are found after options and child-modes.
+
 List of operands begins with:
 
 - first non-option-looking string, or
 - first non-child-mode string, or
 - `--` terminator,
 
+List of operands ends when:
+
+- `---` terminator is encountered (everything after it is discarded if no child modes are set),
+- one of the algorithms detecing nested mode's presence returns true,
+
 If a mode has a defined list of types for its operands they are required.
 If a mode has an empty list of operands it accepts whatever operands are given to it (and may freely discard them).
 If a mode has boolean false in the place of list of operands it accepts no operands.
+
+**Examples:**
+
+Program in the examples has three oprtions:
+
+- `-f` / `--foo`,
+- `-b` / `--bar`,
+- `-B` / `--baz`,
+
+```
+program --foo --bar --baz spam with ham answer is 42
+# Options: --foo --bar --baz
+# Operands: spam with ham answer is 42
+
+program --foo --bar -- --baz spam with ham answer is 42
+# Options: --foo --bar
+# Operands: --baz spam with ham answer is 42
+
+program --foo --bar -- --baz spam with ham --- answer is 42
+# Options: --foo --bar
+# Operands: --baz spam with ham
+# Discarded (after operands-close sign): answer is 42
+```
+
+In the last example, CLAP can act in three different ways depending on how the `programs`'s UI is created:
+
+- if the main mode has some child modes and `answer` is one of them, CLAP will continue parsing,
+- if the main mode has some child modes and `answer` is not one of them, CLAP will raise an exception (unknown mode),
+- if the main mode has no child modes, CLAP will raise an exception (unknown mode?, unused operands? - that's not yet decided),
+
+**NOTE: TODO: third point on the list above**
+
+> What to do with discarded operands?
 
 
 ----
@@ -205,20 +244,23 @@ Modes can be nested.
 
 However, there is a problem due to the fact that nested modes appear *after* operands of their parent mode and
 sometimes it may be hard to distinguish what is an operand and what is nested node.
-This problem has two possible solutions:
+Another problem that is immediately encountered is error reporting - when to report invalid number of operands and
+when an unknown node.
+
+These problem has two possible solutions:
 
 - to disallow operands in modes that are not the final leafs of a mode-tree,
 - to define rules specifying when, and when not, to check for child modes,
 
 RedCLAP uses the second solution. **NOTE:NOT IMPLEMENTED**
 
-#### Detecting nested modes
+#### Algorithm detecting nested modes
 
-Detection of nested modes is not performed when:
+Detection of nested modes is **not** performed when:
 
 - current mode has no child modes,
-- the `--` sybmol has appeared in the input,
-- current mode has no upper range if operands,
+- the `--` sybmol has appeared in the input but the `---` has not,
+- current mode has no upper range of operands,
 
 **NOTE:NOT IMPLEMENTED**
 
@@ -227,7 +269,7 @@ Detection of nested modes is not performed when:
 > when something is a mode and when an operand, and how - at the same time - to deal with
 > non-fixed ranges of operands.
 
-**Open problems:**
+**Problems:**
 
 - how to define when to stop iterating when range is not-fixed,
     - on first string above minimal number of accepted operands that can be accepted as child mode (*first safe match counts* strategy)?
@@ -240,8 +282,33 @@ Detection of nested modes is not performed when:
     - if an item looking like an option is found at non-zero index and the previous item looks like mode but is not accepted as one but only above minimal number of operands?
 - probably more,
 
-For now, there are **no** nested modes in RedCLAP as these are tricky to implement properly and to act in a predictable, reliable way.
+For now, there are **no** nested modes in RedCLAP as these are tricky to implement properly in a predictable, reliable way.
 
+##### Detecting nested modes in fixed range of operands
+
+The following rules are used to define whether the out-of-range operand is in fact a nested mode:
+
+- if the first out-of-range operand is valid child mode, then
+  parsing continues with rules taken from this mode and it becomes nested mode (no error to report),
+- otherwise, if the first out-of-range operand looks like an option *and* last in-range operand is valid mode, then
+  the last operand is treated as nested mode (which will cause operands range to be invalid),
+- otherwise, if the first out-of-range operand is not a valid child mode *and* second out-of-range operand looks like an option, then
+  the first out-of-range operand is considered nested mode (which will cause an error about unknown mode to be reported),
+- else, every out-of-range operand is considered an operand given to current mode,
+
+
+##### Detecing nested modes in fluid (with upper and lower margin) range of operands
+
+The following rules are used to define whether the out-of-range operand is in fact a nested mode:
+
+- if the first out-of-range or any above lower margin operand is valid child mode, then
+  parsing continues with rules taken from this mode and it becomes nested mode (no error to report),
+- otherwise, if an operand looks like an option *and* the operand before it is a valid child mode, then
+  the operand before is considered a nested mode (if it's below the lower margin this would cause an error about insufficient number of operands to
+  be reported),
+- otherwise, if the first out-of-range operand is not a valid child mode *and* second out-of-range operand looks like an option, then
+  the first out-of-range operand is considered nested mode (which will cause an error about unknown mode to be reported),
+- else, every out-of-range operand is considered an operand given to current mode,
 
 ----
 
