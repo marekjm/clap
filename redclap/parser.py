@@ -73,9 +73,10 @@ class Parser:
             input = self._args[:index+1]
         return input
 
-    def _getoperands(self):
+    def _getoperands(self, heur=True):
         """Returns list of operands passed.
         """
+        if heur and self._mode.modes() and self.getOperandsRange()[1] is not None: return self._getheuroperands()[0]
         n = len(self._getinput())
         operands = self._args[n:]
         if operands: self._breaker = (operands[0] == '--')
@@ -83,10 +84,47 @@ class Parser:
         operands = (operands[:operands.index('---')] if ('---' in operands and self._breaker) else operands[:])
         return operands
 
+    def _isAcceptedInChildModes(self, mode, option):
+        """Return true if given option is accepted in at least one child mode.
+        """
+        accepted = False
+        for m in mode.modes():
+            if mode.getmode(m).accepts(option):
+                accepted = True
+                break
+        return accepted
+
+    def _heuralgo(self, opers):
+        """Algorithm for fixed ranges of operands.
+        """
+        operands, nested = [], []
+        i = 0
+        while i < len(opers):
+            item = opers[i]
+            if self._mode.hasmode(item): break
+            if shared.lookslikeopt(item):
+                accepted = False
+                operands.pop(-1)
+                i -= 1
+                break
+            operands.append(item)
+            i += 1
+        nested = opers[i:]
+        return (operands, nested)
+
     def _getheuroperands(self):
         """Returns two-tuple: (operands-for-current-mode, items-for-child-mode).
         Uses simple algorithms to detect nested modes and split the operands.
         """
+        n = len(self._getinput())
+        operands = self._args[n:]
+        breaker = ((operands[0] == '--') if operands else False)
+        if breaker and operands: operands.pop(0)
+        if not breaker:
+            operands, nested = self._heuralgo(operands)
+        else:
+            nested = []
+        return (operands, nested)
 
     def _ininput(self, option):
         """Check if given option is present in input.

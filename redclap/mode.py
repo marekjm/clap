@@ -54,6 +54,7 @@ class RedMode:
             if i.match(name):
                 self._options['local'].remove(i)
                 break
+        return self
 
     def removeGlobalOption(self, name):
         """Remove global option matching the name given.
@@ -143,6 +144,7 @@ class RedMode:
         else:
             raise errors.InvalidOperandRangeError('provided sequence is invalid for operands range: {0}'.format(no))
         self._setoperandsrange(least, most)
+        return self
 
     def getOperandsRange(self):
         """Returns operands range.
@@ -154,6 +156,7 @@ class RedMode:
         Length of this list must be compatible with set range of operands.
         """
         self._operands['types'] = types
+        return self
 
     def getOperandsTypes(self):
         """Return list of types of operands.
