@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from . import shared, errors
+from . import shared, errors, parser
 
 
 """This module contains Checker() object which is used internaly, by
@@ -123,7 +123,7 @@ class RedChecker():
     def _checkoperandsrange(self):
         """Checks whether operands given match specified range.
         """
-        got = len(self._parser._getoperands())
+        got = len(self._parser._getheuroperands()[0])
         least, most = self._parser._mode.getOperandsRange()
         fail = False
         if least is not None and got < least:
@@ -144,6 +144,15 @@ class RedChecker():
             msg = 'expected exactly {0} operands but got {2}'.format(least, got)
             raise errors.InvalidOperandRangeError(msg)
 
+    def _checkchildmode(self, rangecompat=False):
+        """Checks if provided nested mode is accepted and has valid input.
+        """
+        operands, nested = self._parser._getheuroperands()
+        if not nested: return
+        child = nested.pop(0)
+        if not self._parser._mode.hasmode(child): raise errors.UnrecognizedModeError(child)
+        else: RedChecker(parser.Parser(self._parser._mode._modes[child]).feed(nested)).check(rangecompat=rangecompat)
+
     def check(self, rangecompat=True):
         """Validates if the given input is correct for given UI and
         detects some errors with UI design.
@@ -159,6 +168,7 @@ class RedChecker():
         self._checkwants()
         if rangecompat: self._checkoperandscompat()
         self._checkoperandsrange()
+        self._checkchildmode(rangecompat=rangecompat)
 
 
 class Checker():
