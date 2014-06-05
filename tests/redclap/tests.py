@@ -329,6 +329,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.UnrecognizedOptionError, checker._checkunrecognized)
+        self.assertRaises(clap.errors.UnrecognizedOptionError, checker.check)
 
     def testArgumentNotGivenAtTheEnd(self):
         argv = ['--bar', '--foo']
@@ -338,6 +339,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.MissingArgumentError, checker._checkarguments)
+        self.assertRaises(clap.errors.MissingArgumentError, checker.check)
 
     def testArgumentNotGivenAtTheEndBecauseOfBreaker(self):
         argv = ['--bar', '--foo', '--', 'baz']
@@ -347,6 +349,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.MissingArgumentError, checker._checkarguments)
+        self.assertRaises(clap.errors.MissingArgumentError, checker.check)
 
     def testInvalidArgumentType(self):
         argv = ['--bar', '--foo', 'baz']
@@ -356,6 +359,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.InvalidArgumentTypeError, checker._checkarguments)
+        self.assertRaises(clap.errors.InvalidArgumentTypeError, checker.check)
 
     def testInvalidArgumentTypeWhenMultipleArgumentsAreRequested(self):
         argv = ['--point', '0', 'y']
@@ -364,6 +368,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.InvalidArgumentTypeError, checker._checkarguments)
+        self.assertRaises(clap.errors.InvalidArgumentTypeError, checker.check)
 
     def testAnotherOptionGivenAsArgument(self):
         argv = ['--foo', '--bar']
@@ -373,6 +378,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.MissingArgumentError, checker._checkarguments)
+        self.assertRaises(clap.errors.MissingArgumentError, checker.check)
 
     def testRequiredOptionNotFound(self):
         argv = ['--bar']
@@ -382,6 +388,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
+        self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker.check)
 
     def testRequiredOptionNotFoundBecauseOfBreaker(self):
         argv = ['--bar', '--', '--foo']
@@ -391,6 +398,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
+        self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker.check)
 
     def testRequiredOptionNotFoundBecauseMisusedAsAnArgumentToAnotherOption(self):
         argv = ['--bar', '--foo']
@@ -399,12 +407,8 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(long='bar', arguments=['str']))
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
-        if TODOS:
-            warnings.warn('TODO')
-            input()
-        # possibly change method from ._checkrequired() to .check() because ._checkarguments() may catch the misued argument in some cases
-        # however, here it would not complain because the option is a valid string...
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
+        self.assertRaises(clap.errors.MissingArgumentError, checker.check)
 
     def testRequiredNotWithAnotherOption(self):
         argv = ['--bar']
@@ -414,6 +418,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         checker._checkrequired()
+        checker.check()
 
     def testRequiredNotWithAnotherOptionNotFoundBecauseOfBreaker(self):
         argv = ['--baz', '--', '-b']
@@ -424,6 +429,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequired)
+        self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker.check)
 
     def testOptionRequiredByAnotherOption(self):
         argvariants = [
@@ -445,6 +451,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
             checker = clap.checker.RedChecker(parser)
             if DEBUG: print('checking:', ' '.join(argv))
             checker._checkrequires()
+            checker.check()
 
     def testOptionRequiredByAnotherOptionNotFound(self):
         argv = ['--foo', '--bar']
@@ -455,6 +462,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequires)
+        self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker.check)
 
     def testOptionRequiredByAnotherOptionNotFoundBecauseOfBreaker(self):
         argv = ['--foo', '--bar', '--', '--baz']
@@ -465,6 +473,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker._checkrequires)
+        self.assertRaises(clap.errors.RequiredOptionNotFoundError, checker.check)
 
     def testOptionWantedByAnotherOption(self):
         argvariants = [
@@ -485,6 +494,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
             checker = clap.checker.RedChecker(parser)
             if DEBUG: print('checking:', ' '.join(argv))
             checker._checkwants()
+            checker.check()
 
     def testOptionWantedByAnotherOptionNotFound(self):
         argv = ['--foo']
@@ -495,6 +505,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.WantedOptionNotFoundError, checker._checkwants)
+        self.assertRaises(clap.errors.WantedOptionNotFoundError, checker.check)
 
     def testOptionWantedByAnotherOptionNotFoundBecauseOfBreaker(self):
         argv = ['--foo', '--', '--bar']
@@ -505,6 +516,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.WantedOptionNotFoundError, checker._checkwants)
+        self.assertRaises(clap.errors.WantedOptionNotFoundError, checker.check)
 
     def testConflicts(self):
         argvariants = [
@@ -521,6 +533,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
             checker = clap.checker.RedChecker(parser)
             if DEBUG: print('checking:', ' '.join(argv))
             self.assertRaises(clap.errors.ConflictingOptionsError, checker._checkconflicts)
+            self.assertRaises(clap.errors.ConflictingOptionsError, checker.check)
 
     def testConflictsNotRaisedBecauseOfBreaker(self):
         argvariants = [
@@ -537,6 +550,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
             checker = clap.checker.RedChecker(parser)
             if DEBUG: print('checking:', ' '.join(argv))
             checker._checkconflicts()
+            checker.check()
 
 
 class RedParserOperandsTests(unittest.TestCase):
@@ -622,7 +636,7 @@ class RedParserNestedModesTests(unittest.TestCase):
 
 
 class RedCheckerNestedModesCheckingTests(unittest.TestCase):
-    def testItemTreatedAsModeBecauseFollowedByOptionAcceptedByOneOfValidChildModes(self): # unrecognized mode, because option is present in one of modes
+    def testItemTreatedAsModeBecauseFollowedByOptionAcceptedByOneOfValidChildModes(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
         mode.addMode(name='child', mode=child)
@@ -630,8 +644,9 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.UnrecognizedModeError, checker._checkchildmode)
+        self.assertRaises(clap.errors.UnrecognizedModeError, checker.check)
 
-    def testUnrecognizedOptionInNestedMode(self): # unrecognized option, because option in nested mode is unrecognized
+    def testUnrecognizedOptionInNestedMode(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
         mode.addMode(name='child', mode=child)
@@ -639,8 +654,9 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.UnrecognizedOptionError, checker._checkchildmode)
+        self.assertRaises(clap.errors.UnrecognizedOptionError, checker.check)
 
-    def testInvalidNumberOfOperandsBecauseModeIsGivenTooFast(self): # invalid number of operands, because mode is given too fast
+    def testInvalidNumberOfOperandsBecauseModeIsGivenTooFast(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
         mode.addMode(name='child', mode=child)
@@ -649,14 +665,16 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
         checker = clap.checker.RedChecker(parser)
         checker._checkchildmode()
         self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
+        self.assertRaises(clap.errors.InvalidOperandRangeError, checker.check)
 
-    def testInvalidNumberOfOperandsRaisedBeforeInvalidMode(self): # invalid number of operands, and invalid mode (because option is found in one of modes)
+    def testInvalidNumberOfOperandsRaisedBeforeInvalidMode(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
         mode.addMode(name='child', mode=child)
         argv = ['--foo', '-b', '-B', 'spam', 'fake', '--answer', '42']
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
+        self.assertRaises(clap.errors.UnrecognizedModeError, checker._checkchildmode)
         self.assertRaises(clap.errors.InvalidOperandRangeError, checker.check)
 
 
