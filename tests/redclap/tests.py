@@ -625,18 +625,18 @@ class RedParserNestedModesTests(unittest.TestCase):
         self.assertEqual(operands, got_operands)
         self.assertEqual(nested, got_nested)
 
-    def testA(self):
+    def testGettingOperandsAndNestedModeItems(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
         mode.addMode(name='child', mode=child)
-        argv = ['--foo', '-b', '-B', 'spam', 'ham', 'fake', '--answer', '42']
+        argv = ['--foo', '-b', '-B', 'spam', 'ham', 'child', '--answer', '42']
         parser = clap.parser.Parser(mode).feed(argv)
         self.assertEqual(['spam', 'ham'], parser._getheuroperands()[0])
-        self.assertEqual(['fake', '--answer', '42'], parser._getheuroperands()[1])
+        self.assertEqual(['child', '--answer', '42'], parser._getheuroperands()[1])
 
 
 class RedCheckerNestedModesCheckingTests(unittest.TestCase):
-    def testItemTreatedAsModeBecauseFollowedByOptionAcceptedByOneOfValidChildModes(self):
+    def testFixedRangeItemTreatedAsModeBecauseFollowedByOptionAcceptedByOneOfValidChildModes(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
         mode.addMode(name='child', mode=child)
@@ -646,7 +646,7 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
         self.assertRaises(clap.errors.UnrecognizedModeError, checker._checkchildmode)
         self.assertRaises(clap.errors.UnrecognizedModeError, checker.check)
 
-    def testUnrecognizedOptionInNestedMode(self):
+    def testFixedRangeUnrecognizedOptionInNestedMode(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
         mode.addMode(name='child', mode=child)
@@ -656,7 +656,7 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
         self.assertRaises(clap.errors.UnrecognizedOptionError, checker._checkchildmode)
         self.assertRaises(clap.errors.UnrecognizedOptionError, checker.check)
 
-    def testInvalidNumberOfOperandsBecauseModeIsGivenTooFast(self):
+    def testFixedRangeInvalidNumberOfOperandsBecauseModeIsGivenTooFast(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
         mode.addMode(name='child', mode=child)
@@ -667,7 +667,7 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
         self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
         self.assertRaises(clap.errors.InvalidOperandRangeError, checker.check)
 
-    def testInvalidNumberOfOperandsRaisedBeforeInvalidMode(self):
+    def testFixedRangeInvalidNumberOfOperandsRaisedBeforeInvalidMode(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
         mode.addMode(name='child', mode=child)
@@ -676,6 +676,77 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
         checker = clap.checker.RedChecker(parser)
         self.assertRaises(clap.errors.UnrecognizedModeError, checker._checkchildmode)
         self.assertRaises(clap.errors.InvalidOperandRangeError, checker.check)
+
+    def testFluidRangeItemTreatedAsModeBecauseFollowedByOptionAcceptedByOneOfValidChildModes(self):
+        mode = getTestMode().setOperandsRange(no=[1, 4])
+        child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
+        mode.addMode(name='child', mode=child)
+        parser = clap.parser.Parser(mode)
+        argvariants = [
+                ['--foo', '-b', '-B', 'alpha', 'fake', '--answer', '42'],
+                ['--foo', '-b', '-B', 'alpha', 'beta', 'fake', '--answer', '42'],
+                ['--foo', '-b', '-B', 'alpha', 'beta', 'gamma', 'fake', '--answer', '42'],
+                ['--foo', '-b', '-B', 'alpha', 'beta', 'gamma', 'delta', 'fake', '--answer', '42'],
+                ]
+        for argv in argvariants:
+            parser.feed(argv)
+            checker = clap.checker.RedChecker(parser)
+            self.assertRaises(clap.errors.UnrecognizedModeError, checker._checkchildmode)
+            self.assertRaises(clap.errors.UnrecognizedModeError, checker.check)
+
+    def testFluiddRangeUnrecognizedOptionInNestedMode(self):
+        mode = getTestMode().setOperandsRange(no=[1, 4])
+        child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
+        mode.addMode(name='child', mode=child)
+        parser = clap.parser.Parser(mode)
+        argvariants = [
+                ['--foo', '-b', '-B', 'alpha', 'child', '--answer', '42', '--fake'],
+                ['--foo', '-b', '-B', 'alpha', 'beta', 'child', '--answer', '42', '--fake'],
+                ['--foo', '-b', '-B', 'alpha', 'beta', 'gamma', 'child', '--answer', '42', '--fake'],
+                ['--foo', '-b', '-B', 'alpha', 'beta', 'gamma', 'delta', 'child', '--answer', '42', '--fake'],
+                ]
+        for argv in argvariants:
+            parser.feed(argv)
+            checker = clap.checker.RedChecker(parser)
+            self.assertRaises(clap.errors.UnrecognizedOptionError, checker._checkchildmode)
+            self.assertRaises(clap.errors.UnrecognizedOptionError, checker.check)
+
+    def testFluidRangeInvalidNumberOfOperandsBecauseModeIsGivenTooFast(self):
+        mode = getTestMode().setOperandsRange(no=[1, 4])
+        child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
+        mode.addMode(name='child', mode=child)
+        argv = ['--foo', '-b', '-B', 'child', '--answer', '42']
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
+        checker._checkchildmode()
+        self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
+        self.assertRaises(clap.errors.InvalidOperandRangeError, checker.check)
+
+    def testFluidRangeInvalidNumberOfOperandsBecauseModeIsGivenTooLate(self):
+        mode = getTestMode().setOperandsRange(no=[1, 4])
+        child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
+        mode.addMode(name='child', mode=child)
+        argv = ['--foo', '-b', '-B', 'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'child', '--answer', '42']
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
+        checker._checkchildmode()
+        self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
+        self.assertRaises(clap.errors.InvalidOperandRangeError, checker.check)
+
+    def testFluidRangeInvalidNumberOfOperandsRaisedBeforeInvalidMode(self):
+        mode = getTestMode().setOperandsRange(no=[1, 4])
+        child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
+        mode.addMode(name='child', mode=child)
+        parser = clap.parser.Parser(mode)
+        argvariants = [
+                ['--foo', '-b', '-B', 'fake', '--answer', '42'],
+                ['--foo', '-b', '-B', 'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'fake', '--answer', '42']
+                ]
+        for argv in argvariants:
+            parser.feed(argv)
+            checker = clap.checker.RedChecker(parser)
+            self.assertRaises(clap.errors.UnrecognizedModeError, checker._checkchildmode)
+            self.assertRaises(clap.errors.InvalidOperandRangeError, checker.check)
 
 
 class RedCheckerOperandCheckingTests(unittest.TestCase):
