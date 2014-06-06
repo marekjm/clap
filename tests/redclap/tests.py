@@ -216,6 +216,26 @@ class RedParserGeneralTests(unittest.TestCase):
             self.assertEqual(clap.shared.lookslikeopt(opt), expected)
 
 
+class RedParserParsingTests(unittest.TestCase):
+    def testParsingNoModeNoOperands(self):
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='t', long='test'))
+        mode.addLocalOption(clap.option.Option(short='a', long='answer', arguments=['str', 'int']))
+        argv = ['-a', 'is', '42', '--test']
+        parser = clap.parser.Parser(mode).feed(argv)
+        ui = parser.parse2().finalise().ui()
+        self.assertEqual(('is', 42), ui.get('-a'))
+        self.assertEqual(('is', 42), ui.get('--answer'))
+        self.assertEqual(None, ui.get('-t'))
+        self.assertEqual(None, ui.get('--test'))
+        self.assertIn('-a', ui)
+        self.assertIn('--answer', ui)
+        self.assertIn('-t', ui)
+        self.assertIn('--test', ui)
+        self.assertEqual(0, len(ui))
+        self.assertEqual([], ui.operands())
+
+
 class RedParserOptionsTests(unittest.TestCase):
     def testFeedingArgsToParser(self):
         mode = clap.mode.RedMode()

@@ -8,6 +8,67 @@ except ImportError: TYPEHANDLERS = {}
 finally: pass
 
 
+class ParsedUI:
+    """Object returned by parser, containing parsed commandline arguments in a usale form.
+    """
+    def __init__(self):
+        self._options = {}
+        self._operands = []
+        self._mode = ''
+        self._child, self._parent = None, None
+
+    def __contains__(self, option):
+        """Check if option is present.
+        """
+        return option in self._options
+
+    def __iter__(self):
+        """Return iterator over operands.
+        """
+        return iter(self._operands)
+
+    def __str__(self):
+        """Return name of current mode.
+        """
+        return self._mode
+
+    def __len__(self):
+        """Return number of operands.
+        """
+        return len(self._operands)
+
+    def _appendmode(self, parser):
+        """Append parsed nested mode.
+        """
+        parser._parent = self
+        self._child = parser
+
+    def down(self):
+        """Go to nested mode.
+        """
+        return (self._child if self._child is not None else self)
+
+    def up(self):
+        """Go to parent mode.
+        """
+        return (self._parent if self._parent is not None else self)
+
+    def islast(self):
+        """Return true if current mode has no nested modes.
+        """
+        return self._child is None
+
+    def get(self, option):
+        """Return value of an option.
+        """
+        return self._options[option]
+
+    def operands(self):
+        """Return copy of the list of operands.
+        """
+        return self._operands[:]
+
+
 class Parser:
     """Object that, after being fed with command line arguments and mode,
     parses the arguments according to the mode.
@@ -17,6 +78,7 @@ class Parser:
         self._mode, self._current = mode, mode
         self._parsed = {'options': {}, 'operands': []}
         self._breaker = False
+        self._ui = None
         self._typehandlers = {'str': str, 'int': int, 'float': float}
         self._loadtypehandlers()
 
@@ -217,6 +279,58 @@ class Parser:
                 self._parsed['options'][opt] = args
         self._parsed['operands'] = operands
         return self
+
+    def parse2(self):
+        """Parsing method for RedCLAP.
+        """
+        self._ui = ParsedUI()
+        options = []
+        operands = []
+        input = self._getinput()
+        i = 0
+        while i < len(input):
+            item = input[i]
+            if shared.lookslikeopt(item) and self._mode.accepts(item) and not self._mode.params(item):
+                options.append( (item, None) )
+                alias = self._mode.alias(item)
+                if alias != item: options.append( (alias, None) )
+            elif shared.lookslikeopt(item) and self._mode.accepts(item) and self._mode.params(item):
+                n = len(self._mode.params(item))
+                params = input[i+1:i+1+n]
+                for j, callback in enumerate(self._mode.params(item)):
+                    if type(callback) is str: callback = self._typehandlers[callback]
+                    params[j] = callback(params[j])
+                options.append( (item, params) )
+                alias = self._mode.alias(item)
+                if alias != item: options.append( (alias, params) )
+                i += n
+            else:
+                break
+            i += 1
+        for opt, args in options:
+            if self._mode.getopt(opt)['plural'] and self._mode.getopt(opt).params():
+                if opt not in self._parsed['options']: self._parsed['options'][opt] = []
+                self._parsed['options'][opt].append(args)
+            elif self._mode.getopt(opt)['plural'] and not self._mode.getopt(opt).params():
+                if opt not in self._parsed['options']: self._parsed['options'][opt] = 0
+                self._parsed['options'][opt] += 1
+            else:
+                self._parsed['options'][opt] = (tuple(args) if args is not None else args)
+        operands, nested = self._getheuroperands()
+        self._parsed['operands'] = operands
+        self._ui._options = self._parsed['options']
+        self._ui._operands = self._parsed['operands']
+        return self
+
+    def finalise(self):
+        """Perform needed finalisation.
+        """
+        return self
+
+    def ui(self):
+        """Return parsed UI.
+        """
+        return self._ui
 
     def get(self, key, tuplise=True):
         """Returns arguments passed to an option.
