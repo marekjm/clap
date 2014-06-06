@@ -37,11 +37,11 @@ class ParsedUI:
         """
         return len(self._operands)
 
-    def _appendmode(self, parser):
+    def _appendmode(self, mode):
         """Append parsed nested mode.
         """
-        parser._parent = self
-        self._child = parser
+        mode._parent = self
+        self._child = mode
 
     def down(self):
         """Go to nested mode.
@@ -122,11 +122,12 @@ class Parser:
             if item == '--': break
             #   if non-option string is encountered and it's not an argument -> break
             if i == 0 and not shared.lookslikeopt(item): break
-            if i > 0 and not shared.lookslikeopt(item) and not self._mode.params(self._args[i-1]): break
+            if i > 0 and not shared.lookslikeopt(item) and not shared.lookslikeopt(self._args[i-1]): break
+            if i > 0 and not shared.lookslikeopt(item) and shared.lookslikeopt(self._args[i-1]) and not self._mode.params(self._args[i-1]): break
             #   if non-option string is encountered and it's an argument
             #   increase counter by the number of arguments the option requests and
             #   proceed further
-            if i > 0 and not shared.lookslikeopt(item) and self._mode.params(self._args[i-1]):
+            if i > 0 and not shared.lookslikeopt(item) and shared.lookslikeopt(self._args[i-1]) and self._mode.params(self._args[i-1]):
                 i += len(self._mode.params(self._args[i-1]))-1
             index = i
             i += 1
@@ -320,11 +321,25 @@ class Parser:
         self._parsed['operands'] = operands
         self._ui._options = self._parsed['options']
         self._ui._operands = self._parsed['operands']
+        if nested:
+            name = nested.pop(0)
+            ui = Parser(self._mode._modes[name]).feed(nested).parse2().finalise().ui()
+            ui._mode = name
+            self._ui._appendmode(mode=ui)
         return self
 
     def finalise(self):
         """Perform needed finalisation.
         """
+        for k, v in self._parsed['options'].items():
+            is_global, match = False, None
+            for o in self._mode.options(group='global'):
+                if o.match(k):
+                    is_global, match = True, o
+                    break
+            if is_global and self._ui._child is not None:
+                if k in self._ui._child._options and match.isplural() and not match.params(): self._ui._child._options[k] += 1
+                if k not in self._ui._child._options: self._ui._child._options[k] = v
         return self
 
     def ui(self):
