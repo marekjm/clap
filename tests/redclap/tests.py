@@ -235,6 +235,25 @@ class RedParserParsingTests(unittest.TestCase):
         self.assertEqual(0, len(ui))
         self.assertEqual([], ui.operands())
 
+    def testParsingNoMode(self):
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='t', long='test'))
+        mode.addLocalOption(clap.option.Option(short='a', long='answer', arguments=['str', 'int']))
+        mode.setOperandsRange(no=[2, 2])
+        argv = ['-a', 'is', '42', '--test', 'foo', 'bar']
+        parser = clap.parser.Parser(mode).feed(argv)
+        ui = parser.parse2().finalise().ui()
+        self.assertEqual(('is', 42), ui.get('-a'))
+        self.assertEqual(('is', 42), ui.get('--answer'))
+        self.assertEqual(None, ui.get('-t'))
+        self.assertEqual(None, ui.get('--test'))
+        self.assertIn('-a', ui)
+        self.assertIn('--answer', ui)
+        self.assertIn('-t', ui)
+        self.assertIn('--test', ui)
+        self.assertEqual(2, len(ui))
+        self.assertEqual(['foo', 'bar'], ui.operands())
+
 
 class RedParserOptionsTests(unittest.TestCase):
     def testFeedingArgsToParser(self):
