@@ -141,13 +141,16 @@ class RedMode:
         Valid `no` is a sequence - tuple or list - of zero, one, or two integers.
         """
         least, most = None, None
+        if no: no = ([0] + list(no[1:]) if no[0] is None else no)
         if len(no) == 0:
             pass
-        elif len(no) == 1 and no[0] >= 0:
-            most = no[0]
         elif len(no) == 1 and no[0] < 0:
-            least = -no[0]
-        elif len(no) == 2 and no[0] >= 0 and no[1] >= 0:
+            least, most = 0, -no[0]
+        elif len(no) == 1 and no[0] >= 0:
+            least = no[0]
+        elif len(no) == 2 and no[0] >= 0 and no[1] is None:
+            least = no[0]
+        elif len(no) == 2 and no[0] >= 0 and no[1] >= 0 and no[0] <= no[1]:
             least, most = no[0], no[1]
         else:
             raise errors.InvalidOperandRangeError('provided sequence is invalid for operands range: {0}'.format(no))
