@@ -62,7 +62,6 @@ class ParsedUI:
         """Perform needed finalisation.
         """
         if self._child is not None:
-            print('finalization of:', self._mode)
             for k, v in self._options.items():
                 is_global, match = False, None
                 for o in mode.options(group='global'):
