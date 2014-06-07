@@ -8,8 +8,9 @@ from . import shared
 from . import option
 from . import mode
 from . import formatter
-from . import checker
 from . import parser
+from . import checker
+from . import builder
 
 
 __version__ = '0.9.3'
