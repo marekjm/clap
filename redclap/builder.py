@@ -36,6 +36,10 @@ def export(mode):
     if mode.getOperandsRange() != (None, None):
         model['operands'] = {}
         model['operands']['no'] = list(mode.getOperandsRange())
+    if mode.modes():
+        model['modes'] = {}
+        for name, submode in mode._modes.items():
+            model['modes'][name] = export(submode)
     return model
 
 
