@@ -115,8 +115,8 @@ class RedMode:
         type handlers to child modes.
         """
         for mode in self._modes:
-            self._modes[mode]._options['global'] = []
-            for opt in self._options['global']: self._modes[mode].addGlobalOption(opt)
+            # do not overwrite options defined directly in nested modes
+            for opt in self._options['global']: (self._modes[mode].addGlobalOption(opt) if opt not in self._modes[mode]._options['global'] else None)
             self._modes[mode].propagate()
         return self
 
