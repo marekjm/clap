@@ -14,6 +14,14 @@ class RedMode:
         self._operands = {'range': {'least': None, 'most': None}, 'types': []}
         self._modes = {}
 
+    def __eq__(self, other):
+        """Compares two modes for equality.
+        """
+        opts = (self._options == other._options)
+        operands = (self._operands == other._operands)
+        modes = (self._modes == other._modes)
+        return opts and operands and modes
+
     def addMode(self, name, mode):
         """Adds child mode.
         """
