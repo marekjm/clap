@@ -76,5 +76,25 @@ class RedBuilderTests(unittest.TestCase):
         self.assertEqual(mode, clap.builder.Builder().set(model).build().get())
 
 
+class RedModeExportingTests(unittest.TestCase):
+    def testExportingFlatModeEmpty(self):
+        mode = clap.mode.RedMode()
+        model = {}
+        self.assertEqual(model, clap.builder.export(mode))
+        self.assertEqual(model, clap.builder.export(clap.builder.Builder().set(model).build().get()))
+
+    def testExportingFlatModeWithSingleLocalOption(self):
+        mode = clap.mode.RedMode().addLocalOption(clap.option.Option(short='f', long='foo'))
+        model = {'options': {'local': [{'short': 'f', 'long': 'foo'}]}}
+        self.assertEqual(model, clap.builder.export(mode))
+        self.assertEqual(model, clap.builder.export(clap.builder.Builder().set(model).build().get()))
+
+    def testBuildingFlatModeWithSingleGlobalOption(self):
+        mode = clap.mode.RedMode().addGlobalOption(clap.option.Option(short='f', long='foo'))
+        model = {'options': {'global': [{'short': 'f', 'long': 'foo'}]}}
+        self.assertEqual(model, clap.builder.export(mode))
+        self.assertEqual(model, clap.builder.export(clap.builder.Builder().set(model).build().get()))
+
+
 if __name__ == '__main__':
     unittest.main()

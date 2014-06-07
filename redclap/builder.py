@@ -24,6 +24,18 @@ def readjson(path):
     return json.loads(readfile(path))
 
 
+def export(mode):
+    """Exports mode built in Python to a dict that can be JSON encoded.
+    """
+    model = {}
+    if mode._options['local'] or mode._options['global']: model['options'] = {}
+    for scope in ['local', 'global']:
+        if mode._options[scope]:
+            model['options'][scope] = []
+            for opt in mode._options[scope]: model['options'][scope].append(opt._export())
+    return model
+
+
 class Builder:
     """Object used to convert JSON representation of UI to
     appropriate CLAP objects.

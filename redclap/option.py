@@ -77,10 +77,7 @@ class Option():
         return self._meta[key]
 
     def __iter__(self):
-        return iter(self.meta)
-
-    def __dict__(self):
-        return self.meta
+        return iter(self._meta)
 
     def __list__(self):
         return [(key, self.meta[key]) for key in self.meta]
@@ -98,6 +95,18 @@ class Option():
                 result = False
                 break
         return result
+
+    def _export(self):
+        """Exports dictionary required to build option.
+        """
+        default = Option(short=self['short'], long=self['long'])
+        model = {}
+        if self['short']: model['short'] = self['short'][1:]
+        if self['long']: model['long'] = self['long'][2:]
+        for k, v in self._meta.items():
+            if k in ['short', 'long']: continue
+            if v != default[k]: model[k] = v
+        return model
 
     def alias(self, name):
         """Returns other name of the option (if any).
