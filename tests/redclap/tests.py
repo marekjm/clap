@@ -686,19 +686,20 @@ class RedParserOperandsTests(unittest.TestCase):
 
     def testSettingRangeAtLeast(self):
         mode = clap.mode.RedMode()
-        mode.setOperandsRange(no=[-2])
+        mode.setOperandsRange(no=[2])
         self.assertEqual((2, None), mode.getOperandsRange())
 
     def testSettingRangeAtMost(self):
         mode = clap.mode.RedMode()
-        mode.setOperandsRange(no=[2])
-        self.assertEqual((None, 2), mode.getOperandsRange())
+        mode.setOperandsRange(no=[-2])
+        self.assertEqual((0, 2), mode.getOperandsRange())
 
     def testSettingRangeInvalid(self):
         mode = clap.mode.RedMode()
         ranges = [
                 [-1, -1],
-                [1, 2, 3]
+                [1, 2, 3],
+                [4, 2],
                 ]
         for i in ranges:
             self.assertRaises(clap.errors.InvalidOperandRangeError, mode.setOperandsRange, i)
@@ -726,6 +727,231 @@ class RedParserOperandsTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(short='B', long='baz'))
         parser = clap.parser.Parser(mode).feed(argv)
         self.assertEqual(['baz', '---', '--baz', 'this', 'is', 'not', 'discarded'], parser._getoperands())
+
+
+class RedCheckerOperandCheckingTests(unittest.TestCase):
+    def testOperandRangeAny(self):
+        argvariants = [
+                ['--foo', '-b'],                    # no operands
+                ['--foo', '-b', '0'],               # one operand
+                ['--foo', '-b', '0', '1'],          # two operands
+                ['--foo', '-b', '0', '1', '2'],     # more than two operands
+                ]
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.setOperandsRange(no=[])
+        parser = clap.parser.Parser(mode)
+        for argv in argvariants:
+            parser.feed(argv)
+            if DEBUG: print('checking:', parser._getoperands())
+            checker = clap.checker.RedChecker(parser)
+            checker._checkoperandsrange()
+
+    def testOperandRangeAtLeast(self):
+        argvariants = [
+                ['--foo', '-b', '0', '1'],
+                ['--foo', '-b', '--', '0', '1', '2'],
+                ['--foo', '-b', '--', '0', '1', '2', '3'],
+                ]
+        failvariants = [
+                ['--foo', '-b'],
+                ['--foo', '-b', '0'],
+                ]
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        ranges = [
+                (2,),
+                (2, None),
+                ]
+        for r in ranges:
+            mode.setOperandsRange(no=r)
+            parser = clap.parser.Parser(mode)
+            for argv in argvariants:
+                parser.feed(argv)
+                if DEBUG: print('checking range {0} with operands: {1} (argv: {2})'.format(r, parser._getoperands(), argv))
+                checker = clap.checker.RedChecker(parser)
+                checker._checkoperandsrange()
+            for argv in failvariants:
+                parser.feed(argv)
+                if DEBUG: print('fail checking range {0} with operands: {1} (argv: {2})'.format(r, parser._getoperands(), argv))
+                checker = clap.checker.RedChecker(parser)
+                self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
+
+    def testOperandRangeAtMost(self):
+        argvariants = [
+                ['--foo', '-b'],
+                ['--foo', '-b', '0'],
+                ['--foo', '-b', '0', '1'],
+                ]
+        failvariants = [
+                ['--foo', '-b', '0', '1', '2'],
+                ['--foo', '-b', '0', '1', '2', '3'],
+                ['--foo', '-b', '0', '1', '2', '3', '4'],
+                ]
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        ranges = [(-2,), (0, 2), (None, 2)]
+        for r in ranges:
+            mode.setOperandsRange(no=r)
+            parser = clap.parser.Parser(mode)
+            for argv in argvariants:
+                parser.feed(argv)
+                if DEBUG: print('checking range {0} with input: {1}'.format(r, parser._getoperands()))
+                checker = clap.checker.RedChecker(parser)
+                checker._checkoperandsrange()
+            for argv in failvariants:
+                parser.feed(argv)
+                if DEBUG: print('fail checking range {0} with input: {1}'.format(r, parser._getoperands()))
+                checker = clap.checker.RedChecker(parser)
+                self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
+
+    def testOperandRangeBetween(self):
+        argvariants = [
+                ['--foo', '-b', '0', '1'],
+                ['--foo', '-b', '0', '1', '2'],
+                ['--foo', '-b', '0', '1', '2', '3'],
+                ]
+        failvariants = [
+                ['--foo', '-b'],
+                ['--foo', '-b', '0'],
+                ['--foo', '-b', '0', '1', '2', '3', '4'],
+                ]
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        ranges = [(2, 4)]
+        for r in ranges:
+            mode.setOperandsRange(no=r)
+            parser = clap.parser.Parser(mode)
+            for argv in argvariants:
+                parser.feed(argv)
+                if DEBUG: print('checking range {0} with input: {1}'.format(r, parser._getoperands()))
+                checker = clap.checker.RedChecker(parser)
+                checker._checkoperandsrange()
+            for argv in failvariants:
+                parser.feed(argv)
+                if DEBUG: print('fail checking range {0} with input: {1}'.format(r, parser._getoperands()))
+                checker = clap.checker.RedChecker(parser)
+                self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
+
+    def testOperandRangeZero(self):
+        argvariants = [
+                ['--foo', '-b'],
+                ['--foo', '-b', '--'],
+                ]
+        failvariants = [
+                ['--foo', '-b', '--', '0'],
+                ['--foo', '-b', '--', '0', '1'],
+                ['--foo', '-b', '0'],
+                ['--foo', '-b', '0', '1'],
+                ]
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        ranges = [
+                (0, 0)
+                ]
+        for r in ranges:
+            mode.setOperandsRange(no=r)
+            parser = clap.parser.Parser(mode)
+            for argv in argvariants:
+                parser.feed(argv)
+                if DEBUG: print('checking range {0} with input: {1}'.format(r, parser._getoperands()))
+                checker = clap.checker.RedChecker(parser)
+                checker._checkoperandsrange()
+            for argv in failvariants:
+                parser.feed(argv)
+                if DEBUG: print('fail checking range {0} with input: {1}'.format(r, parser._getoperands()))
+                checker = clap.checker.RedChecker(parser)
+                self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
+
+    def testOperandsRangeNotCompatibleWithListOfTypesInvalidLeast(self):
+        mode = clap.mode.RedMode()
+        ranges = [
+                (3, 4),
+                (-3,),
+                (3,),
+                ]
+        for r in ranges:
+            mode.setOperandsRange(no=r)
+            mode.setOperandsTypes(types=['int', 'int'])
+            parser = clap.parser.Parser(mode).feed([])
+            checker = clap.checker.RedChecker(parser)
+            self.assertRaises(clap.errors.UIDesignError, checker._checkoperandscompat)
+
+    def testOperandsRangeNotCompatibleWithListOfTypesInvalidMost(self):
+        mode = clap.mode.RedMode()
+        ranges = [
+                (2, 5),
+                (5,),
+                (-5,),
+                ]
+        for r in ranges:
+            mode.setOperandsRange(no=r)
+            mode.setOperandsTypes(types=['int', 'int'])
+            parser = clap.parser.Parser(mode).feed([])
+            checker = clap.checker.RedChecker(parser)
+            self.assertRaises(clap.errors.UIDesignError, checker._checkoperandscompat)
+
+    def testOperandsRangeNotCompatibleWithListOfTypesInvalidMostListOfTypesTooLong(self):
+        mode = clap.mode.RedMode()
+        mode.setOperandsRange(no=[2, 3])
+        mode.setOperandsTypes(types=['int', 'int', 'int', 'int'])
+        parser = clap.parser.Parser(mode).feed([])
+        checker = clap.checker.RedChecker(parser)
+        self.assertRaises(clap.errors.UIDesignError, checker._checkoperandscompat)
+
+    def testOperandsRangeNotCompatibleWithListOfTypesInvalidExact(self):
+        mode = clap.mode.RedMode()
+        ranges = [
+                (0, 0),
+                (5, 5),
+                ]
+        for r in ranges:
+            mode.setOperandsRange(no=r)
+            mode.setOperandsTypes(types=['int', 'int', 'int', 'int'])
+            parser = clap.parser.Parser(mode).feed([])
+            checker = clap.checker.RedChecker(parser)
+            self.assertRaises(clap.errors.UIDesignError, checker._checkoperandscompat)
+
+    def testOperandsRangeCompatibleWithListOfTypes(self):
+        mode = clap.mode.RedMode()
+        mode.setOperandsRange(no=[2, 4])
+        mode.setOperandsTypes(types=['int', 'int'])
+        parser = clap.parser.Parser(mode).feed([])
+        checker = clap.checker.RedChecker(parser)
+        checker._checkoperandscompat()
+
+    def testRangeBasedOnlyOnListOfTypes(self):
+        argvariants = [
+                ['--foo', '-b', '0', '1'],
+                ['--foo', '-b', '0', '1', '2', '3'],
+                ['--foo', '-b', '0', '1', '2', '3', '4', '5'],
+                ]
+        failvariants = [
+                ['--foo', '-b'],
+                ['--foo', '-b', '0'],
+                ['--foo', '-b', '0', '1', '2'],
+                ['--foo', '-b', '0', '1', '2', '3', '4'],
+                ]
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.setOperandsTypes(types=['int', 'int'])
+        parser = clap.parser.Parser(mode)
+        for argv in argvariants:
+            parser.feed(argv)
+            if DEBUG: print('checking range based only on list of types ({0}) with input: {1}'.format(len(mode.getOperandsTypes()), parser._getoperands()))
+            checker = clap.checker.RedChecker(parser)
+            checker._checkoperandsrange()
+        for argv in failvariants:
+            parser.feed(argv)
+            if DEBUG: print('fail checking range based only on list of types ({0}) with input: {1}'.format(len(mode.getOperandsTypes()), parser._getoperands()))
+            checker = clap.checker.RedChecker(parser)
+            self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
 
 
 class RedParserNestedModesTests(unittest.TestCase):
@@ -1026,227 +1252,6 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
             checker = clap.checker.RedChecker(parser)
             self.assertRaises(clap.errors.UnrecognizedModeError, checker._checkchildmode)
             self.assertRaises(clap.errors.InvalidOperandRangeError, checker.check)
-
-
-class RedCheckerOperandCheckingTests(unittest.TestCase):
-    def testOperandRangeAny(self):
-        argvariants = [
-                ['--foo', '-b'],                    # no operands
-                ['--foo', '-b', '0'],               # one operand
-                ['--foo', '-b', '0', '1'],          # two operands
-                ['--foo', '-b', '0', '1', '2'],     # more than two operands
-                ]
-        mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
-        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
-        mode.setOperandsRange(no=[])
-        parser = clap.parser.Parser(mode)
-        for argv in argvariants:
-            parser.feed(argv)
-            if DEBUG: print('checking:', parser._getoperands())
-            checker = clap.checker.RedChecker(parser)
-            checker._checkoperandsrange()
-
-    def testOperandRangeAtLeast(self):
-        argvariants = [
-                ['--foo', '-b', '0', '1'],
-                ['--foo', '-b', '--', '0', '1', '2'],
-                ['--foo', '-b', '--', '0', '1', '2', '3'],
-                ]
-        failvariants = [
-                ['--foo', '-b'],
-                ['--foo', '-b', '0'],
-                ]
-        mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
-        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
-        ranges = [(-2,),]
-        for r in ranges:
-            mode.setOperandsRange(no=r)
-            parser = clap.parser.Parser(mode)
-            for argv in argvariants:
-                parser.feed(argv)
-                if DEBUG: print('checking range {0} with operands: {1} (argv: {2})'.format(r, parser._getoperands(), argv))
-                checker = clap.checker.RedChecker(parser)
-                checker._checkoperandsrange()
-            for argv in failvariants:
-                parser.feed(argv)
-                if DEBUG: print('fail checking range {0} with operands: {1} (argv: {2})'.format(r, parser._getoperands(), argv))
-                checker = clap.checker.RedChecker(parser)
-                self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
-
-    def testOperandRangeAtMost(self):
-        argvariants = [
-                ['--foo', '-b'],
-                ['--foo', '-b', '0'],
-                ['--foo', '-b', '0', '1'],
-                ]
-        failvariants = [
-                ['--foo', '-b', '0', '1', '2'],
-                ['--foo', '-b', '0', '1', '2', '3'],
-                ['--foo', '-b', '0', '1', '2', '3', '4'],
-                ]
-        mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
-        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
-        ranges = [(2,), (0, 2)]
-        for r in ranges:
-            mode.setOperandsRange(no=r)
-            parser = clap.parser.Parser(mode)
-            for argv in argvariants:
-                parser.feed(argv)
-                if DEBUG: print('checking range {0} with input: {1}'.format(r, parser._getoperands()))
-                checker = clap.checker.RedChecker(parser)
-                checker._checkoperandsrange()
-            for argv in failvariants:
-                parser.feed(argv)
-                if DEBUG: print('fail checking range {0} with input: {1}'.format(r, parser._getoperands()))
-                checker = clap.checker.RedChecker(parser)
-                self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
-
-    def testOperandRangeBetween(self):
-        argvariants = [
-                ['--foo', '-b', '0', '1'],
-                ['--foo', '-b', '0', '1', '2'],
-                ['--foo', '-b', '0', '1', '2', '3'],
-                ]
-        failvariants = [
-                ['--foo', '-b'],
-                ['--foo', '-b', '0'],
-                ['--foo', '-b', '0', '1', '2', '3', '4'],
-                ]
-        mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
-        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
-        ranges = [(2, 4)]
-        for r in ranges:
-            mode.setOperandsRange(no=r)
-            parser = clap.parser.Parser(mode)
-            for argv in argvariants:
-                parser.feed(argv)
-                if DEBUG: print('checking range {0} with input: {1}'.format(r, parser._getoperands()))
-                checker = clap.checker.RedChecker(parser)
-                checker._checkoperandsrange()
-            for argv in failvariants:
-                parser.feed(argv)
-                if DEBUG: print('fail checking range {0} with input: {1}'.format(r, parser._getoperands()))
-                checker = clap.checker.RedChecker(parser)
-                self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
-
-    def testOperandRangeZero(self):
-        argvariants = [
-                ['--foo', '-b'],
-                ['--foo', '-b', '--'],
-                ]
-        failvariants = [
-                ['--foo', '-b', '--', '0'],
-                ['--foo', '-b', '--', '0', '1'],
-                ['--foo', '-b', '0'],
-                ['--foo', '-b', '0', '1'],
-                ]
-        mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
-        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
-        ranges = [
-                (0,),
-                (0, 0)
-                ]
-        for r in ranges:
-            mode.setOperandsRange(no=r)
-            parser = clap.parser.Parser(mode)
-            for argv in argvariants:
-                parser.feed(argv)
-                if DEBUG: print('checking range {0} with input: {1}'.format(r, parser._getoperands()))
-                checker = clap.checker.RedChecker(parser)
-                checker._checkoperandsrange()
-            for argv in failvariants:
-                parser.feed(argv)
-                if DEBUG: print('fail checking range {0} with input: {1}'.format(r, parser._getoperands()))
-                checker = clap.checker.RedChecker(parser)
-                self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
-
-    def testOperandsRangeNotCompatibleWithListOfTypesInvalidLeast(self):
-        mode = clap.mode.RedMode()
-        ranges = [
-                (3, 4),
-                (-3,),
-                ]
-        for r in ranges:
-            mode.setOperandsRange(no=r)
-            mode.setOperandsTypes(types=['int', 'int'])
-            parser = clap.parser.Parser(mode).feed([])
-            checker = clap.checker.RedChecker(parser)
-            self.assertRaises(clap.errors.UIDesignError, checker._checkoperandscompat)
-
-    def testOperandsRangeNotCompatibleWithListOfTypesInvalidMost(self):
-        mode = clap.mode.RedMode()
-        ranges = [
-                (2, 5),
-                (5,),
-                ]
-        for r in ranges:
-            mode.setOperandsRange(no=r)
-            mode.setOperandsTypes(types=['int', 'int'])
-            parser = clap.parser.Parser(mode).feed([])
-            checker = clap.checker.RedChecker(parser)
-            self.assertRaises(clap.errors.UIDesignError, checker._checkoperandscompat)
-
-    def testOperandsRangeNotCompatibleWithListOfTypesInvalidMostListOfTypesTooLong(self):
-        mode = clap.mode.RedMode()
-        mode.setOperandsRange(no=[2, 3])
-        mode.setOperandsTypes(types=['int', 'int', 'int', 'int'])
-        parser = clap.parser.Parser(mode).feed([])
-        checker = clap.checker.RedChecker(parser)
-        self.assertRaises(clap.errors.UIDesignError, checker._checkoperandscompat)
-
-    def testOperandsRangeNotCompatibleWithListOfTypesInvalidExact(self):
-        mode = clap.mode.RedMode()
-        ranges = [
-                (0, 0),
-                (5, 5),
-                ]
-        for r in ranges:
-            mode.setOperandsRange(no=r)
-            mode.setOperandsTypes(types=['int', 'int', 'int', 'int'])
-            parser = clap.parser.Parser(mode).feed([])
-            checker = clap.checker.RedChecker(parser)
-            self.assertRaises(clap.errors.UIDesignError, checker._checkoperandscompat)
-
-    def testOperandsRangeCompatibleWithListOfTypes(self):
-        mode = clap.mode.RedMode()
-        mode.setOperandsRange(no=[2, 4])
-        mode.setOperandsTypes(types=['int', 'int'])
-        parser = clap.parser.Parser(mode).feed([])
-        checker = clap.checker.RedChecker(parser)
-        checker._checkoperandscompat()
-
-    def testRangeBasedOnlyOnListOfTypes(self):
-        argvariants = [
-                ['--foo', '-b', '0', '1'],
-                ['--foo', '-b', '0', '1', '2', '3'],
-                ['--foo', '-b', '0', '1', '2', '3', '4', '5'],
-                ]
-        failvariants = [
-                ['--foo', '-b'],
-                ['--foo', '-b', '0'],
-                ['--foo', '-b', '0', '1', '2'],
-                ['--foo', '-b', '0', '1', '2', '3', '4'],
-                ]
-        mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(short='f', long='foo'))
-        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
-        mode.setOperandsTypes(types=['int', 'int'])
-        parser = clap.parser.Parser(mode)
-        for argv in argvariants:
-            parser.feed(argv)
-            if DEBUG: print('checking range based only on list of types ({0}) with input: {1}'.format(len(mode.getOperandsTypes()), parser._getoperands()))
-            checker = clap.checker.RedChecker(parser)
-            checker._checkoperandsrange()
-        for argv in failvariants:
-            parser.feed(argv)
-            if DEBUG: print('fail checking range based only on list of types ({0}) with input: {1}'.format(len(mode.getOperandsTypes()), parser._getoperands()))
-            checker = clap.checker.RedChecker(parser)
-            self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
 
 
 if __name__ == '__main__':
