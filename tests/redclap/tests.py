@@ -881,6 +881,38 @@ class RedParserNestedModesTests(unittest.TestCase):
         self.assertEqual(4, ui.get('-g'))
         self.assertEqual(4, ui.get('--global'))
 
+    def testPropagatingGlobalOptionsThatStartAppearingInNonfirstMode(self):
+        mode = clap.mode.RedMode().setOperandsRange(no=[0, 0])
+        mode.addLocalOption(clap.option.Option(short='l', long='local'))
+        child = clap.mode.RedMode().setOperandsRange(no=[0, 0])
+        child.addGlobalOption(clap.option.Option(short='g', long='global', plural=True))
+        child.addMode(name='second', mode=clap.mode.RedMode())
+        mode.addMode(name='child', mode=child)
+        mode.propagate()
+        argv = ['--local', 'child', '-g', '--global', 'second', '--global']
+        ui = clap.parser.Parser(mode).feed(argv).parse2().ui().finalise(mode)
+        self.assertEqual('', str(ui))
+        self.assertIn('-l', ui)
+        self.assertIn('--local', ui)
+        self.assertNotIn('-g', ui)
+        self.assertNotIn('--global', ui)
+        ui = ui.down()
+        self.assertEqual('child', str(ui))
+        self.assertNotIn('-l', ui)
+        self.assertNotIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        self.assertEqual(2, ui.get('-g'))
+        self.assertEqual(2, ui.get('--global'))
+        ui = ui.down()
+        self.assertEqual('second', str(ui))
+        self.assertNotIn('-l', ui)
+        self.assertNotIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        self.assertEqual(3, ui.get('-g'))
+        self.assertEqual(3, ui.get('--global'))
+
 
 class RedCheckerNestedModesCheckingTests(unittest.TestCase):
     def testFixedRangeItemTreatedAsModeBecauseFollowedByOptionAcceptedByOneOfValidChildModes(self):
