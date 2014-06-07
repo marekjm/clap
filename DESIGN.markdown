@@ -161,7 +161,7 @@ under which the functions were attached, a custom string, not by the function na
 
 #### Operand schemes
 
-The `__operands__` directive may include zero or one *scheme* of operands.
+The `operands` directive may include a *scheme* of operands.
 If no scheme is set, CLAP will accept any number and any type of operands.
 Otherwise, the set of operands given will be matched against the scheme present.
 
@@ -171,19 +171,19 @@ Otherwise, the set of operands given will be matched against the scheme present.
 ```
 {
     ...
-    "__operands__": [
-        {
-            "no": [<int>, <int>...],
-            "types": [<str>, <str>...]
-        }
-    ]
+    "operands":  {
+        "no": [<int>, <int>],
+        "types": [<str>, <str>...]
+    }
 }
 ```
 
 The `"no"` rule specifies number of operands accepted by the mode.
 The `"types"` rule specifies expected types of operands.
 
-Both rules can be omitted, with certain restrictions.
+##### Omission
+
+Both rules can be omitted.
 
 If *no* rule is omitted and *types* is not, number of operands must be divisible by the length of types list.
 List of operands will be divided into groups, and each group will have its members converted according to the
@@ -214,17 +214,18 @@ If list is empty, CLAP will accept any arguments.
 
 **`[<int>]`**
 
-If list contains one integer and it is not negative, CLAP will accept *at most* `<int>` operands.
-Useful trick is to set *no* rule to `[0]` which will cause CLAP to accept no operands.
+If list contains one integer and it is not negative, CLAP will accept *at least* `<int>` operands.
 
-**`[-<int>]**
+**`[-<int>]`**
 
-If list contains one integer and it is negative, CLAP will accept *at least* `<int>` operands.
+If list contains one integer and it is negative, CLAP will accept *at most* `<int>` operands.
 
 **`[<int>, <int>]`**
 
 If list contains two integers and both are not negative, CLAP will accept any number of operands between these two integers (inclusive).
 This means that `[0, 2]` sequence will cause CLAP to accept 0, 1 or 2 operands.
+The *no* rule can be set to `[0, 0]` to make CLAP accept no operands.
+If the first item is `None` it is converted to `0`.
 
 **`[-<int>, -<int>]` and other sequences**
 
