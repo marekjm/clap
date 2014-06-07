@@ -33,6 +33,9 @@ def export(mode):
         if mode._options[scope]:
             model['options'][scope] = []
             for opt in mode._options[scope]: model['options'][scope].append(opt._export())
+    if mode.getOperandsRange() != (None, None):
+        model['operands'] = {}
+        model['operands']['no'] = list(mode.getOperandsRange())
     return model
 
 

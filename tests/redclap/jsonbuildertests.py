@@ -89,9 +89,35 @@ class RedModeExportingTests(unittest.TestCase):
         self.assertEqual(model, clap.builder.export(mode))
         self.assertEqual(model, clap.builder.export(clap.builder.Builder().set(model).build().get()))
 
-    def testBuildingFlatModeWithSingleGlobalOption(self):
+    def testExportingFlatModeWithSingleGlobalOption(self):
         mode = clap.mode.RedMode().addGlobalOption(clap.option.Option(short='f', long='foo'))
         model = {'options': {'global': [{'short': 'f', 'long': 'foo'}]}}
+        self.assertEqual(model, clap.builder.export(mode))
+        self.assertEqual(model, clap.builder.export(clap.builder.Builder().set(model).build().get()))
+
+    def testExportingFlatModeWithSingleGlobalAndLocalOption(self):
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='l', long='local'))
+        mode.addGlobalOption(clap.option.Option(short='g', long='global'))
+        model = {'options': {'local': [{'short': 'l', 'long': 'local'}], 'global': [{'short': 'g', 'long': 'global'}]}}
+        self.assertEqual(model, clap.builder.export(mode))
+        self.assertEqual(model, clap.builder.export(clap.builder.Builder().set(model).build().get()))
+
+    def testExportingFlatModeWithSetFixedOperandsRange(self):
+        mode = clap.mode.RedMode().setOperandsRange(no=[2, 2])
+        model = {'operands': {'no': [2, 2]}}
+        self.assertEqual(model, clap.builder.export(mode))
+        self.assertEqual(model, clap.builder.export(clap.builder.Builder().set(model).build().get()))
+
+    def testExportingFlatModeWithSetFluidOperandsRangeAtMost(self):
+        mode = clap.mode.RedMode().setOperandsRange(no=[0, 4])
+        model = {'operands': {'no': [0, 4]}}
+        self.assertEqual(model, clap.builder.export(mode))
+        self.assertEqual(model, clap.builder.export(clap.builder.Builder().set(model).build().get()))
+
+    def testExportingFlatModeWithSetFluidOperandsRangeAtLeast(self):
+        mode = clap.mode.RedMode().setOperandsRange(no=[4, None])
+        model = {'operands': {'no': [4, None]}}
         self.assertEqual(model, clap.builder.export(mode))
         self.assertEqual(model, clap.builder.export(clap.builder.Builder().set(model).build().get()))
 
