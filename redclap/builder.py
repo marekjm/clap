@@ -55,6 +55,9 @@ class Builder:
                 for opt in self._model['options']['global']: ui.addGlobalOption(option.Option(**opt))
         if 'operands' in self._model:
             if 'no' in self._model['operands']: ui.setOperandsRange(no=self._model['operands']['no'])
+        if 'modes' in self._model:
+            for name, nmodel in self._model['modes'].items(): ui.addMode(name=name, mode=Builder().set(nmodel).build().get())
+        ui.propagate()
         self._mode = ui
         return self
 

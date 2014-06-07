@@ -62,6 +62,19 @@ class RedBuilderTests(unittest.TestCase):
         for model in models:
             self.assertEqual(mode, clap.builder.Builder().set(model).build().get())
 
+    def testBuildingNestedModeEmpty(self):
+        mode = clap.mode.RedMode().addMode(name='child', mode=clap.mode.RedMode())
+        model = {'modes': {'child': {}}}
+        self.assertEqual(mode, clap.builder.Builder().set(model).build().get())
+
+    def testBuildingNestedModeWithSingleGlobalOption(self):
+        mode = clap.mode.RedMode()
+        mode.addGlobalOption(clap.option.Option(short='g', long='global'))
+        mode.addMode(name='child', mode=clap.mode.RedMode().addMode(name='infant', mode=clap.mode.RedMode()))
+        mode.propagate()
+        model = {'modes': {'child': {'modes': {'infant': {}}}}, 'options': {'global': [{'short': 'g', 'long': 'global'}]}}
+        self.assertEqual(mode, clap.builder.Builder().set(model).build().get())
+
 
 if __name__ == '__main__':
     unittest.main()
