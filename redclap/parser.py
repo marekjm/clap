@@ -58,6 +58,23 @@ class ParsedUI:
         """
         return self._child is None
 
+    def finalise(self, mode):
+        """Perform needed finalisation.
+        """
+        if self._child is not None:
+            print('finalization of:', self._mode)
+            for k, v in self._options.items():
+                is_global, match = False, None
+                for o in mode.options(group='global'):
+                    if o.match(k):
+                        is_global, match = True, o
+                        break
+                if is_global:
+                    if k in self._child._options and match.isplural() and not match.params(): self._child._options[k] += v
+                    if k not in self._child._options: self._child._options[k] = v
+            self._child.finalise(mode._modes[self._child._mode])
+        return self
+
     def get(self, option):
         """Return value of an option.
         """
@@ -323,23 +340,10 @@ class Parser:
         self._ui._operands = self._parsed['operands']
         if nested:
             name = nested.pop(0)
-            ui = Parser(self._mode._modes[name]).feed(nested).parse2().finalise().ui()
+            mode = self._mode._modes[name]
+            ui = Parser(mode).feed(nested).parse2().ui()
             ui._mode = name
             self._ui._appendmode(mode=ui)
-        return self
-
-    def finalise(self):
-        """Perform needed finalisation.
-        """
-        for k, v in self._parsed['options'].items():
-            is_global, match = False, None
-            for o in self._mode.options(group='global'):
-                if o.match(k):
-                    is_global, match = True, o
-                    break
-            if is_global and self._ui._child is not None:
-                if k in self._ui._child._options and match.isplural() and not match.params(): self._ui._child._options[k] += 1
-                if k not in self._ui._child._options: self._ui._child._options[k] = v
         return self
 
     def ui(self):
