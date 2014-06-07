@@ -47,6 +47,15 @@ class Builder:
     def build(self):
         """Builds UI from loaded JSON.
         """
+        ui = mode.RedMode()
+        if 'options' in self._model:
+            if 'local' in self._model['options']:
+                for opt in self._model['options']['local']: ui.addLocalOption(option.Option(**opt))
+            if 'global' in self._model['options']:
+                for opt in self._model['options']['global']: ui.addGlobalOption(option.Option(**opt))
+        if 'operands' in self._model:
+            if 'no' in self._model['operands']: ui.setOperandsRange(no=self._model['operands']['no'])
+        self._mode = ui
         return self
 
     def get(self):
