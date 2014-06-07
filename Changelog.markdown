@@ -1,15 +1,48 @@
-#### Changelog file for CLAP
+# Changelog file for CLAP
 
 This file describes changes in CLAP codebase, usage, public and private API and documentation.
 It's mostly useful for developers who use the CLAP library.
 
-##### Rules
+#### Rules
 
 * __fix__:  bug fixes,
 * __upd__:  updated feature,
 * __new__:  new features,
 * __dep__:  deprecated features (scheduled for removal in next *n* versions),
 * __rem__:  removed features,
+
+
+----
+
+## Version 0.9.2 (2014-06-07)
+
+This is the first version of RedCLAP, i.e. *Redesigned CLAP* and is not backwards compatible with previous release.
+However, it brings major improvements to the code.
+
+Notable new features are *operand ranges*, a method for designer to set a range of operands accepted by CLAP and
+let CLAP validate them, and *plural options* - which tell CLAP to not overwrite the previously found value of an options but
+rather build a list of all values passed (in case of options that take no arguments - to count how many times they occured).
+This provides for greater control over user input.
+
+Another feature is just a huge bugfix. Nested modes are finally working properly.
+The can be nested *ad infinitum*, all can have operands with set ranges, all can have global and local options.
+
+Successful improvement was done on the front of UI building.
+Global options can now be added freely - after or before modes are added and are *propagated* to nested modes after the
+(who would have guessed) `.propagate()` method is called on the top level mode.
+
+
+- **new**:  [`DESIGN.markdown`](./DESIGN.markdown) file has been added,
+- **new**:  development moved to `redclap/` directory while `clap/` contains old, untouched code from 0.9.1 release,
+- **new**:  operand ranges,
+- **new**:  new bahaviour of `.get()` method of parsed UI,
+- **new**:  plural options,
+
+- **fix**:  nested modes,
+- **fix**:  global options propagation,
+
+- **rem**:  old JSON UIs must be ported to new JSON spec,
+- **rem**:  CLAP v0.9.2 changed Python APIs for building UIs,
 
 
 ----
