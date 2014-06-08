@@ -127,7 +127,7 @@ class RedModeExportingTests(unittest.TestCase):
         self.assertEqual(model, clap.builder.export(mode))
         self.assertEqual(model, clap.builder.export(clap.builder.Builder().set(model).build().get()))
 
-    def testBuildingNestedModeWithSingleGlobalOption(self):
+    def testExportingNestedModeWithSingleGlobalOption(self):
         mode = clap.mode.RedMode()
         mode.addGlobalOption(clap.option.Option(short='g', long='global'))
         mode.addMode(name='child', mode=clap.mode.RedMode().addMode(name='infant', mode=clap.mode.RedMode()))
