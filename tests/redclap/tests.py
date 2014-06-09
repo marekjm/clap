@@ -239,7 +239,7 @@ class RedParserParsingTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(short='a', long='answer', arguments=['str', 'int']))
         argv = ['-a', 'is', '42', '--test']
         parser = clap.parser.Parser(mode).feed(argv)
-        ui = parser.parse2().ui().finalise(mode)
+        ui = parser.parse().ui().finalise()
         self.assertEqual(('is', 42), ui.get('-a'))
         self.assertEqual(('is', 42), ui.get('--answer'))
         self.assertEqual(None, ui.get('-t'))
@@ -259,7 +259,7 @@ class RedParserParsingTests(unittest.TestCase):
         mode.setOperandsRange(no=[2, 2])
         argv = ['-a', 'is', '42', '--test', 'foo', 'bar']
         parser = clap.parser.Parser(mode).feed(argv)
-        ui = parser.parse2().ui().finalise(mode)
+        ui = parser.parse().ui().finalise()
         self.assertEqual(('is', 42), ui.get('-a'))
         self.assertEqual(('is', 42), ui.get('--answer'))
         self.assertEqual(None, ui.get('-t'))
@@ -281,7 +281,7 @@ class RedParserParsingTests(unittest.TestCase):
         mode.addMode(name='child', mode=child)
         argv = ['-a', 'is', '42', '--test', 'child', '--spam']
         parser = clap.parser.Parser(mode).feed(argv)
-        ui = parser.parse2().ui().finalise(mode)
+        ui = parser.parse().ui().finalise()
         self.assertEqual(('is', 42), ui.get('-a'))
         self.assertEqual(('is', 42), ui.get('--answer'))
         self.assertEqual(None, ui.get('-t'))
@@ -312,7 +312,7 @@ class RedParserParsingTests(unittest.TestCase):
         mode.addMode(name='child', mode=child)
         argv = ['-a', 'is', '42', '--test', 'alpha', 'child', '--spam']
         parser = clap.parser.Parser(mode).feed(argv)
-        ui = parser.parse2().ui().finalise(mode)
+        ui = parser.parse().ui().finalise()
         self.assertEqual(('is', 42), ui.get('-a'))
         self.assertEqual(('is', 42), ui.get('--answer'))
         self.assertEqual(None, ui.get('-t'))
@@ -986,7 +986,7 @@ class RedParserNestedModesTests(unittest.TestCase):
         mode.addMode(name='child', mode=child)
         mode.propagate()
         argv = ['--local', '--global', 'child']
-        ui = clap.parser.Parser(mode).feed(argv).parse2().ui().finalise(mode)
+        ui = clap.parser.Parser(mode).feed(argv).parse().ui().finalise()
         self.assertEqual('', str(ui))
         self.assertIn('-l', ui)
         self.assertIn('--local', ui)
@@ -1007,7 +1007,7 @@ class RedParserNestedModesTests(unittest.TestCase):
         mode.addMode(name='child', mode=child)
         mode.propagate()
         argv = ['--local', '--global', '42', 'child']
-        ui = clap.parser.Parser(mode).feed(argv).parse2().ui().finalise(mode)
+        ui = clap.parser.Parser(mode).feed(argv).parse().ui().finalise()
         self.assertEqual('', str(ui))
         self.assertIn('-l', ui)
         self.assertIn('--local', ui)
@@ -1032,7 +1032,7 @@ class RedParserNestedModesTests(unittest.TestCase):
         mode.addMode(name='child', mode=child)
         mode.propagate()
         argv = ['--local', '--global', '42', 'child', '-g', '69']
-        ui = clap.parser.Parser(mode).feed(argv).parse2().ui().finalise(mode)
+        ui = clap.parser.Parser(mode).feed(argv).parse().ui().finalise()
         self.assertEqual('', str(ui))
         self.assertIn('-l', ui)
         self.assertIn('--local', ui)
@@ -1057,7 +1057,7 @@ class RedParserNestedModesTests(unittest.TestCase):
         mode.addMode(name='child', mode=child)
         mode.propagate()
         argv = ['--local', '--global', 'child']
-        ui = clap.parser.Parser(mode).feed(argv).parse2().ui().finalise(mode)
+        ui = clap.parser.Parser(mode).feed(argv).parse().ui().finalise()
         self.assertEqual('', str(ui))
         self.assertIn('-l', ui)
         self.assertIn('--local', ui)
@@ -1082,7 +1082,7 @@ class RedParserNestedModesTests(unittest.TestCase):
         mode.addMode(name='child', mode=child)
         mode.propagate()
         argv = ['--local', '--global', 'child', '-g', '--global', 'second', '--global']
-        ui = clap.parser.Parser(mode).feed(argv).parse2().ui().finalise(mode)
+        ui = clap.parser.Parser(mode).feed(argv).parse().ui().finalise()
         self.assertEqual('', str(ui))
         self.assertIn('-l', ui)
         self.assertIn('--local', ui)
@@ -1116,7 +1116,7 @@ class RedParserNestedModesTests(unittest.TestCase):
         mode.addMode(name='child', mode=child)
         mode.propagate()
         argv = ['--local', 'child', '-g', '--global', 'second', '--global']
-        ui = clap.parser.Parser(mode).feed(argv).parse2().ui().finalise(mode)
+        ui = clap.parser.Parser(mode).feed(argv).parse().ui().finalise()
         self.assertEqual('', str(ui))
         self.assertIn('-l', ui)
         self.assertIn('--local', ui)

@@ -59,20 +59,20 @@ class ParsedUI:
         """
         return self._child is None
 
-    def finalise(self, mode):
+    def finalise(self):
         """Perform needed finalisation.
         """
         if self._child is not None:
             for k, v in self._options.items():
                 is_global, match = False, None
-                for o in mode.options(group='global'):
+                for o in self._mode.options(group='global'):
                     if o.match(k):
                         is_global, match = True, o
                         break
                 if is_global:
                     if k in self._child._options and match.isplural() and not match.params(): self._child._options[k] += v
                     if k not in self._child._options: self._child._options[k] = v
-            self._child.finalise(mode._modes[self._child._name])
+            self._child.finalise()
         return self
 
     def get(self, key, tuplise=True):
@@ -276,46 +276,6 @@ class Parser:
         return variant
 
     def parse(self):
-        """Parses given input.
-        """
-        options = []
-        operands = []
-        input = self._getinput()
-        i = 0
-        while i < len(input):
-            item = input[i]
-            if shared.lookslikeopt(item) and self._mode.accepts(item) and not self._mode.params(item):
-                options.append( (item, None) )
-                alias = self._mode.alias(item)
-                if alias != item: options.append( (alias, None) )
-            elif shared.lookslikeopt(item) and self._mode.accepts(item) and self._mode.params(item):
-                n = len(self._mode.params(item))
-                params = input[i+1:i+1+n]
-                for j, callback in enumerate(self._mode.params(item)):
-                    if type(callback) is str: callback = self._typehandlers[callback]
-                    params[j] = callback(params[j])
-                options.append( (item, params) )
-                alias = self._mode.alias(item)
-                if alias != item: options.append( (alias, params) )
-                i += n
-            else:
-                break
-            i += 1
-        operands = self._args[i:]
-        if operands and operands[0] == '--': operands.pop(0)
-        for opt, args in options:
-            if self._mode.getopt(opt)['plural'] and self._mode.getopt(opt).params():
-                if opt not in self._parsed['options']: self._parsed['options'][opt] = []
-                self._parsed['options'][opt].append(args)
-            elif self._mode.getopt(opt)['plural'] and not self._mode.getopt(opt).params():
-                if opt not in self._parsed['options']: self._parsed['options'][opt] = 0
-                self._parsed['options'][opt] += 1
-            else:
-                self._parsed['options'][opt] = args
-        self._parsed['operands'] = operands
-        return self
-
-    def parse2(self):
         """Parsing method for RedCLAP.
         """
         self._ui = ParsedUI()
@@ -359,7 +319,7 @@ class Parser:
         if nested:
             name = nested.pop(0)
             mode = self._mode._modes[name]
-            ui = Parser(mode).feed(nested).parse2().ui()
+            ui = Parser(mode).feed(nested).parse().ui()
             ui._name = name
             ui._mode = mode
             self._ui._appendmode(mode=ui)
