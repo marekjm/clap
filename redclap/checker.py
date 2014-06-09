@@ -34,7 +34,7 @@ class RedChecker():
                 types = self._parser._mode.getopt(opt).params()
                 if i+len(types) >= len(input):
                     # missing parameters at the end of input
-                    raise errors.MissingArgumentError('{0} ({1})'.format(opt, ', '.join([str(t)[8:-2] for t in types])))
+                    raise errors.MissingArgumentError('{0}={1}'.format(opt, ', '.join(types)))
                 if shared.lookslikeopt(input[i+1]) and self._parser._mode.accepts(input[i+1]):
                     # number of parameters too low before next option is passed
                     raise errors.MissingArgumentError(opt)
@@ -126,6 +126,9 @@ class RedChecker():
         got = len(self._parser._getheuroperands()[0])
         least, most = self._parser._mode.getOperandsRange()
         fail = False
+        if least is not None and least == most and got != least:
+            msg = 'expected exactly {0} operands but got {1}'.format(least, got)
+            raise errors.InvalidOperandRangeError(msg)
         if least is not None and got < least:
             msg = 'expected at least {0} operands but got {1}'.format(least, got)
             raise errors.InvalidOperandRangeError(msg)
@@ -140,9 +143,6 @@ class RedChecker():
             elif got < typeslen:
                 msg = 'expected at least {0} operands but got {1}'.format(typeslen, got)
                 raise errors.InvalidOperandRangeError(msg)
-        if least is not None and least == most and got != least:
-            msg = 'expected exactly {0} operands but got {2}'.format(least, got)
-            raise errors.InvalidOperandRangeError(msg)
 
     def _checkchildmode(self, rangecompat=False):
         """Checks if provided nested mode is accepted and has valid input.
