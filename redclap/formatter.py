@@ -73,6 +73,7 @@ class Formatter():
         """
         self._splitshorts()
         self._splitequal()
+        return self
 
     def reset(self):
         """Resets `formatted` back to `argv`.
