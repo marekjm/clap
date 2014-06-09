@@ -14,7 +14,8 @@ class ParsedUI:
     def __init__(self):
         self._options = {}
         self._operands = []
-        self._mode = ''
+        self._name = ''
+        self._mode = None
         self._child, self._parent = None, None
 
     def __contains__(self, option):
@@ -30,7 +31,7 @@ class ParsedUI:
     def __str__(self):
         """Return name of current mode.
         """
-        return self._mode
+        return self._name
 
     def __len__(self):
         """Return number of operands.
@@ -71,13 +72,29 @@ class ParsedUI:
                 if is_global:
                     if k in self._child._options and match.isplural() and not match.params(): self._child._options[k] += v
                     if k not in self._child._options: self._child._options[k] = v
-            self._child.finalise(mode._modes[self._child._mode])
+            self._child.finalise(mode._modes[self._child._name])
         return self
 
-    def get(self, option):
-        """Return value of an option.
+    def get(self, key, tuplise=True):
+        """Returns arguments passed to an option.
+        - options that take no arguments return None,
+        - options that are plural AND take no argument return number of times they were passed,
+        - options that take exactly one argument return it directly,
+        - options that take at least two arguments return tuple containing their arguments,
+        - options that take at least one argument AND are plural return list of tuples containing arguments passed
+          to each occurence of the option in input,
+        
+        Tuple-isation can be switched off by passing 'tuplise` parameter as false;
+        in such case lists are returned for options that take at least two arguments and
+        direct values for options taking one argumet or less.
         """
-        return self._options[option]
+        option = self._mode.getopt(key)
+        value = self._options[key]
+        if option.isplural() and not option.params(): return value
+        if not option.params(): return None
+        if len(option.params()) == 1 and not option.isplural(): return value[0]
+        if tuplise: value = ([tuple(v) for v in value] if option.isplural() else tuple(value))
+        return value
 
     def operands(self):
         """Return copy of the list of operands.
@@ -302,6 +319,7 @@ class Parser:
         """Parsing method for RedCLAP.
         """
         self._ui = ParsedUI()
+        self._ui._mode = self._mode
         options = []
         operands = []
         input = self._getinput()
@@ -342,7 +360,8 @@ class Parser:
             name = nested.pop(0)
             mode = self._mode._modes[name]
             ui = Parser(mode).feed(nested).parse2().ui()
-            ui._mode = name
+            ui._name = name
+            ui._mode = mode
             self._ui._appendmode(mode=ui)
         return self
 
