@@ -47,8 +47,8 @@ class Builder:
     """Object used to convert JSON representation of UI to
     appropriate CLAP objects.
     """
-    def __init__(self):
-        self._model = None
+    def __init__(self, model=None):
+        self._model = model
         self._mode = None
 
     def load(self, path):
