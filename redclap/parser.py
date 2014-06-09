@@ -163,12 +163,12 @@ class Parser:
         operands = (operands[:operands.index('---')] if ('---' in operands and self._breaker) else operands[:])
         return operands
 
-    def _isAcceptedInChildModes(self, mode, option):
+    def _isAcceptedInChildModes(self, option):
         """Return true if given option is accepted in at least one child mode.
         """
         accepted = False
-        for m in mode.modes():
-            if mode.getmode(m).accepts(option):
+        for m in self._mode.modes():
+            if self._mode.getmode(m).accepts(option):
                 accepted = True
                 break
         return accepted
@@ -182,10 +182,11 @@ class Parser:
             item = opers[i]
             if self._mode.hasmode(item): break
             if shared.lookslikeopt(item):
-                accepted = False
-                operands.pop(-1)
-                i -= 1
-                break
+                accepted = self._isAcceptedInChildModes(item)
+                if accepted:
+                    operands.pop(-1)
+                    i -= 1
+                    break
             operands.append(item)
             i += 1
         nested = opers[i:]
