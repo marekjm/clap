@@ -1,0 +1,55 @@
+{
+    "help": "this is example flat mode",
+    "modes": {},
+    "options": {
+        "global": [
+            {
+                "short": "h",
+                "long": "help",
+                "help": "display help message"
+            },
+            {
+                "short": "v",
+                "long": "verbose",
+                "conflicts": ["--quiet"],
+                "help": "display verbose output"
+            },
+            {
+                "short": "q",
+                "long": "quiet",
+                "conflicts": ["--verbose"],
+                "help": "be silent"
+            },
+            {
+                "long": "version",
+                "help": "display CLAP version"
+            }
+        ],
+        "local": [
+            {
+                "long": "ok",
+                "required": true
+            },
+            {
+                "short": "e",
+                "long": "echo",
+                "arguments": ["str"],
+                "plural": true,
+                "help": "print option's argument to screen"
+            },
+            {
+                "short": "q",
+                "long": "question",
+                "requires": ["--answer"],
+                "help": "just an option"
+            },
+            {
+                "short": "a",
+                "long": "answer",
+                "requires": ["--question"],
+                "help": "an answer to the question"
+            }
+        ]
+    },
+    "operands": {"no": [0]}
+}
