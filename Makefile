@@ -1,29 +1,23 @@
-PYTHONVERSION=3.3
+PYTHONVERSION=3.4
 
 .PHONY: tests tests-python2
 
-tests:
-	python3 -m unittest --catch --failfast --verbose tests.py
-
-tests-python2:
-	python2 -m unittest --catch --failfast --verbose tests
 
 doc:
 	echo "" > DOC
-	pydoc3 ./clap/* >> DOC
+	pydoc3 ./redclap/* >> DOC
 
 install:
 	make tests
 	make clean
-	cp -Rv ./clap /usr/lib/python${PYTHONVERSION}/site-packages/
+	cp -Rv ./redclap /usr/lib/python${PYTHONVERSION}/site-packages/
 
-local-install: ./clap/*.py
-	make tests
+local-install: ./redclap/*.py
 	make clean
-	cp -Rv ./clap ~/.local/lib/python${PYTHONVERSION}/site-packages/
+	cp -Rv ./redclap ~/.local/lib/python${PYTHONVERSION}/site-packages/
 
 clean:
-	rm -rv ./clap/__pycache__
+	rm -rv ./redclap/__pycache__
 
 
 redclap-test:
