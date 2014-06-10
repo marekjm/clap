@@ -10,11 +10,11 @@ doc:
 install:
 	make tests
 	make clean
-	cp -Rv ./redclap /usr/lib/python${PYTHONVERSION}/site-packages/
+	make install
 
-local-install: ./redclap/*.py
-	make clean
-	cp -Rv ./redclap ~/.local/lib/python${PYTHONVERSION}/site-packages/
+local-install: ./clap/*.py
+	mkdir -p ~/.local/lib/python${PYTHONVERSION}/site-packages/clap/
+	cp -Rv ./clap/*.py ~/.local/lib/python${PYTHONVERSION}/site-packages/clap/
 
 clean:
 	rm -rv ./redclap/__pycache__
