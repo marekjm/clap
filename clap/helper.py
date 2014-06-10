@@ -14,9 +14,12 @@ def makelines(s, maxlen):
     lines = []
     words = s.split(' ')
     line = ''
-    for i in words:
-        if len(line + i) <= maxlen-1:
-            line += (i + ' ')
+    i = 0
+    while i < len(words):
+        word = words[i]
+        if len(line + word) <= maxlen-1:
+            line += (word + ' ')
+            i += 1
         else:
             lines.append(line)
             line = ''
@@ -55,6 +58,10 @@ class Helper:
         self._usage.append(line)
         return self
 
+    def setmaxlen(self, n):
+        self._maxlen = n
+        return self
+
     def gen(self):
         usage_head = 'usage: {0} '.format(self._progname)
         usage_indent = len(usage_head) * ' '
@@ -67,7 +74,7 @@ class Helper:
         intro_head = 'MAIN MODE of "{0}":'.format(self._progname)
         intro_lines = []
         intro_lines.append( ('str', intro_head) )
-        for i in makelines(self._mode._help, 96): intro_lines.append( ('str', self._indent['string'] + i) )
+        for i in makelines(self._mode._help, self._maxlen-4): intro_lines.append( ('str', self._indent['string'] + i) )
         self._lines.extend(intro_lines)
         if self._mode._help: self._lines.append( ('str', '') )
         self._lines.extend(_getoptionlines(self._mode))
@@ -78,7 +85,7 @@ class Helper:
             intro_lines = []
             intro_lines.append( ('str', intro_head) )
             mode = self._mode.getmode(m)
-            for i in makelines(mode._help, 92): intro_lines.append( ('str', self._indent['string']*2 + i) )
+            for i in makelines(mode._help, self._maxlen-8): intro_lines.append( ('str', self._indent['string']*2 + i) )
             self._lines.extend(intro_lines)
             if mode._help: self._lines.append( ('str', '') )
             self._lines.extend(_getoptionlines(mode, level=2))
