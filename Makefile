@@ -5,23 +5,24 @@ PYTHONVERSION=3.4
 
 doc:
 	echo "" > DOC
-	pydoc3 ./redclap/* >> DOC
+	pydoc3 ./clap/* >> DOC
 
 install:
 	make tests
 	make clean
-	make install
+	mkdir -p /usr/lib/python${PYTHONVERSION}/site-packages/clap
+	cp -v ./clap/*.py /usr/lib/python${PYTHONVERSION}/site-packages/clap/
 
 local-install: ./clap/*.py
-	mkdir -p ~/.local/lib/python${PYTHONVERSION}/site-packages/clap/
-	cp -Rv ./clap/*.py ~/.local/lib/python${PYTHONVERSION}/site-packages/clap/
+	mkdir -p ~/.local/lib/python${PYTHONVERSION}/site-packages/clap
+	cp -v ./clap/*.py ~/.local/lib/python${PYTHONVERSION}/site-packages/clap/
 
 clean:
-	rm -rv ./redclap/__pycache__
+	rm -rv ./clap/__pycache__
 
 
-redclap-test:
-	python3 ./tests/redclap/tests.py --catch --failfast --verbose 
+test:
+	python3 ./tests/clap/tests.py --catch --failfast --verbose 
 
-redclap-test-builder:
-	python3 ./tests/redclap/buildertests.py --catch --failfast --verbose 
+test-builder:
+	python3 ./tests/clap/buildertests.py --catch --failfast --verbose 
