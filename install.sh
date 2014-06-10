@@ -14,5 +14,5 @@ if [ $1 == '']; then
 else
     make tests
     make clean
-    cp -Rv ./clap/ /usr/lib/python$1/site-packages/
+    cp -Rv ./redclap/ /usr/lib/python$1/site-packages/
 fi
