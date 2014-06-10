@@ -1,0 +1,70 @@
+{
+    "help": "This is example nested mode. It can be used to learn how UIs with nested modes are built in CLAP and how to interact with them in code.",
+    "modes": {
+        "foo": {
+            "help": "This is child mode with name 'foo'.",
+            "options": {
+                "local": [
+                    {
+                        "short": "a",
+                        "long": "alpha",
+                        "help": "first letter of Greek alphabet"
+                    },
+                    {
+                        "short": "b",
+                        "long": "beta",
+                        "arguments": ["int"],
+                        "help": "second letter of Greek alphabet"
+                    }
+                ]
+            }
+        },
+        "bar": {
+            "help": "This is child mode with name 'bar'.",
+            "options": {
+                "local": [
+                    {
+                        "short": "d",
+                        "long": "",
+                        "help": "first letter of Greek alphabet"
+                    },
+                    {
+                        "short": "b",
+                        "long": "beta",
+                        "arguments": ["int"],
+                        "help": "second letter of Greek alphabet"
+                    }
+                ]
+            }
+        }
+    },
+    "options": {
+        "global": [
+            {
+                "short": "v",
+                "long": "verbose",
+                "conflicts": ["--quiet"],
+                "help": "display verbose output"
+            },
+            {
+                "short": "q",
+                "long": "quiet",
+                "conflicts": ["--verbose"],
+                "help": "be silent"
+            }
+        ],
+        "local": [
+            {
+                "short": "h",
+                "long": "help",
+                "help": "display help message"
+            },
+            {
+                "long": "version",
+                "conflicts": ["--help"],
+                "help": "display CLAP version"
+            }
+        ]
+    },
+    "operands": {"no": [0]}
+}

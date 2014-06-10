@@ -14,6 +14,29 @@ It's mostly useful for developers who use the CLAP library.
 
 ----
 
+## Version 0.9.3 (2014-06-10)
+
+CLAP can build UIs from JSON descriptions and
+export UIs built directly in Python to JSON (exporting is work-in-progress and needs more testing, though).
+
+Another feature implemented in this release is help screen generation, but currently to only one level of depth.
+This will be fixed in later releases.
+
+
+- **new**:  building interfaces from JSON,
+- **new**:  exporting interfaces written in Python to JSON,
+- **new**:  generating help screens,
+- **new**:  more fluent interface for formatter,
+
+- **fix**:  bug in parser, which returned items for nested mode even if mode accepted no child modes,
+
+- **rem**:  old CLAP code,
+- **rem**:  old CLAP tests,
+- **rem**:  old checker code from RedCLAP module,
+
+
+----
+
 ## Version 0.9.2 (2014-06-07)
 
 This is the first version of RedCLAP, i.e. *Redesigned CLAP* and is not backwards compatible with previous release.

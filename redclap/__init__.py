@@ -11,6 +11,7 @@ from . import formatter
 from . import parser
 from . import checker
 from . import builder
+from . import helper
 
 
 __version__ = '0.9.3'

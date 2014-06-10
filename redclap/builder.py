@@ -67,6 +67,7 @@ class Builder:
         """Builds UI from loaded JSON.
         """
         ui = mode.RedMode()
+        if 'help' in self._model: ui._help = self._model['help']
         if 'options' in self._model:
             if 'local' in self._model['options']:
                 for opt in self._model['options']['local']: ui.addLocalOption(option.Option(**opt))

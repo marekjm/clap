@@ -13,6 +13,7 @@ class RedMode:
         self._options = {'local': [], 'global': []}
         self._operands = {'range': {'least': None, 'most': None}, 'types': []}
         self._modes = {}
+        self._help = ''
 
     def __eq__(self, other):
         """Compares two modes for equality.
