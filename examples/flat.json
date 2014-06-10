@@ -22,13 +22,15 @@
             },
             {
                 "long": "version",
+                "conflicts": ["--help"],
                 "help": "display CLAP version"
             }
         ],
         "local": [
             {
                 "long": "ok",
-                "required": true
+                "required": true,
+                "not_with": ["--help", "--version"]
             },
             {
                 "short": "e",
