@@ -14,6 +14,27 @@ It's mostly useful for developers who use the CLAP library.
 
 ----
 
+## Version 0.9.4 (2014-06-16)
+
+CLAP is able to build full or abbreviated help screens.
+Abbreviated help screens show help only for top-level mode, i.e. its
+options - local and global - and commands.
+Full help screen displays help for all subcommands.
+
+Also, in this release CLAP code was moved back from `redclap/` to `clap/`.
+
+Finally, 0.9.4 is most probably last release from 0.9.x line and
+the next version of CLAP will mark the beginning of the 0.10.x line.
+
+
+- **new**:  full help screens,
+- **new**:  abbreviated help screens,
+
+- **fix**:  checker now correctly handles one more case of unrecognized option,
+
+
+----
+
 ## Version 0.9.3 (2014-06-10)
 
 CLAP can build UIs from JSON descriptions and
