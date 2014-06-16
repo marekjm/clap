@@ -449,6 +449,14 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         self.assertRaises(clap.errors.UnrecognizedOptionError, checker._checkunrecognized)
         self.assertRaises(clap.errors.UnrecognizedOptionError, checker.check)
 
+    def testUnrecognizedOptions(self):
+        argv = ['--hello', 'world']
+        mode = clap.mode.RedMode()
+        parser = clap.parser.Parser(mode).feed(argv)
+        checker = clap.checker.RedChecker(parser)
+        self.assertRaises(clap.errors.UnrecognizedOptionError, checker._checkunrecognized)
+        self.assertRaises(clap.errors.UnrecognizedOptionError, checker.check)
+
     def testArgumentNotGivenAtTheEnd(self):
         argv = ['--bar', '--foo']
         mode = clap.mode.RedMode()

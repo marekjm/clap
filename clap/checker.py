@@ -18,7 +18,11 @@ class RedChecker():
     def _checkunrecognized(self):
         """Checks if input list contains any unrecognized options.
         """
-        for i in self._parser._getinput():
+        try:
+            input = self._parser._getinput()
+        except KeyError as e:
+            raise errors.UnrecognizedOptionError(e)
+        for i in input:
             if shared.lookslikeopt(i) and not self._parser._mode.accepts(i): raise errors.UnrecognizedOptionError(i)
 
     def _checkarguments(self):
