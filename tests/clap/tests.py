@@ -7,7 +7,7 @@ import shutil
 import unittest
 import warnings
 
-import redclap as clap
+import clap
 
 
 # enable debugging output which is basically huge number of print() calls
