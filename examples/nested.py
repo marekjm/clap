@@ -5,7 +5,7 @@ import os
 
 from sys import argv
 
-import redclap as clap
+import clap
 
 base, filename = os.path.split(argv.pop(0))
 filename_ui = os.path.splitext(filename)[0] + '.json'
@@ -21,6 +21,7 @@ checker = clap.checker.RedChecker(parser)
 
 
 try:
+    err = None
     checker.check()
     fail = False
 except clap.errors.MissingArgumentError as e:
@@ -42,10 +43,12 @@ except clap.errors.UIDesignError as e:
     print('UI has design error: {0}'.format(e))
     fail = True
 except Exception as e:
-    print('fatal: unhandled exception: {0}'.format(e))
-    fail = True
+    print('fatal: unhandled exception: {0}: {1}'.format(str(type(e))[8:-2], e))
+    fail, err = True, e
 finally:
-    if fail: exit()
+    if fail:
+        if err is not None: raise err
+        else: exit()
     else: ui = parser.parse().ui().finalise()
 
 
@@ -53,16 +56,17 @@ if '--version' in ui:
     print('using clap (RedCLAP) version {0}'.format(clap.__version__))
     exit()
 
-if '--help' in ui:
-    helper = clap.helper.Helper(filename, mode)
-    helper.addUsage('--help')
-    helper.addUsage('--version')
-    helper.addUsage('--ok [opts...]')
-    helper.addUsage('--ok [--verbose | --quiet] [opts...]')
-    print(helper.gen().render())
-    exit(0)
-
-if '--echo' in ui:
-    print(ui.get('-e'))
-    for msg in ui.get('-e'):
-        print(msg[0])
+cui = ui
+while True:
+    if '--help' in cui:
+        helper = clap.helper.Helper(filename, cui._mode).setmaxlen(n=70)
+        if cui.up() is cui:
+            helper.addUsage('--help')
+            helper.addUsage('--version')
+            helper.addUsage('--ok [opts...]')
+            helper.addUsage('--ok [--verbose | --quiet] [opts...]')
+        print(helper.gen(deep=('--verbose' in cui)).render())
+        if '--verbose' not in cui: print('\nRun "{0} --help --verbose" to see full help message'.format(filename))
+        exit(0)
+    if cui.islast(): break
+    cui = cui.down()

@@ -62,7 +62,7 @@ class Helper:
         self._maxlen = n
         return self
 
-    def gen(self):
+    def _genusage(self):
         usage_head = 'usage: {0} '.format(self._progname)
         usage_indent = len(usage_head) * ' '
         usage_lines = []
@@ -71,25 +71,27 @@ class Helper:
         self._lines.extend(usage_lines)
         if self._lines: self._lines.append( ('str', '') )
 
-        intro_head = 'MAIN MODE of "{0}":'.format(self._progname)
-        intro_lines = []
-        intro_lines.append( ('str', intro_head) )
-        for i in makelines(self._mode._help, self._maxlen-4): intro_lines.append( ('str', self._indent['string'] + i) )
-        self._lines.extend(intro_lines)
-        if self._mode._help: self._lines.append( ('str', '') )
-        self._lines.extend(_getoptionlines(self._mode))
+    def _genintrolines(self, mode, level=0):
+        lines = []
+        for i in makelines(mode._help, self._maxlen-len(self._indent['string']*level)): lines.append( ('str', (self._indent['string']*level) + i) )
+        if mode._help: lines.append( ('str', '') )
+        return lines
 
-        if self._mode.modes(): self._lines.append( ('str', 'MODES:') )
-        for m in sorted(self._mode.modes()):
-            intro_head = self._indent['string'] + m
-            intro_lines = []
-            intro_lines.append( ('str', intro_head) )
-            mode = self._mode.getmode(m)
-            for i in makelines(mode._help, self._maxlen-8): intro_lines.append( ('str', self._indent['string']*2 + i) )
-            self._lines.extend(intro_lines)
-            if mode._help: self._lines.append( ('str', '') )
-            self._lines.extend(_getoptionlines(mode, level=2))
-        
+    def _genmodelines(self, mode, level=0, name='', deep=True):
+        lines = []
+        if name: self._lines.append( ('str', ((self._indent['string']*level) + name)) )
+        self._lines.extend(self._genintrolines(mode, level=level+1))
+        self._lines.extend(_getoptionlines(mode, level=level+1))
+        if mode.modes(): self._lines.append( ('str', ((self._indent['string']*(level+1)) + 'commands:')) )
+        for m in sorted(mode.modes()):
+            submode = mode.getmode(m)
+            if deep: lines.extend(self._genmodelines(submode, name=m, level=level+2))
+            else: lines.append( ('str', ((self._indent['string']*(level+2)) + m)) )
+        return lines
+
+    def gen(self, deep=True):
+        self._genusage()
+        self._lines.extend(self._genmodelines(mode=self._mode, deep=deep))
         return self
 
     def render(self):
