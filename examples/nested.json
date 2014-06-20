@@ -47,8 +47,8 @@
                 ]
             },
             "modes": {
-                "bar": {
-                    "help": "This is child-child mode with name 'bar'.",
+                "bary": {
+                    "help": "This is child-child mode with name 'bary'. It has some pretty long description. Not that this description (or summary? or whatever...) will tell you anything interesting, it's here only to stress the help screen builder with a description containing many words so the line-breaking can be tested. And some more words, just to make sure it is long.",
                     "options": {
                         "local": [
                             {

@@ -85,8 +85,19 @@ class Helper:
         if mode.modes(): self._lines.append( ('str', ((self._indent['string']*(level+1)) + 'commands:')) )
         for m in sorted(mode.modes()):
             submode = mode.getmode(m)
-            if deep: lines.extend(self._genmodelines(submode, name=m, level=level+2))
-            else: lines.append( ('str', ((self._indent['string']*(level+2)) + m)) )
+            if deep:
+                lines.extend(self._genmodelines(submode, name=m, level=level+2))
+            else:
+                text = m
+                if submode._help: text += ' - {0}'.format(submode._help)
+                first = makelines(text, self._maxlen)[0]
+                lines.append( ('str', ((self._indent['string']*(level+2)) + first)) )
+                for l in makelines(text[len(first):], (self._maxlen-len(m)-3)):
+                    indent = self._indent['string']*(level+2)
+                    padding = ' ' * (len(m) + 3) # the +3 is for ' - ' string separating mode name from description, to be included in padding
+                    l = '{0}{1}{2}'.format(indent, padding, l)
+                    lines.append( ('str', l) )
+                if submode._help: lines.append( ('str', '') )
         return lines
 
     def gen(self, deep=True):
