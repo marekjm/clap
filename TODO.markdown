@@ -1,6 +1,4 @@
 ### RedCLAP TODO
 
-- refactor helper,
-- implement handling nested modes to arbitrary depth in helper,
-- improve helper,
+- try to make all `CONF?` variables in code configurable via Python API and JSON,
 - is the `clap_typehandlers.py` with global `TYPEHANDLERS` worth having?
