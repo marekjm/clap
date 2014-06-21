@@ -63,7 +63,9 @@ class RedChecker():
             check = option['required']
             for n in option['not_with']:
                 if not check: break
-                check = not self._parser._strininput(string=n)
+                if not self._parser._mode.accepts(n): raise errors.UIDesignError('option "{0}" is not required with an option that is not recognized by parser: {1}'.format(option, n))
+                n = self._parser._mode.getopt(name=n)
+                check = not self._parser._ininput(option=n)
             if not check: continue
             if not self._parser._ininput(option=option): raise errors.RequiredOptionNotFoundError(option)
 
