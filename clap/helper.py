@@ -44,10 +44,19 @@ def _getoptionlines(mode, indent='    ', level=1):
     return lines
 
 
+def _cleanback(lines):
+    while True:
+        type, content = lines[-1]
+        if type != 'str': break
+        if content.strip() == '': lines.pop(-1)
+        else: break
+    return lines
+
+
 class Helper:
     def __init__(self, progname, mode):
         self._mode = mode
-        self._indent = {'string': '    ', 'level': 0}
+        self._indent = {'string': '   ', 'level': 0}
         self._usage = []
         self._progname = progname
         self._maxlen = 140
@@ -71,36 +80,47 @@ class Helper:
         self._lines.extend(usage_lines)
         if self._lines: self._lines.append( ('str', '') )
 
-    def _genintrolines(self, mode, level=0):
+    def _genintrolines2(self, mode, name, level=0, longest=0):
+        if not longest: longest = len(name)
+        SPACING = (2 if longest else 0)  # CONF?
         lines = []
-        for i in makelines(mode._help, self._maxlen-len(self._indent['string']*level)): lines.append( ('str', (self._indent['string']*level) + i) )
-        if mode._help: lines.append( ('str', '') )
+        text = '{0}{1}'.format(name.ljust(longest+SPACING), mode._doc['help'].strip())
+        first = makelines(text, self._maxlen)[0]
+        lines.append( ('str', ((self._indent['string']*level) + first)) )
+        for l in makelines(text[len(first):], (self._maxlen-len(name)-3)):
+            indent = self._indent['string']*level
+            padding = ' ' * (len(name) + SPACING)
+            l = '{0}{1}{2}'.format(indent, padding, l)
+            lines.append( ('str', l) )
+        lines = _cleanback(lines)
+        if text: lines.append( ('str', '') )
+        return lines
+
+    def _gencommandslines(self, mode, name, level, deep):
+        lines = []
+        modes = sorted(mode.modes())
+        longest = 0
+        for m in modes:
+            if len(m) > longest: longest = len(m)
+        for m in modes:
+            submode = mode.getmode(m)
+            if deep:
+                lines.extend(self._genmodelines(submode, name=m, level=level+2))
+                lines.append( ('str', '') )
+            else:
+                lines.extend(self._genintrolines2(submode, name=m, level=level+2, longest=longest))
         return lines
 
     def _genmodelines(self, mode, level=0, name='', deep=True):
         lines = []
-        if name: self._lines.append( ('str', ((self._indent['string']*level) + name)) )
-        self._lines.extend(self._genintrolines(mode, level=level+1))
-        self._lines.extend(_getoptionlines(mode, level=level+1))
+        self._lines.extend(self._genintrolines2(mode, name, level=level))
+        self._lines.extend(_getoptionlines(mode, indent=self._indent['string'], level=level+1))
         if mode.modes(): self._lines.append( ('str', ((self._indent['string']*(level+1)) + 'commands:')) )
-        for m in sorted(mode.modes()):
-            submode = mode.getmode(m)
-            if deep:
-                lines.extend(self._genmodelines(submode, name=m, level=level+2))
-            else:
-                text = m
-                if submode._help: text += ' - {0}'.format(submode._help)
-                first = makelines(text, self._maxlen)[0]
-                lines.append( ('str', ((self._indent['string']*(level+2)) + first)) )
-                for l in makelines(text[len(first):], (self._maxlen-len(m)-3)):
-                    indent = self._indent['string']*(level+2)
-                    padding = ' ' * (len(m) + 3) # the +3 is for ' - ' string separating mode name from description, to be included in padding
-                    l = '{0}{1}{2}'.format(indent, padding, l)
-                    lines.append( ('str', l) )
-                if submode._help: lines.append( ('str', '') )
+        self._lines.extend(self._gencommandslines(mode, name, level, deep))
         return lines
 
     def gen(self, deep=True):
+        for i in self._mode._doc['usage']: self._usage.append(i)
         self._genusage()
         self._lines.extend(self._genmodelines(mode=self._mode, deep=deep))
         return self
