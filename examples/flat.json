@@ -1,5 +1,12 @@
 {
-    "help": "this is example flat mode",
+    "doc": {
+        "help": "this is example flat mode",
+        "usage": [
+            "--help",
+            "--version",
+            "--ok [--verbose | --quiet] [opts...]"
+        ]
+    },
     "modes": {},
     "options": {
         "global": [

@@ -60,11 +60,6 @@ cui = ui
 while True:
     if '--help' in cui:
         helper = clap.helper.Helper(filename, cui._mode).setmaxlen(n=70)
-        if cui.up() is cui:
-            helper.addUsage('--help')
-            helper.addUsage('--version')
-            helper.addUsage('--ok [opts...]')
-            helper.addUsage('--ok [--verbose | --quiet] [opts...]')
         print(helper.gen(deep=('--verbose' in cui)).render())
         if '--verbose' not in cui: print('\nRun "{0} --help --verbose" to see full help message'.format(filename))
         exit(0)

@@ -5,7 +5,7 @@ import os
 
 from sys import argv
 
-import redclap as clap
+import clap
 
 base, filename = os.path.split(argv.pop(0))
 filename_ui = os.path.splitext(filename)[0] + '.json'
@@ -55,11 +55,7 @@ if '--version' in ui:
 
 if '--help' in ui:
     helper = clap.helper.Helper(filename, mode)
-    helper.addUsage('--help')
-    helper.addUsage('--version')
-    helper.addUsage('--ok [opts...]')
-    helper.addUsage('--ok [--verbose | --quiet] [opts...]')
-    print(helper.gen().render())
+    print(helper.gen(deep=('--verbose' in ui)).render())
     exit(0)
 
 if '--echo' in ui:
