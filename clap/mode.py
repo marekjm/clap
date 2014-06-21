@@ -13,7 +13,7 @@ class RedMode:
         self._options = {'local': [], 'global': []}
         self._operands = {'range': {'least': None, 'most': None}, 'types': []}
         self._modes = {}
-        self._help = ''
+        self._doc = {'help': '', 'usage': []}
 
     def __eq__(self, other):
         """Compares two modes for equality.
@@ -21,7 +21,15 @@ class RedMode:
         opts = (self._options == other._options)
         operands = (self._operands == other._operands)
         modes = (self._modes == other._modes)
-        return opts and operands and modes
+        doc = (self._doc == other._doc)
+        return opts and operands and modes and doc
+
+    def setdoc(self, help=None, usage=None):
+        """Set some basic doc about the mode.
+        """
+        if help is not None: self._doc['help'] = help
+        if usage is not None: self._doc['usage'] = usage
+        return self
 
     def addMode(self, name, mode):
         """Adds child mode.

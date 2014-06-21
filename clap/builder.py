@@ -3,6 +3,7 @@ Python objects representing modes and options.
 """
 
 import json
+import warnings
 
 from . import option
 from . import mode
@@ -51,12 +52,6 @@ class Builder:
         self._model = model
         self._mode = None
 
-    def load(self, path):
-        """Loads file from path.
-        """
-        self._model = readjson(path)
-        return self
-
     def set(self, model):
         """Set model of the UI.
         """
@@ -67,7 +62,10 @@ class Builder:
         """Builds UI from loaded JSON.
         """
         ui = mode.RedMode()
-        if 'help' in self._model: ui._help = self._model['help']
+        if 'help' in self._model:
+            ui.setdoc(self._model['help'], None)
+            warnings.warn('"help" field in mode descriptions is deprecated and will be removed in version 0.10.0 of CLAP: move it to \'"doc": {"help": "Your help here..."}\'')
+        if 'doc' in self._model: ui.setdoc(**self._model['doc'])
         if 'options' in self._model:
             if 'local' in self._model['options']:
                 for opt in self._model['options']['local']: ui.addLocalOption(option.Option(**opt))
