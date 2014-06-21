@@ -537,14 +537,18 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         self.assertRaises(clap.errors.MissingArgumentError, checker.check)
 
     def testRequiredNotWithAnotherOption(self):
-        argv = ['--bar']
+        argvariants = [
+                ['--bar'],
+                ['-b'],
+                ]
         mode = clap.mode.RedMode()
-        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar']))
+        mode.addLocalOption(clap.option.Option(long='foo', required=True, not_with=['--bar', '--fail']))
         mode.addLocalOption(clap.option.Option(short='b', long='bar'))
-        parser = clap.parser.Parser(mode).feed(argv)
-        checker = clap.checker.RedChecker(parser)
-        checker._checkrequired()
-        checker.check()
+        for argv in argvariants:
+            parser = clap.parser.Parser(mode).feed(argv)
+            checker = clap.checker.RedChecker(parser)
+            checker._checkrequired()
+            checker.check()
 
     def testRequiredNotWithAnotherOptionNotFoundBecauseOfBreaker(self):
         argv = ['--baz', '--', '-b']
