@@ -14,6 +14,24 @@ It's mostly useful for developers who use the CLAP library.
 
 ----
 
+## Version 0.9.5 (2014-06-21)
+
+CLAP is now building better help screens, greatest improvement can be seen in how descriptions of commands (submodes) are rendered, i.e.
+the name of the submode is followed by a two-space break and a description of it so users can quicky check what command they want to use.
+
+This release also fixes a bug which caused an error about unrecognized option to be incorrectly raised.
+
+- **new**:  command descriptions in abbreviated help screens,
+- **new**:  sligthly refactored help screen generator and help screens' look is slightly different,
+- **new**:  new way of building doc in JSON, added `"doc"` field (with `"help"` and `"usage"` keys),
+
+- **dep**:  `"help": ` key of mode is moved to `"doc"` field,
+
+- **fix**:  unrecognized option error incorrectly raised when aliases are passed,
+
+
+----
+
 ## Version 0.9.4 (2014-06-16)
 
 CLAP is able to build full or abbreviated help screens.
