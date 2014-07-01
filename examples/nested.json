@@ -5,6 +5,10 @@
             "--help",
             "--version",
             "[--verbose | --quiet] <mode> [opts...]"
+        ],
+        "examples": [
+            "--verbose foo --alpha",
+            "foo --quiet bary -gd"
         ]
     },
     "options": {
@@ -37,7 +41,14 @@
     },
     "modes": {
         "foo": {
-            "doc": {"help": "This is child mode with name 'foo'."},
+            "doc": {
+                "help": "This is child mode with name 'foo'.",
+                "examples": [
+                    "--alpha bary",
+                    "--beta bary",
+                    "-ab bary"
+                ]
+            },
             "options": {
                 "local": [
                     {
