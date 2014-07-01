@@ -57,7 +57,7 @@ class Helper:
     def __init__(self, progname, mode):
         self._mode = mode
         self._indent = {'string': '   ', 'level': 0}
-        self._usage = []
+        self._usage, self._examples = [], []
         self._progname = progname
         self._maxlen = 140
         self._opt_desc_start = 0
@@ -71,14 +71,16 @@ class Helper:
         self._maxlen = n
         return self
 
-    def _genusage(self):
-        usage_head = 'usage: {0} '.format(self._progname)
-        usage_indent = len(usage_head) * ' '
-        usage_lines = []
-        if self._usage: usage_lines.append( ('str', usage_head + self._usage[0]) )
-        for line in self._usage[1:]: usage_lines.append( ('str', usage_indent + line) )
-        self._lines.extend(usage_lines)
-        if self._lines: self._lines.append( ('str', '') )
+    def _gendoc(self):
+        for key in ['usage', 'examples']:
+            head = '{0}: {1} '.format(key, self._progname)
+            indent = len(head) * ' '
+            lines = []
+            what = (self._mode._doc[key] if key in self._mode._doc else [])
+            if what: lines.append( ('str', head + what[0]) )
+            for line in what[1:]: lines.append( ('str', indent + line) )
+            self._lines.extend(lines)
+            if self._lines: self._lines.append( ('str', '') )
 
     def _genintrolines2(self, mode, name, level=0, longest=0):
         if not longest: longest = len(name)
@@ -120,8 +122,7 @@ class Helper:
         return lines
 
     def gen(self, deep=True):
-        for i in self._mode._doc['usage']: self._usage.append(i)
-        self._genusage()
+        self._gendoc()
         self._lines.extend(self._genmodelines(mode=self._mode, deep=deep))
         return self
 

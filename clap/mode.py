@@ -24,11 +24,12 @@ class RedMode:
         doc = (self._doc == other._doc)
         return opts and operands and modes and doc
 
-    def setdoc(self, help=None, usage=None):
+    def setdoc(self, help=None, usage=None, examples=None):
         """Set some basic doc about the mode.
         """
         if help is not None: self._doc['help'] = help
         if usage is not None: self._doc['usage'] = usage
+        if examples is not None: self._doc['examples'] = examples
         return self
 
     def addMode(self, name, mode):

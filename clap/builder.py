@@ -73,8 +73,12 @@ class Builder:
                 for opt in self._model['options']['global']: ui.addGlobalOption(option.Option(**opt))
         if 'operands' in self._model:
             if 'no' in self._model['operands']: ui.setOperandsRange(no=self._model['operands']['no'])
+        commands = {}
         if 'modes' in self._model:
-            for name, nmodel in self._model['modes'].items(): ui.addMode(name=name, mode=Builder().set(nmodel).build().get())
+            warnings.warn('"modes" key is deprecated: use "commands", support for "modes" will be removed in version 0.10.0 of CLAP')
+            commands = self._model['modes']
+        if 'commands' in self._model: commands = self._model['commands']
+        for name, nmodel in commands.items(): ui.addMode(name=name, mode=Builder().set(nmodel).build().get())
         ui.propagate()
         self._mode = ui
         return self
