@@ -14,6 +14,48 @@ It's mostly useful for developers who use the CLAP library.
 
 ----
 
+## Version 0.9.6 ()
+
+It seems like the 0.9.x line is about to stay for a bit longer than I expected.
+However, it does not mean there are no improvements in the code.
+
+One new feature is the `"examples"` key in `"doc"` field of the top-level command.
+Apart from usage, which describes more abstract syntax, the examples are used to
+provide real-life invocations of the program.  
+This field may change in future (currently it is built the same way as usage) to incorporate
+brief explanation what does the line do:
+
+```
+"examples": [
+    {
+        "line": "foo --bar baz -xy",
+        "desc": "this line does something"
+    }
+]
+```
+
+Would yield something akin to:
+
+```
+Examples:
+
+    program foo --bar baz -xy
+        this line does something
+```
+
+Apart from this new feature, there is a deprecation: `modes` are no longer modes in JSON
+representations of UIs, but are `commands`.
+There is a warning about this in code so CLAP will yell about UIs that are not upgraded.
+
+- **new**:  `examples` key in `doc` field of JSON UI representations,
+
+- **upd**:  `Helper` was refactored a little bit,
+
+- **dep**:  `modes` field in JSON UI representations, changed to `commands`,
+
+
+----
+
 ## Version 0.9.5 (2014-06-21)
 
 CLAP is now building better help screens, greatest improvement can be seen in how descriptions of commands (submodes) are rendered, i.e.
