@@ -58,13 +58,13 @@ There is a warning about this in code so CLAP will yell about UIs that are not u
 
 ## Version 0.9.5 (2014-06-21)
 
-CLAP is now building better help screens, greatest improvement can be seen in how descriptions of commands (submodes) are rendered, i.e.
-the name of the submode is followed by a two-space break and a description of it so users can quicky check what command they want to use.
+CLAP is now building better help screens, greatest improvement can be seen in how descriptions of commands (sub modes) are rendered, i.e.
+the name of the submode is followed by a two-space break and a description of it so users can quickly check what command they want to use.
 
 This release also fixes a bug which caused an error about unrecognized option to be incorrectly raised.
 
 - **new**:  command descriptions in abbreviated help screens,
-- **new**:  sligthly refactored help screen generator and help screens' look is slightly different,
+- **new**:  slightly refactored help screen generator and help screens' look is slightly different,
 - **new**:  new way of building doc in JSON, added `"doc"` field (with `"help"` and `"usage"` keys),
 
 - **dep**:  `"help": ` key of mode is moved to `"doc"` field,
@@ -79,7 +79,7 @@ This release also fixes a bug which caused an error about unrecognized option to
 CLAP is able to build full or abbreviated help screens.
 Abbreviated help screens show help only for top-level mode, i.e. its
 options - local and global - and commands.
-Full help screen displays help for all subcommands.
+Full help screen displays help for all sub-commands.
 
 Also, in this release CLAP code was moved back from `redclap/` to `clap/`.
 
@@ -125,7 +125,7 @@ However, it brings major improvements to the code.
 
 Notable new features are *operand ranges*, a method for designer to set a range of operands accepted by CLAP and
 let CLAP validate them, and *plural options* - which tell CLAP to not overwrite the previously found value of an options but
-rather build a list of all values passed (in case of options that take no arguments - to count how many times they occured).
+rather build a list of all values passed (in case of options that take no arguments - to count how many times they occurred).
 This provides for greater control over user input.
 
 Another feature is just a huge bugfix. Nested modes are finally working properly.
@@ -139,7 +139,7 @@ Global options can now be added freely - after or before modes are added and are
 - **new**:  [`DESIGN.markdown`](./DESIGN.markdown) file has been added,
 - **new**:  development moved to `redclap/` directory while `clap/` contains old, untouched code from 0.9.1 release,
 - **new**:  operand ranges,
-- **new**:  new bahaviour of `.get()` method of parsed UI,
+- **new**:  new behavior of `.get()` method of parsed UI,
 - **new**:  plural options,
 
 - **fix**:  nested modes,
@@ -245,7 +245,7 @@ Apart from this, some refactoring had been done in `clap/builder.py`.
 to build an interface is `clap.builder.Builder()`.
 Builder functions, and element-type recognition functions, are exposed so you can
 use them directly with no need to initialize builder object.
-However, I don't see a need for this - if you would wnat to translate dicts and
+However, I don't see a need for this - if you would want to translate dicts and
 lists to interfaces and bother with all the stuff around them it's easier to just
 code the whole interface by hand. This functionality will never be removed.
 
@@ -290,7 +290,7 @@ Such behaviour needed some changes in code to be done and this resulted in `chec
 automatically calling define before any actual checking is done. 
 
 **Notice**: it's possible that in version 0.7.2 `modes.Parser()` will be renamed to prevent it being mistaken for `parser.Parser()` and
-to imporove accuracy of error messages.
+to improve accuracy of error messages.
 
 
 * __fix__:  fixed bug in `clap.modes.Parser().addOption()` (I forgot to port it to the new version of options)
