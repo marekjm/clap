@@ -54,6 +54,13 @@ class ParsedUI:
         """
         return (self._parent if self._parent is not None else self)
 
+    def top(self):
+        """Go to top of command chain.
+        """
+        cherry = self
+        while cherry._parent is not None: cherry = cherry._parent
+        return cherry
+
     def islast(self):
         """Return true if current mode has no nested modes.
         """
