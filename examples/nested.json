@@ -1,16 +1,27 @@
 {
     "doc": {
-        "help": "This is example nested mode. It can be used to learn how UIs with nested modes are built in CLAP and how to interact with them in code. This description is taken from 'doc' field.",
+        "help": "This is example UI with nested commands. It can be used to learn how UIs with nested commands are built in CLAP and how to interact with them in programs' code and on the commandline. It takes no operands. This description is taken from 'doc' field.",
         "usage": [
             "--help",
             "--version",
             "[--verbose | --quiet] <mode> [opts...]"
         ],
         "examples": [
-            "--verbose foo --alpha",
-            "foo --quiet bary -gd"
+            {
+                "line": "--verbose foo --alpha",
+                "desc": "do stuff"
+            },
+            {
+                "line": "foo --quiet bary -gd",
+                "desc": "do moar stuff"
+            },
+            {
+                "line": "help --verbose | help --help",
+                "desc": "display detailed help message"
+            }
         ]
     },
+    "help": "just to be warned that in 0.10.0 I need to remove it",
     "options": {
         "global": [
             {
@@ -42,12 +53,7 @@
     "modes": {
         "foo": {
             "doc": {
-                "help": "This is child mode with name 'foo'.",
-                "examples": [
-                    "--alpha bary",
-                    "--beta bary",
-                    "-ab bary"
-                ]
+                "help": "This is child mode with name 'foo'."
             },
             "options": {
                 "local": [
@@ -119,7 +125,13 @@
                     }
                 }
             }
+        },
+        "help": {
+            "doc": {
+                "help": "This command is used to obtain help information about various commands. It accepts any number of operands and can display help about nested commands, but finishes searching as soon as it finds option-looking string."
+            },
+            "operands": {"no": [0]}
         }
     },
-    "operands": {"no": [0]}
+    "operands": {"no": [0, 0]}
 }

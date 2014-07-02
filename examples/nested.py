@@ -56,12 +56,4 @@ if '--version' in ui:
     print('using clap (RedCLAP) version {0}'.format(clap.__version__))
     exit()
 
-cui = ui
-while True:
-    if '--help' in cui:
-        helper = clap.helper.Helper(filename, cui._mode).setmaxlen(n=70)
-        print(helper.gen(deep=('--verbose' in cui)).render())
-        if '--verbose' not in cui: print('\nRun "{0} --help --verbose" to see full help message'.format(filename))
-        exit(0)
-    if cui.islast(): break
-    cui = cui.down()
+if clap.helper.HelpRunner(ui=ui, program=filename).adjust(options=['-h', '--help']).run().displayed(): exit(0)
