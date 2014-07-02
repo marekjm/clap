@@ -43,11 +43,26 @@ Examples:
         this line does something
 ```
 
-Apart from this new feature, there is a deprecation: `modes` are no longer modes in JSON
+This release brings another new feature: Help Runner.
+It is an object which takes parsed UI and analyses it to tell whether user wanted to see help
+screen or not; in either case it will act accordingly, and report the outcome to the program
+developer (in code).  
+As such, it shifts the burden of managing help screens yet further away from the developers so
+that the library can do even more of the heavy lifting.
+
+Currently, the help runner does not offer many customization hooks (only option-triggers can be adjusted), yet it comes with sane defaults:
+
+- `-h` and `--help` options trigger help screen display,
+- `help` as first (second, technically) command triggers help display.
+
+Apart from these new features, there is a deprecation also: *verb commands* (akin to Git's `commit`, `pull` or `stash`) are no longer `modes` in JSON
 representations of UIs, but are `commands`.
 There is a warning about this in code so CLAP will yell about UIs that are not upgraded.
 
-- **new**:  `examples` key in `doc` field of JSON UI representations,
+
+- **new**:  `examples` key in `doc` field of JSON UI representations, **examples should only be set in doc for the TOP LEVEL command **,
+- **new**:  `HelpRunner` object in `clap.helper` module,
+- **new**:  `top()` method in `ParsedUI`,
 
 - **upd**:  `Helper` was refactored a little bit,
 
@@ -286,7 +301,7 @@ This version brings support for creating interfaces using JSON.
 #### Version 0.7.1 (2013-08-04):
 
 This version is capable of having *nested modes*, e.g. syntax like `foo bar baz --some --fancy options --after --this`.
-Such behaviour needed some changes in code to be done and this resulted in `check()` method of `modes.Parser()`
+Such behavior needed some changes in code to be done and this resulted in `check()` method of `modes.Parser()`
 automatically calling define before any actual checking is done. 
 
 **Notice**: it's possible that in version 0.7.2 `modes.Parser()` will be renamed to prevent it being mistaken for `parser.Parser()` and
