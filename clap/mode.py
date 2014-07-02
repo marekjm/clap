@@ -107,7 +107,7 @@ class RedMode:
         """Returns true if mode accepts 'opt' option.
         """
         accepts = False
-        for i in self._options['local'] + self._options['global']:
+        for i in self.options():
             if i.match(opt):
                 accepts = True
                 break
