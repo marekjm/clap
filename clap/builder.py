@@ -1,5 +1,7 @@
 """This module holds logic responsible for turning JSON representations into usable UI descriptions, i.e.
-Python objects representing modes and options.
+Python objects representing commands and options.
+It also contains functionality needed to export UIs to ordinary data structures which, in turn, may be
+serializes to JSON.
 """
 
 import json
@@ -12,7 +14,7 @@ from . import errors
 
 
 def readfile(path):
-    """Reads file and returns string with contents of it.
+    """Reads file and returns its contents as string.
     """
     ifstream = open(path)
     content = ifstream.read()
@@ -26,7 +28,7 @@ def readjson(path):
 
 
 def export(mode):
-    """Exports mode built in Python to a dict that can be JSON encoded.
+    """Exports UI built in Python to a dict that can be JSON encoded.
     """
     model = {}
     if mode._options['local'] or mode._options['global']: model['options'] = {}
