@@ -137,6 +137,16 @@ class ModeTests(unittest.TestCase):
         mode.removeGlobalOption(name='--foo')
         self.assertFalse(mode.accepts('--foo'))
 
+    def testAliases(self):
+        mode = clap.mode.RedMode()
+        mode.addLocalOption(clap.option.Option(short='a'))
+        mode.addLocalOption(clap.option.Option(short='b', long='bar'))
+        mode.addLocalOption(clap.option.Option(long='baz'))
+        self.assertEqual('', mode.alias('-a'))
+        self.assertEqual('-b', mode.alias('--bar'))
+        self.assertEqual('--bar', mode.alias('-b'))
+        self.assertEqual('', mode.alias('--baz'))
+
 
 class RedParserGeneralTests(unittest.TestCase):
     def testGettingInputAndOperands(self):
