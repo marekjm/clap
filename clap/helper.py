@@ -246,18 +246,18 @@ class HelpRunner:
         """Display help if options tell you to do so.
         """
         cui, ui = self._ui, self._ui
+        present = False
         while True and str(ui.down()) != 'help':
-            present = False
             for i in self._options:
-                if i in ui:
+                if i in cui:
                     present = True
                     break
-            if present:
-                helper = Helper(self._program_name, cui._mode).setmaxlen(n=70)
-                print(helper.gen(deep=('--verbose' in cui)).render())
-                self._displayed = True
             if cui.islast(): break
             cui = cui.down()
+        if present:
+            helper = Helper(self._program_name, cui._mode).setmaxlen(n=70)
+            print(helper.gen(deep=('--verbose' in cui)).render())
+            self._displayed = True
 
     def _byhelpcommand(self):
         """Display help message when 'help' command is encountered.
