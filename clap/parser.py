@@ -122,11 +122,6 @@ class Parser:
         self._typehandlers = {'str': str, 'int': int, 'float': float}
         self._loadtypehandlers()
 
-    def __contains__(self, option):
-        """Checks if parser contains given option.
-        """
-        return option in self._parsed['options']
-
     def _loadtypehandlers(self):
         """Loads typehandlers from TYPEHANDLERS dict.
         """
@@ -339,33 +334,14 @@ class Parser:
             self._ui._appendmode(mode=ui)
         return self
 
+    def state(self):
+        """Returns state of the parser's current command, i.e. current options and operands.
+        Must be called **after** the `.parse()` method.
+        """
+        return self._parsed
+
     def ui(self):
-        """Return parsed UI.
+        """Returns parsed UI.
+        Must be called **after** the `.parse()` method.
         """
         return self._ui
-
-    def get(self, key, tuplise=True):
-        """Returns arguments passed to an option.
-        - options that take no arguments return None,
-        - options that are plural AND take no argument return number of times they were passed,
-        - options that take exactly one argument return it directly,
-        - options that take at least two arguments return tuple containing their arguments,
-        - options that take at least one argument AND are plural return list of tuples containing arguments passed
-          to each occurence of the option in input,
-        
-        Tuple-isation can be switched off by passing 'tuplise` parameter as false;
-        in such case lists are returned for options that take at least two arguments and
-        direct values for options taking one argumet or less.
-        """
-        option = self._mode.getopt(key)
-        value = self._parsed['options'][key]
-        if option.isplural() and not option.params(): return value
-        if not option.params(): return None
-        if len(option.params()) == 1 and not option.isplural(): return value[0]
-        if tuplise: value = ([tuple(v) for v in value] if option.isplural() else tuple(value))
-        return value
-
-    def getoperands(self):
-        """Returns list of operands.
-        """
-        return self._parsed['operands']
