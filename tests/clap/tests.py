@@ -356,72 +356,94 @@ class RedParserOptionsTests(unittest.TestCase):
         mode = clap.mode.RedMode()
         mode.addLocalOption(clap.option.Option(short='v', long='verbose'))
         parser = clap.parser.Parser(mode).feed(['--verbose']).parse()
-        self.assertTrue('--verbose' in parser)
-        self.assertTrue('-v' in parser)
-        self.assertEqual(None, parser.get('--verbose'))
-        self.assertEqual(None, parser.get('-v'))
+        state, ui = parser.state(), parser.ui()
+        check_opts = ['--verbose', '-v']
+        for opt in check_opts:
+            self.assertTrue(opt in state['options'])
+            self.assertTrue(opt in ui)
+            self.assertEqual(None, state['options'][opt])
+            self.assertEqual(None, ui.get(opt))
 
     def testParsingBareOptions(self):
         mode = clap.mode.RedMode()
         mode.addLocalOption(clap.option.Option(short='v', long='verbose'))
         mode.addLocalOption(clap.option.Option(short='d', long='debug'))
         parser = clap.parser.Parser(mode).feed(['--verbose', '--debug']).parse()
-        self.assertTrue('--verbose' in parser)
-        self.assertTrue('-v' in parser)
-        self.assertTrue('--debug' in parser)
-        self.assertTrue('-d' in parser)
-        self.assertEqual(None, parser.get('--verbose'))
-        self.assertEqual(None, parser.get('-v'))
-        self.assertEqual(None, parser.get('--debug'))
-        self.assertEqual(None, parser.get('-d'))
+        state, ui = parser.state(), parser.ui()
+        check_opts = ['--verbose', '-v', '--debug', '-d']
+        for opt in check_opts:
+            self.assertTrue(opt in state['options'])
+            self.assertTrue(opt in ui)
+            self.assertEqual(None, state['options'][opt])
+            self.assertEqual(None, ui.get(opt))
 
     def testParsingPluralOptionsWithoutArguments(self):
         mode = clap.mode.RedMode()
         mode.addLocalOption(clap.option.Option(short='v', long='verbose', plural=True))
         parser = clap.parser.Parser(mode).feed(['--verbose', '--verbose', '-v']).parse()
-        self.assertTrue('--verbose' in parser)
-        self.assertTrue('-v' in parser)
-        self.assertEqual(3, parser.get('--verbose'))
-        self.assertEqual(3, parser.get('-v'))
+        state, ui = parser.state(), parser.ui()
+        check_opts = [
+                ('--verbose', 3),
+                ('-v', 3),
+                ]
+        for opt, value in check_opts:
+            self.assertTrue(opt in state['options'])
+            self.assertTrue(opt in ui)
+            self.assertEqual(value, state['options'][opt])
+            self.assertEqual(value, ui.get(opt))
 
     def testParsingPluralOptionsWithArguments(self):
         mode = clap.mode.RedMode()
         mode.addLocalOption(clap.option.Option(short='f', long='foo', plural=True, arguments=['int']))
         parser = clap.parser.Parser(mode).feed(['--foo', '0', '-f', '1']).parse()
-        self.assertTrue('--foo' in parser)
-        self.assertTrue('-f' in parser)
-        self.assertEqual([(0,), (1,)], parser.get('--foo'))
-        self.assertEqual([(0,), (1,)], parser.get('-f'))
+        state, ui = parser.state(), parser.ui()
+        for opt in ['-f', '--foo']:
+            self.assertTrue(opt in state['options'])
+            self.assertTrue(opt in ui)
+            self.assertEqual([[0], [1]], state['options'][opt])
+            self.assertEqual([(0,), (1,)], ui.get(opt))
 
     def testParsingOptionWithOneArgument(self):
         mode = clap.mode.RedMode()
         mode.addLocalOption(clap.option.Option(short='f', long='foo', arguments=['str']))
         parser = clap.parser.Parser(mode).feed(['--foo', 'spam']).parse()
-        self.assertTrue('--foo' in parser)
-        self.assertEqual('spam', parser.get('--foo'))
-        self.assertEqual('spam', parser.get('-f'))
+        state, ui = parser.state(), parser.ui()
+        for opt in ['-f', '--foo']:
+            self.assertTrue(opt in state['options'])
+            self.assertTrue(opt in ui)
+            self.assertEqual(('spam',), state['options'][opt])
+            self.assertEqual('spam', ui.get(opt))
 
     def testParsingOptionWithMultipleArguments(self):
         mode = clap.mode.RedMode()
         mode.addLocalOption(clap.option.Option(short='f', long='foo', arguments=['str', 'str']))
         parser = clap.parser.Parser(mode).feed(['--foo', 'spam', 'eggs']).parse()
-        self.assertTrue('--foo' in parser)
-        self.assertEqual(('spam', 'eggs'), parser.get('--foo'))
-        self.assertEqual(('spam', 'eggs'), parser.get('-f'))
+        state, ui = parser.state(), parser.ui()
+        for opt in ['-f', '--foo']:
+            self.assertTrue(opt in state['options'])
+            self.assertTrue(opt in ui)
+            self.assertEqual(('spam', 'eggs'), state['options'][opt])
+            self.assertEqual(('spam', 'eggs'), ui.get(opt))
 
     def testParsingStopsOnFirstNonOption(self):
         mode = clap.mode.RedMode()
         mode.addLocalOption(clap.option.Option(short='f', long='foo', arguments=['str', 'str']))
         parser = clap.parser.Parser(mode).feed(['spam', '--foo']).parse()
-        self.assertTrue('--foo' not in parser)
-        self.assertEqual(['spam', '--foo'], parser.getoperands())
+        state, ui = parser.state(), parser.ui()
+        self.assertTrue('--foo' not in state['options'])
+        self.assertTrue('--foo' not in ui)
+        self.assertEqual(['spam', '--foo'], state['operands'])
+        self.assertEqual(['spam', '--foo'], ui.operands())
 
     def testParsingStopsOnBreaker(self):
         mode = clap.mode.RedMode()
         mode.addLocalOption(clap.option.Option(short='f', long='foo', arguments=['str', 'str']))
         parser = clap.parser.Parser(mode).feed(['--', '--foo']).parse()
-        self.assertTrue('--foo' not in parser)
-        self.assertEqual(['--foo'], parser.getoperands())
+        state, ui = parser.state(), parser.ui()
+        self.assertTrue('--foo' not in state['options'])
+        self.assertTrue('--foo' not in ui)
+        self.assertEqual(['--foo'], state['operands'])
+        self.assertEqual(['--foo'], ui.operands())
 
     def testParsingShortOptions(self):
         args = ['-a', '-b', '-c', 'd', 'e', 'f']
@@ -430,10 +452,14 @@ class RedParserOptionsTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(short='b'))
         mode.addLocalOption(clap.option.Option(short='c'))
         parser = clap.parser.Parser(mode).feed(args).parse()
-        self.assertEqual(None, parser.get('-a'))
-        self.assertEqual(None, parser.get('-b'))
-        self.assertEqual(None, parser.get('-c'))
-        self.assertEqual(['d', 'e', 'f'], parser.getoperands())
+        state, ui = parser.state(), parser.ui()
+        for opt in ['-a', '-b', '-c']:
+            self.assertIn(opt, state['options'])
+            self.assertIn(opt, ui)
+            self.assertIs(None, state['options'][opt])
+            self.assertIs(None, ui.get(opt))
+        self.assertEqual(['d', 'e', 'f'], state['operands'])
+        self.assertEqual(['d', 'e', 'f'], ui.operands())
 
     def testShortOptionsWithArguments(self):
         args = ['-s', 'eggs', '-i', '42', '-f', '4.2', '--', 'foo']
@@ -442,10 +468,17 @@ class RedParserOptionsTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(short='i', arguments=[int]))
         mode.addLocalOption(clap.option.Option(short='f', arguments=[float]))
         parser = clap.parser.Parser(mode).feed(args).parse()
-        self.assertEqual('eggs', parser.get('-s', tuplise=False))
-        self.assertEqual(42, parser.get('-i', tuplise=False))
-        self.assertEqual(4.2, parser.get('-f', tuplise=False))
-        self.assertEqual(['foo'], parser.getoperands())
+        state, ui = parser.state(), parser.ui()
+        check_opts = [
+                ('-s', 'eggs'),
+                ('-i', 42),
+                ('-f', 4.2),
+                ]
+        for opt, value in check_opts:
+            self.assertEqual(value, ui.get(opt, tuplise=False))
+            self.assertEqual((value,), state['options'][opt])
+        self.assertEqual(['foo'], ui.operands())
+        self.assertEqual(['foo'], state['operands'])
 
 
 class RedCheckerOptionCheckingTests(unittest.TestCase):
