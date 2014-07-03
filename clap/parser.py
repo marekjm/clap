@@ -1,11 +1,8 @@
-"""RedCLAP parser module.
+"""This module holds logic responsible for parsing arguments lists and
+providing programming interface to interact with them.
 """
 
 from . import shared
-
-try: from clap_typehandlers import TYPEHANDLERS
-except ImportError: TYPEHANDLERS = {}
-finally: pass
 
 
 class ParsedUI:
@@ -120,12 +117,6 @@ class Parser:
         self._breaker = False
         self._ui = None
         self._typehandlers = {'str': str, 'int': int, 'float': float}
-        self._loadtypehandlers()
-
-    def _loadtypehandlers(self):
-        """Loads typehandlers from TYPEHANDLERS dict.
-        """
-        for name, callback in TYPEHANDLERS.items(): self._typehandlers[name] = callback
 
     def feed(self, argv):
         """Feed argv to parser.
