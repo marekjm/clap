@@ -54,7 +54,7 @@
             }
         ]
     },
-    "modes": {
+    "commands": {
         "foo": {
             "doc": {
                 "help": "This is child mode with name 'foo'."
@@ -129,26 +129,6 @@
                     }
                 }
             }
-        },
-        "help": {
-            "doc": {
-                "help": "This command is used to obtain help information about various commands. It accepts any number of operands and can display help about nested commands, but finishes searching as soon as it finds option-looking string."
-            },
-            "options": {
-                "local": [
-                    {
-                        "short": "u",
-                        "long": "usage",
-                        "help": "display usage information (discards operands)"
-                    },
-                    {
-                        "short": "e",
-                        "long": "examples",
-                        "help": "display example invocations (discards operands)"
-                    }
-                ]
-            },
-            "operands": {"no": [0]}
         }
     },
     "operands": {"no": [0, 0]}
