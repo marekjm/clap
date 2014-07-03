@@ -271,9 +271,6 @@ class Parser:
         :type option: str
         """
         input = self._getinput()
-        #if string:
-        #    name = string
-        #    alias = self.alias(string)
         if option:
             name = str(option)
             alias = option.alias(name)
