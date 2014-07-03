@@ -3,6 +3,7 @@ Python objects representing modes and options.
 """
 
 import json
+import warnings
 
 from . import option
 from . import mode
@@ -11,6 +12,9 @@ from . import errors
 
 
 def makelines(s, maxlen):
+    """Split string into words (space separated, no fancy tokenising here) and
+    join them into lines of at most `maxlen` width.
+    """
     lines = []
     words = s.split(' ')
     line = ''
@@ -29,9 +33,10 @@ def makelines(s, maxlen):
 
 def renderOptionHelp(option, help=True):
     """Renders a single help line for passed option.
+    if `help` is passed as false, it will not render help message but only
+    short and long variants.
     """
-    message = ''
-    message += (option['short'] if option['short'] else '    ')
+    message = (option['short'] if option['short'] else '    ')
     if option['short'] and option['long']: message += ', '
     message += (option['long'] if option['long'] else '')
     if option.params():
@@ -41,6 +46,12 @@ def renderOptionHelp(option, help=True):
     return message
 
 def _getoptionlines(mode, indent='    ', level=1):
+    """Renders lines with options' help messages.
+    The lines with actual option help strings, have only put short and long
+    variants into their strings to make nice padding available, so all options'
+    descriptions begin on the same column.
+    Renderer handles the help messages (if they are present).
+    """
     lines = []
     for scope in ['global', 'local']:
         if mode.options(group=scope): lines.append( ('str', indent*(level) + '{0} options:'.format(scope)) )
@@ -50,6 +61,8 @@ def _getoptionlines(mode, indent='    ', level=1):
 
 
 def _cleanback(lines):
+    """Removes whitespace-only lines from the end of lines list.
+    """
     while True:
         type, content = lines[-1]
         if type != 'str': break
@@ -59,6 +72,15 @@ def _cleanback(lines):
 
 
 class Helper:
+    """Class used to build help screens for CLAP UIs.
+
+    It can build abbreviated and full screens, display usage information,
+    example program invocations, nested commands and their options, etc.
+
+    The output is modelled after the 'git --help' output and 'gem' output,
+    in the ways of how usage and examples are shown and how options are aligned; and
+    after man pages in how option parameters are shown.
+    """
     def __init__(self, progname, mode):
         self._mode = mode
         self._indent = {'string': '   ', 'level': 0}
@@ -68,14 +90,24 @@ class Helper:
         self._lines = []
 
     def addUsage(self, line):
+        """Add usage line.
+        """
+        warnings.warn('this method is deprecated: usage exampels are taken from JSON representations')
         self._usage.append(line)
         return self
 
     def setmaxlen(self, n):
+        """Set the maximum lenght of a single line on help screen.
+        Descriptions will be adjusted to match it.
+        """
         self._maxlen = n
         return self
 
     def _genexamples(self):
+        """Generate `examples` part of help screen.
+        It will list example invocations of the program and
+        their descriptions.
+        """
         lines = []
         examples = (self._mode._doc['examples'] if 'examples' in self._mode._doc else [])
         if examples: lines.append( ('str', 'Examples:') )
@@ -88,7 +120,10 @@ class Helper:
         if lines: self._lines.extend(lines)
         if self._lines and lines: self._lines.append( ('str', '') )
 
-    def _gendoc(self):
+    def _genusage(self):
+        """Generate `usage` part of help screen.
+        Modelled after `git --help` invocation usage message.
+        """
         for key in ['usage']:
             head = '{0}: {1} '.format(key, self._progname)
             indent = len(head) * ' '
@@ -99,7 +134,9 @@ class Helper:
             self._lines.extend(lines)
             if self._lines: self._lines.append( ('str', '') )
 
-    def _genintrolines2(self, mode, name, level=0, longest=0):
+    def _gencommandhelp(self, mode, name, level=0, longest=0):
+        """Generate lines with command help message.
+        """
         if not longest: longest = len(name)
         SPACING = (2 if longest else 0)  # CONF?
         lines = []
@@ -127,24 +164,47 @@ class Helper:
                 lines.extend(self._genmodelines(submode, name=m, level=level+2))
                 lines.append( ('str', '') )
             else:
-                lines.extend(self._genintrolines2(submode, name=m, level=level+2, longest=longest))
+                lines.extend(self._gencommandhelp(submode, name=m, level=level+2, longest=longest))
         return lines
 
     def _genmodelines(self, mode, level=0, name='', deep=True):
         lines = []
-        self._lines.extend(self._genintrolines2(mode, name, level=level))
+        self._lines.extend(self._gencommandhelp(mode, name, level=level))
         self._lines.extend(_getoptionlines(mode, indent=self._indent['string'], level=level+1))
         if mode.modes(): self._lines.append( ('str', ((self._indent['string']*(level+1)) + 'commands:')) )
         self._lines.extend(self._gencommandslines(mode, name, level, deep))
         return lines
 
     def gen(self, deep=True):
-        self._gendoc()
+        """Generate help screen.
+        """
+        warnings.warn('deprecated: use .full() method instead')
+        return self.full(deep)
+
+    def usage(self):
+        """Generate usage help screen.
+        """
+        self._genusage()
+        return self
+
+    def examples(self):
+        """Generate examples help screen.
+        """
+        self._genexamples()
+        return self
+
+    def full(self, deep=True):
+        """Generate full help screen.
+        """
+        self._genusage()
         self._genexamples()
         self._lines.extend(self._genmodelines(mode=self._mode, deep=deep))
         return self
 
     def render(self):
+        """Performs final rendering of token-lines into single string
+        that can be printed out as a help message.
+        """
         for i in self._lines:
             if i[0] == 'option':
                 if len(i[1]) > self._opt_desc_start: self._opt_desc_start = len(i[1])
@@ -193,9 +253,8 @@ class HelpRunner:
                     present = True
                     break
             if present:
-                helper = Helper(filename, cui._mode).setmaxlen(n=70)
+                helper = Helper(self._program_name, cui._mode).setmaxlen(n=70)
                 print(helper.gen(deep=('--verbose' in cui)).render())
-                if '--verbose' not in cui: print('\nRun "{0} --help --verbose" to see full help message'.format(filename))
                 self._displayed = True
             if cui.islast(): break
             cui = cui.down()
@@ -209,7 +268,6 @@ class HelpRunner:
         if not items:
             helper = Helper(self._program_name, ui.up()._mode).setmaxlen(n=70)
             print(helper.gen(deep=('--verbose' in ui or '--help' in ui)).render())
-            if '--verbose' not in ui and '--help' not in ui: print('\nRun "{0} help --verbose" or "{0} help --help" to see full help message'.format(self._program_name))
             self._displayed = True
         if self._displayed: return
         mode, done = ui.top()._mode, False
@@ -229,7 +287,6 @@ class HelpRunner:
         if not self._displayed:
             helper = Helper(self._program_name, mode).setmaxlen(n=70)
             print(helper.gen(deep=('--verbose' in ui or '--help' in ui)).render())
-            if '--verbose' not in ui and '--help' not in ui: print('\nRun "{0} help --verbose -- [opers...]" or "{0} help --help -- [opers...]" to see full help message'.format(self._program_name))
             self._displayed = True
 
     def adjust(self, options=None, commands=None, ignorecmds=None):
@@ -243,10 +300,26 @@ class HelpRunner:
         if ignorecmds is not None: self._ignorecmds = ignorecmds
         return self
 
+    def _ignore(self):
+        """Check if given UI can or should be adjusted for Help Runner.
+        By default, help runner ignores the empty - '' - command which is
+        the first and default command for any program whose UI is built by CLAP.
+        """
+        for i in self._ignorecmds:
+            if str(self._ui) == i: self._ui = self._ui.down()
+            else: break
+
     def run(self):
         """Runs whole logic.
         """
-        self._byoptions()
+        self._ignore()
+        if '--usage' in self._ui:
+            print(Helper(self._program_name, self._ui.top()._mode).usage().render())
+            self._displayed = True
+        if '--examples' in self._ui:
+            print(Helper(self._program_name, self._ui.top()._mode).examples().render())
+            self._displayed = True
+        if not self._displayed: self._byoptions()
         if not self._displayed: self._byhelpcommand()
         return self
 

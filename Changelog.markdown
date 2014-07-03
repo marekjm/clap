@@ -63,10 +63,12 @@ There is a warning about this in code so CLAP will yell about UIs that are not u
 - **new**:  `examples` key in `doc` field of JSON UI representations, **examples should only be set in doc for the TOP LEVEL command **,
 - **new**:  `HelpRunner` object in `clap.helper` module,
 - **new**:  `top()` method in `ParsedUI`,
+- **new**:  `usage()` and `examples()` methods in `Helper`,
 
 - **upd**:  `Helper` was refactored a little bit,
 
 - **dep**:  `modes` field in JSON UI representations, changed to `commands`,
+- **dep**:  `gen` method in `Helper`, use `full` instead,
 
 
 ----
