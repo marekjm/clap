@@ -44,6 +44,30 @@ def export(mode):
     return model
 
 
+# model of help command that may be inserted into program's main command
+# to ease using the Help Runner
+HELP_COMMAND = {
+            'doc': {
+                'help': 'This command is used to obtain help information about various commands. It accepts any number of operands and can display help about nested commands, but finishes searching as soon as it finds option-looking string.'
+            },
+            'options': {
+                'local': [
+                    {
+                        'short': 'u',
+                        'long': 'usage',
+                        'help': 'display usage information (discards operands)'
+                    },
+                    {
+                        'short': 'e',
+                        'long': 'examples',
+                        'help': 'display example invocations (discards operands)'
+                    }
+                ]
+            },
+            'operands': {'no': [0]}
+        }
+
+
 class Builder:
     """Object used to convert JSON representation of UI to
     appropriate CLAP objects.
@@ -58,8 +82,16 @@ class Builder:
         self._model = model
         return self
 
+    def insertHelpCommand(self):
+        """Inser help command into program's main command.
+        This provides interface usable by Help Runner.
+        """
+        if 'commands' not in self._model: self._model['commands'] = {}
+        self._model['commands']['help'] = HELP_COMMAND
+        return self
+
     def build(self):
-        """Builds UI from loaded JSON.
+        """Builds UI from loaded model.
         """
         ui = mode.RedMode()
         if 'help' in self._model:
