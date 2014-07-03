@@ -55,6 +55,10 @@ Currently, the help runner does not offer many customization hooks (only option-
 - `-h` and `--help` options trigger help screen display,
 - `help` as first (second, technically) command triggers help display.
 
+The help runner can be more easily integrated into programs using `Builder` object using its `insertHelpCommand()` method which,
+as the name says, inserts a model of `help` command into model of UI as a child of main command.
+The call looks this way: `mode = clap.builder.Builder(model).insertHelpCommand().build().get()`
+
 Apart from these new features, there is a deprecation also: *verb commands* (akin to Git's `commit`, `pull` or `stash`) are no longer `modes` in JSON
 representations of UIs, but are `commands`.
 There is a warning about this in code so CLAP will yell about UIs that are not upgraded.
@@ -64,11 +68,19 @@ There is a warning about this in code so CLAP will yell about UIs that are not u
 - **new**:  `HelpRunner` object in `clap.helper` module,
 - **new**:  `top()` method in `ParsedUI`,
 - **new**:  `usage()` and `examples()` methods in `Helper`,
+- **new**:  `insertHelpCommand()` method added to `Builder`, which makes integration with Help Runner easier and
+            provides unified help interface for users of CLAP library,
 
 - **upd**:  `Helper` was refactored a little bit,
+- **upd**:  parser undergone major refactoring, actual parsing logic has been broken down into several smaller, easier to understand methods;
+            maybe a separate class should be created as `Parser` seems to have too much responsibility,
 
 - **dep**:  `modes` field in JSON UI representations, changed to `commands`,
 - **dep**:  `gen` method in `Helper`, use `full` instead,
+
+- **rem**:  `get()` method from `Parser`,
+- **rem**:  `getoperands()` method from `Parser`,
+- **rem**:  `clap_typehandler.py` method of setting typehandlers for CLAP,
 
 
 ----
