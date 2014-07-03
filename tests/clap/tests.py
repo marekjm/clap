@@ -11,7 +11,7 @@ import clap
 
 
 # enable debugging output which is basically huge number of print() calls
-DEBUG = True
+DEBUG = False
 # enable information about TODOs in code (if any)
 TODOS = False
 

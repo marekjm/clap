@@ -11,11 +11,11 @@ finally: pass
 class ParsedUI:
     """Object returned by parser, containing parsed commandline arguments in a usale form.
     """
-    def __init__(self):
+    def __init__(self, mode=None):
         self._options = {}
         self._operands = []
         self._name = ''
-        self._mode = None
+        self._mode = mode
         self._child, self._parent = None, None
 
     def __contains__(self, option):
@@ -158,7 +158,6 @@ class Parser:
         input = []
         while i < len(self._args):
             item = self._args[i]
-            #   if a breaker is encountered -> break
             if item == '--': break
             #   if non-option string is encountered and it's not an argument -> break
             if i == 0 and not shared.lookslikeopt(item): break
@@ -279,53 +278,64 @@ class Parser:
         if alias and (alias in input): variant = alias
         return variant
 
-    def parse(self):
-        """Parsing method for RedCLAP.
+    def _parseoptions(self, input):
+        """Parse options part of input.
         """
-        self._ui = ParsedUI()
-        self._ui._mode = self._mode
         options = []
-        operands = []
-        input = self._getinput()
         i = 0
         while i < len(input):
             item = input[i]
-            if shared.lookslikeopt(item) and self._mode.accepts(item) and not self._mode.params(item):
-                options.append( (item, None) )
-                alias = self._mode.alias(item)
-                if alias != item: options.append( (alias, None) )
-            elif shared.lookslikeopt(item) and self._mode.accepts(item) and self._mode.params(item):
-                n = len(self._mode.params(item))
-                params = input[i+1:i+1+n]
-                for j, callback in enumerate(self._mode.params(item)):
-                    if type(callback) is str: callback = self._typehandlers[callback]
-                    params[j] = callback(params[j])
-                options.append( (item, params) )
-                alias = self._mode.alias(item)
-                if alias != item: options.append( (alias, params) )
-                i += n
-            else:
-                break
             i += 1
+            if not (shared.lookslikeopt(item) and self._mode.accepts(item)): break
+            n = len(self._mode.params(item))
+            params = (input[i:i+n] if n else None)  # if n(umber of parameters) if greater than 0 extract parameters, else set them to None
+            alias = self._mode.alias(item)
+            options.append( (item, params) )
+            if alias and alias != item: options.append( (alias, params) )
+            i += n
+        return options
+
+    def _composeoptions(self, options):
+        """Compose options dictionary according to rules set by UI description, i.e.
+        plural options shall be gathered, singular should be overwritten etc.
+        """
+        composed = {}
         for opt, args in options:
             if self._mode.getopt(opt)['plural'] and self._mode.getopt(opt).params():
-                if opt not in self._parsed['options']: self._parsed['options'][opt] = []
-                self._parsed['options'][opt].append(args)
+                if opt not in composed: composed[opt] = []
+                composed[opt].append(args)
             elif self._mode.getopt(opt)['plural'] and not self._mode.getopt(opt).params():
-                if opt not in self._parsed['options']: self._parsed['options'][opt] = 0
-                self._parsed['options'][opt] += 1
+                if opt not in composed: composed[opt] = 0
+                composed[opt] += 1
             else:
-                self._parsed['options'][opt] = (tuple(args) if args is not None else args)
+                composed[opt] = (tuple(args) if args is not None else args)
+        return composed
+
+    def _convertoptionstypes(self, options):
+        """Convert options' parameters to their desired types.
+        """
+        converted = []
+        for opt, params in options:
+            for i, callback in enumerate(self._mode.params(opt)):
+                if type(callback) is str: callback = self._typehandlers[callback]
+                params[i] = callback(params[i])
+            converted.append( (opt, params) )
+        return converted
+
+    def parse(self):
+        """Parsing method for RedCLAP.
+        """
+        self._ui = ParsedUI(mode=self._mode)
+        input = self._getinput()
+        options = self._composeoptions(self._convertoptionstypes(self._parseoptions(input)))
         operands, nested = self._getheuroperands()
-        self._parsed['operands'] = operands
-        self._ui._options = self._parsed['options']
-        self._ui._operands = self._parsed['operands']
+        self._parsed['options'], self._parsed['operands'] = options, operands
+        self._ui._options, self._ui._operands = options, operands
         if nested:
             name = nested.pop(0)
             mode = self._mode._modes[name]
             ui = Parser(mode).feed(nested).parse().ui()
             ui._name = name
-            ui._mode = mode
             self._ui._appendmode(mode=ui)
         return self
 
