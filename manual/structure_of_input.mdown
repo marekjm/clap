@@ -1,7 +1,7 @@
 ### User input
 
 When your program is invoked, user usually gives it some input in form of options (some of them with
-arguments attached) and simpe arguments.
+arguments attached) and simple arguments.
 
 Here, I will explain how CLAP interprets, analyzes and processes user input before it expose it to
 you in form that is easy to work with.
@@ -14,14 +14,15 @@ you in form that is easy to work with.
 #### Structure of input
 
 Whole input is contained in `argv` variable but is logically divided into
-two main sections: *input* and *arguments*.
-As of version 0.7.1 they are not really splitted during input analysis but there is a special method
+two main sections: *input* and *operands*.
+As of version 0.7.1 they are not really split during input analysis but there is a special method
 `_getinput()` which will extract only the *input* part of argv.
 
 General structure is shown below (`foo` is the name of example program):
 
-        foo [options [option-arguments]]... [--] [arguments]...
-
+```
+foo [options [option-arguments]]... [--] [arguments]...
+```
 
 ##### *input*
 
@@ -31,7 +32,7 @@ only arguments will follow), or a *non-option* and *non-option-argument* string.
 Only this part is checked for mistakes since arguments are too program-specific and CLAP leaves
 their validation to users.
 
-##### *arguments*
+##### *operands*
 
 Everything that follows first *non-option* and *non-option-argument* string or *breaker*.
 
@@ -46,7 +47,7 @@ CLAP divides user input into three types:
 
 *   *options* (or *switches*),
 *   *option-arguments*,
-*   *arguments*.
+*   *operands*.
 
 
 ----
@@ -56,7 +57,7 @@ CLAP divides user input into three types:
 ##### 1. Options (switches)
 
 Options are strings that hold special meaning defined by the programmer or creator of UI.
-They can (but doesn't have to) request fixed-lenght lists of arguments of different types to be
+They can (but doesn't have to) request fixed-length lists of arguments of different types to be
 passed to them.
 
 Options are recognized using regular expressions (see the code in `clap/base.py` to check the exact
@@ -73,15 +74,15 @@ appearance:
 Short options are one-character switches. Usually they have long aliases which are more descriptive but
 entering just one character saves keystrokes.
 
-Short option is a string starting with single hyphen (`-`) immidiately followed by a single letter or
+Short option is a string starting with single hyphen (`-`) immediately followed by a single letter or
 number (the *name* of the short option).
 Name cannot be another hyphen - two hyphens (`--`) are special string used to tell a program that it's
 input is finished and from now on only non-option arguments will follow.
 
 ##### Abbreviations
 
->   **Notice to programmers**: if you want to enable your users to use abbreviations you must first format
->   the input using `Formater()` object (`clap.formater.Formater()`) because parser is not able to understand
+>   **Note to programmers**: if you want to enable your users to use abbreviations you must first format
+>   the input using `Formatter()` object (`clap.formater.Formatter()`) because parser is not able to understand
 >   them.
 
 Short options are useful for users who memorized some part of the program's interface as they can be
@@ -154,7 +155,7 @@ will be from string to string).
 
 ##### Variable-length arguments list
 
-Currently there is no way to define a variable list of arguments.
+Currently there is no way to define a variable-length list of arguments.
 
 ##### Optional arguments
 

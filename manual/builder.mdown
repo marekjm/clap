@@ -10,22 +10,29 @@ available using JSON builder API.
 
 #### Argument types
 
-Only thing that needs to be set up in native Python are *type-handlers* that are not built-in
+Only thing that needs to be set up in Python are *type-handlers* that are not built-in
 Python data types.
-These *type-handlers* are the callback functions which are used for `arguments`
-parameter in `clap.parser.Parser.add()`. In JSON they are stored as strings and need
-to be replaced by real functions. `str`, `int` and `float` are always available.
+These *type-handlers* are the callback functions which are used to convert options' arguments to
+their final data types.
+In JSON they are stored as strings and need to be replaced by real functions.
+The three basic ones: `str`, `int` and `float` are always available.
 
 
 ----
 
-#### Building single-mode parser
+#### Building single-command parser
 
-In single-mode parser all options are global.
-This can be written as this:
+Single command parser has only options and
+it does not really matter if they are global or local.
+It can be built like this:
 
-    {
-        "__global__": [
+```
+{
+    "doc": {
+        "help": "a help message"
+    },
+    "options": {
+        "local": [
             {
                 "short": "f",
                 "long": "foo"
@@ -36,52 +43,48 @@ This can be written as this:
             }
         ]
     }
-
-
-However, to provide backwards compatibility with pre-0.9.x versions single-mode parsers can be created
-by just list of options:
-
-    [
-        {
-            "short": "f",
-            "long": "foo"
-        },
-        {
-            "short": "b",
-            "long": "bar"
-        }
-    ]
-
+}
+```
 
 ----
 
-#### Building multiple-modes parser
+#### Building multiple-commands parser
 
-Parsers with more than one mode are defined as dictionaries.
-Each key is a name of the parser for a different mode.
-
-There is a reserved key **`__global__`** which defines list of
-global options - common to all modes.
+Multi-commands parsers are defined exactly the same way as single-command parsers.
+The only difference is the presence of `commands` key, which is a dictionary of
+nested commands.  
+Commands can be nested to an arbitrary level, CLAP does not enforce any limits.
 
 Example:
 
-    {
-        "foo": [
+```
+{
+    "doc": {
+        "help": "a help message"
+    },
+    "options": {
+        "local": [
             {
                 "short": "f",
                 "long": "foo"
             }
         ],
-        "bar": [
+        "global": [
             {
                 "short": "b",
                 "long": "bar"
             }
-        ],
-        "__global__": [
-            {
-                "short": "B",
-                "long" "baz"
-            }
         ]
+    },
+    "commands": {
+        "cmnd": {
+            "doc": {
+                "help": "it is nested"
+            },
+            "options": {"local": []}
+        }
     }
+}
+```
+
+
