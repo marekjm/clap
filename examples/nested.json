@@ -18,6 +18,10 @@
             {
                 "line": "help --verbose | help --help",
                 "desc": "display detailed help message"
+            },
+            {
+                "line": "help --verbose -- [operand...]  |  help --help -- [operand...]",
+                "desc": "display detailed help mesasge about chosen element"
             }
         ]
     },
@@ -129,6 +133,20 @@
         "help": {
             "doc": {
                 "help": "This command is used to obtain help information about various commands. It accepts any number of operands and can display help about nested commands, but finishes searching as soon as it finds option-looking string."
+            },
+            "options": {
+                "local": [
+                    {
+                        "short": "u",
+                        "long": "usage",
+                        "help": "display usage information (discards operands)"
+                    },
+                    {
+                        "short": "e",
+                        "long": "examples",
+                        "help": "display example invocations (discards operands)"
+                    }
+                ]
             },
             "operands": {"no": [0]}
         }
