@@ -175,12 +175,6 @@ class Helper:
         self._lines.extend(self._gencommandslines(mode, name, level, deep))
         return lines
 
-    def gen(self, deep=True):
-        """Generate help screen.
-        """
-        warnings.warn('deprecated: use .full() method instead')
-        return self.full(deep)
-
     def usage(self):
         """Generate usage help screen.
         """
@@ -267,7 +261,7 @@ class HelpRunner:
         items = ui.operands()
         if not items:
             helper = Helper(self._program_name, ui.up()._mode).setmaxlen(n=70)
-            print(helper.gen(deep=('--verbose' in ui or '--help' in ui)).render())
+            print(helper.full(deep=('--verbose' in ui or '--help' in ui)).render())
             self._displayed = True
         if self._displayed: return
         mode, done = ui.top()._mode, False

@@ -40,9 +40,9 @@ def export(mode):
         model['operands'] = {}
         model['operands']['no'] = list(mode.getOperandsRange())
     if mode.modes():
-        model['modes'] = {}
+        model['commands'] = {}
         for name, submode in mode._modes.items():
-            model['modes'][name] = export(submode)
+            model['commands'][name] = export(submode)
     return model
 
 
@@ -96,9 +96,6 @@ class Builder:
         """Builds UI from loaded model.
         """
         ui = mode.RedMode()
-        if 'help' in self._model:
-            ui.setdoc(self._model['help'], None)
-            warnings.warn('"help" field in mode descriptions is deprecated and will be removed in version 0.10.0 of CLAP: move it to \'"doc": {"help": "Your help here..."}\'')
         if 'doc' in self._model: ui.setdoc(**self._model['doc'])
         if 'options' in self._model:
             if 'local' in self._model['options']:
@@ -107,11 +104,7 @@ class Builder:
                 for opt in self._model['options']['global']: ui.addGlobalOption(option.Option(**opt))
         if 'operands' in self._model:
             if 'no' in self._model['operands']: ui.setOperandsRange(no=self._model['operands']['no'])
-        commands = {}
-        if 'modes' in self._model:
-            warnings.warn('"modes" key is deprecated: use "commands", support for "modes" will be removed in version 0.10.0 of CLAP')
-            commands = self._model['modes']
-        if 'commands' in self._model: commands = self._model['commands']
+        commands = (self._model['commands'] if 'commands' in self._model else {})
         for name, nmodel in commands.items(): ui.addMode(name=name, mode=Builder().set(nmodel).build().get())
         ui.propagate()
         self._mode = ui
