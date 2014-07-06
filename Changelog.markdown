@@ -18,6 +18,10 @@ It's mostly useful for developers who use the CLAP library.
 
 All deprecated features were removed from code.
 
+- **upd**:  `addMode()` method of `RedMode` renamed to `addCommand()`,
+- **upd**:  `hasmode()` method of `RedMode` renamed to `hasCommand()`,
+- **upd**:  `getmode()` method of `RedMode` renamed to `getCommand()`,
+- **upd**:  `modes()` method of `RedMode` renamed to `commands()`,
 
 - **rem**:  removed support for features deprecated in 0.9.x line,
 

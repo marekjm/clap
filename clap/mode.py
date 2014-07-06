@@ -32,24 +32,24 @@ class RedMode:
         if examples is not None: self._doc['examples'] = examples
         return self
 
-    def addMode(self, name, mode):
-        """Adds child mode.
+    def addCommand(self, name, mode):
+        """Adds nested command.
         """
         self._modes[name] = mode
         return self
 
-    def hasmode(self, name):
-        """Returns true if mode has a child mode with given name.
+    def hasCommand(self, name):
+        """Returns true if command has a subcommand with given name.
         """
-        return name in self._modes
+        return name in self.commands()
 
-    def getmode(self, name):
-        """Returns child mode with given name.
+    def getCommand(self, name):
+        """Returns subcommand with given name.
         """
         return self._modes[name]
 
-    def modes(self):
-        """Returns list of supported child modes.
+    def commands(self):
+        """Returns list of subcommand.
         """
         return [i for i in self._modes]
 
