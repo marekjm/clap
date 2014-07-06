@@ -14,7 +14,16 @@ It's mostly useful for developers who use the CLAP library.
 
 ----
 
-## Version 0.9.6 ()
+## Version 0.10.0-rc.1
+
+All deprecated features were removed from code.
+
+
+- **rem**:  removed support for features deprecated in 0.9.x line,
+
+----
+
+## Version 0.9.6 (2014-07-04)
 
 It seems like the 0.9.x line is about to stay for a bit longer than I expected.
 However, it does not mean there are no improvements in the code.
