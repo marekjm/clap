@@ -13,36 +13,22 @@ from . import shared
 from . import errors
 
 
-def readfile(path):
-    """Reads file and returns its contents as string.
-    """
-    ifstream = open(path)
-    content = ifstream.read()
-    ifstream.close()
-    return content
-
-def readjson(path):
-    """Reads JSON file and returns decoded object.
-    """
-    return json.loads(readfile(path))
-
-
-def export(mode):
-    """Exports UI built in Python to a dict that can be JSON encoded.
+def export(command):
+    """Exports UI built in Python to a model that can be JSON encoded.
     """
     model = {}
-    if mode._options['local'] or mode._options['global']: model['options'] = {}
+    if command._options['local'] or command._options['global']: model['options'] = {}
     for scope in ['local', 'global']:
-        if mode._options[scope]:
+        if command._options[scope]:
             model['options'][scope] = []
-            for opt in mode._options[scope]: model['options'][scope].append(opt._export())
-    if mode.getOperandsRange() != (None, None):
+            for opt in command._options[scope]: model['options'][scope].append(opt._export())
+    if command.getOperandsRange() != (None, None):
         model['operands'] = {}
-        model['operands']['no'] = list(mode.getOperandsRange())
-    if mode.commands():
+        model['operands']['no'] = list(command.getOperandsRange())
+    if command.commands():
         model['commands'] = {}
-        for name, submode in mode._modes.items():
-            model['commands'][name] = export(submode)
+        for name in command.commands():
+            model['commands'][name] = export(command.getCommand(name))
     return model
 
 
