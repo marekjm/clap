@@ -101,19 +101,19 @@ class ModeTests(unittest.TestCase):
 
     def testAddingGlobalOptions(self):
         mode = clap.mode.RedMode()
-        mode.addMode('foo', clap.mode.RedMode())
-        mode.addMode('bar', clap.mode.RedMode())
+        mode.addCommand('foo', clap.mode.RedMode())
+        mode.addCommand('bar', clap.mode.RedMode())
         mode.addGlobalOption(clap.option.Option(short='v', long='verbose')).propagate()
         self.assertTrue(mode.accepts('--verbose'))
-        self.assertTrue(mode.getmode('foo').accepts('--verbose'))
-        self.assertTrue(mode.getmode('bar').accepts('--verbose'))
+        self.assertTrue(mode.getCommand('foo').accepts('--verbose'))
+        self.assertTrue(mode.getCommand('bar').accepts('--verbose'))
 
     def testAddingModes(self):
         mode = clap.mode.RedMode()
-        mode.addMode('foo', clap.mode.RedMode())
-        mode.addMode('bar', clap.mode.RedMode())
-        self.assertTrue(mode.hasmode('foo'))
-        self.assertTrue(mode.hasmode('bar'))
+        mode.addCommand('foo', clap.mode.RedMode())
+        mode.addCommand('bar', clap.mode.RedMode())
+        self.assertTrue(mode.hasCommand('foo'))
+        self.assertTrue(mode.hasCommand('bar'))
 
     def testRemovingLocalOption(self):
         """Be careful when manually building interfaces and
@@ -194,7 +194,7 @@ class RedParserGeneralTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(short='l', long='local'))
         mode.addGlobalOption(clap.option.Option(short='g', long='global', arguments=['int']))
         child = clap.mode.RedMode()
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         mode.propagate()
         argv = ['--local', '--global', '42', 'child']
         parser = clap.parser.Parser(mode).feed(argv)
@@ -288,7 +288,7 @@ class RedParserParsingTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(short='a', long='answer', arguments=['str', 'int']))
         child = clap.mode.RedMode()
         child.addLocalOption(clap.option.Option(short='s', long='spam'))
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         argv = ['-a', 'is', '42', '--test', 'child', '--spam']
         parser = clap.parser.Parser(mode).feed(argv)
         ui = parser.parse().ui().finalise()
@@ -319,7 +319,7 @@ class RedParserParsingTests(unittest.TestCase):
         mode.setOperandsRange(no=[1, 1])
         child = clap.mode.RedMode()
         child.addLocalOption(clap.option.Option(short='s', long='spam'))
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         argv = ['-a', 'is', '42', '--test', 'alpha', 'child', '--spam']
         parser = clap.parser.Parser(mode).feed(argv)
         ui = parser.parse().ui().finalise()
@@ -1015,7 +1015,7 @@ class RedParserNestedModesTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(short='b', long='breakfast', arguments=['str']))
         mode.addLocalOption(clap.option.Option(short='w', long='what'))
         mode.setOperandsRange(no=[2, 2])
-        mode.addMode(name='child', mode=clap.mode.RedMode().setOperandsRange(no=[2, 2]))
+        mode.addCommand(name='child', mode=clap.mode.RedMode().setOperandsRange(no=[2, 2]))
         argv = ['--breakfast', 'yes', '--what', 'spam', 'ham', 'child', 'foo', 'bar']
         operands = ['spam', 'ham']
         nested = ['child', 'foo', 'bar']
@@ -1027,7 +1027,7 @@ class RedParserNestedModesTests(unittest.TestCase):
     def testGettingOperandsAndNestedModeItems(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         argv = ['--foo', '-b', '-B', 'spam', 'ham', 'child', '--answer', '42']
         parser = clap.parser.Parser(mode).feed(argv)
         self.assertEqual(['spam', 'ham'], parser._getheuroperands()[0])
@@ -1038,7 +1038,7 @@ class RedParserNestedModesTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(short='l', long='local'))
         mode.addGlobalOption(clap.option.Option(short='g', long='global'))
         child = clap.mode.RedMode()
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         mode.propagate()
         argv = ['--local', '--global', 'child']
         ui = clap.parser.Parser(mode).feed(argv).parse().ui().finalise()
@@ -1059,7 +1059,7 @@ class RedParserNestedModesTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(short='l', long='local'))
         mode.addGlobalOption(clap.option.Option(short='g', long='global', arguments=['int']))
         child = clap.mode.RedMode()
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         mode.propagate()
         argv = ['--local', '--global', '42', 'child']
         ui = clap.parser.Parser(mode).feed(argv).parse().ui().finalise()
@@ -1084,7 +1084,7 @@ class RedParserNestedModesTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(short='l', long='local'))
         mode.addGlobalOption(clap.option.Option(short='g', long='global', arguments=['int']))
         child = clap.mode.RedMode()
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         mode.propagate()
         argv = ['--local', '--global', '42', 'child', '-g', '69']
         ui = clap.parser.Parser(mode).feed(argv).parse().ui().finalise()
@@ -1109,7 +1109,7 @@ class RedParserNestedModesTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(short='l', long='local'))
         mode.addGlobalOption(clap.option.Option(short='g', long='global', plural=True))
         child = clap.mode.RedMode()
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         mode.propagate()
         argv = ['--local', '--global', 'child']
         ui = clap.parser.Parser(mode).feed(argv).parse().ui().finalise()
@@ -1133,8 +1133,8 @@ class RedParserNestedModesTests(unittest.TestCase):
         mode = clap.mode.RedMode().setOperandsRange(no=[0, 0])
         mode.addLocalOption(clap.option.Option(short='l', long='local'))
         mode.addGlobalOption(clap.option.Option(short='g', long='global', plural=True))
-        child = clap.mode.RedMode().addMode(name='second', mode=clap.mode.RedMode())
-        mode.addMode(name='child', mode=child)
+        child = clap.mode.RedMode().addCommand(name='second', mode=clap.mode.RedMode())
+        mode.addCommand(name='child', mode=child)
         mode.propagate()
         argv = ['--local', '--global', 'child', '-g', '--global', 'second', '--global']
         ui = clap.parser.Parser(mode).feed(argv).parse().ui().finalise()
@@ -1167,8 +1167,8 @@ class RedParserNestedModesTests(unittest.TestCase):
         mode.addLocalOption(clap.option.Option(short='l', long='local'))
         child = clap.mode.RedMode().setOperandsRange(no=[0, 0])
         child.addGlobalOption(clap.option.Option(short='g', long='global', plural=True))
-        child.addMode(name='second', mode=clap.mode.RedMode())
-        mode.addMode(name='child', mode=child)
+        child.addCommand(name='second', mode=clap.mode.RedMode())
+        mode.addCommand(name='child', mode=child)
         mode.propagate()
         argv = ['--local', 'child', '-g', '--global', 'second', '--global']
         ui = clap.parser.Parser(mode).feed(argv).parse().ui().finalise()
@@ -1199,7 +1199,7 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
     def testFixedRangeItemTreatedAsModeBecauseFollowedByOptionAcceptedByOneOfValidChildModes(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         argv = ['--foo', '-b', '-B', 'spam', 'ham', 'fake', '--answer', '42']
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
@@ -1209,7 +1209,7 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
     def testFixedRangeUnrecognizedOptionInNestedMode(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         argv = ['--foo', '-b', '-B', 'spam', 'ham', 'child', '--answer', '42', '--fake']
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
@@ -1219,7 +1219,7 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
     def testFixedRangeInvalidNumberOfOperandsBecauseModeIsGivenTooFast(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         argv = ['--foo', '-b', '-B', 'spam', 'child', '--answer', '42']
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
@@ -1230,7 +1230,7 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
     def testFixedRangeInvalidNumberOfOperandsRaisedBeforeInvalidMode(self):
         mode = getTestMode().setOperandsRange(no=[2, 2])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         argv = ['--foo', '-b', '-B', 'spam', 'fake', '--answer', '42']
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
@@ -1240,7 +1240,7 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
     def testFluidRangeItemTreatedAsModeBecauseFollowedByOptionAcceptedByOneOfValidChildModes(self):
         mode = getTestMode().setOperandsRange(no=[1, 4])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         parser = clap.parser.Parser(mode)
         argvariants = [
                 ['--foo', '-b', '-B', 'alpha', 'fake', '--answer', '42'],
@@ -1257,7 +1257,7 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
     def testFluiddRangeUnrecognizedOptionInNestedMode(self):
         mode = getTestMode().setOperandsRange(no=[1, 4])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         parser = clap.parser.Parser(mode)
         argvariants = [
                 ['--foo', '-b', '-B', 'alpha', 'child', '--answer', '42', '--fake'],
@@ -1274,7 +1274,7 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
     def testFluidRangeInvalidNumberOfOperandsBecauseModeIsGivenTooFast(self):
         mode = getTestMode().setOperandsRange(no=[1, 4])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         argv = ['--foo', '-b', '-B', 'child', '--answer', '42']
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
@@ -1285,7 +1285,7 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
     def testFluidRangeInvalidNumberOfOperandsBecauseModeIsGivenTooLate(self):
         mode = getTestMode().setOperandsRange(no=[1, 4])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         argv = ['--foo', '-b', '-B', 'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'child', '--answer', '42']
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
@@ -1296,7 +1296,7 @@ class RedCheckerNestedModesCheckingTests(unittest.TestCase):
     def testFluidRangeInvalidNumberOfOperandsRaisedBeforeInvalidMode(self):
         mode = getTestMode().setOperandsRange(no=[1, 4])
         child = clap.mode.RedMode().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
-        mode.addMode(name='child', mode=child)
+        mode.addCommand(name='child', mode=child)
         parser = clap.parser.Parser(mode)
         argvariants = [
                 ['--foo', '-b', '-B', 'fake', '--answer', '42'],
