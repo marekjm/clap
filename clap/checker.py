@@ -156,7 +156,7 @@ class RedChecker():
         operands, nested = self._parser._getheuroperands()
         if not nested: return
         child = nested.pop(0)
-        if not self._parser._mode.hasmode(child): raise errors.UnrecognizedModeError(child)
+        if not self._parser._mode.hasCommand(child): raise errors.UnrecognizedModeError(child)
         else: RedChecker(parser.Parser(self._parser._mode._modes[child]).feed(nested)).check(rangecompat=rangecompat)
 
     def check(self, rangecompat=True):

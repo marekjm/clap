@@ -39,7 +39,7 @@ def export(mode):
     if mode.getOperandsRange() != (None, None):
         model['operands'] = {}
         model['operands']['no'] = list(mode.getOperandsRange())
-    if mode.modes():
+    if mode.commands():
         model['commands'] = {}
         for name, submode in mode._modes.items():
             model['commands'][name] = export(submode)
@@ -105,7 +105,7 @@ class Builder:
         if 'operands' in self._model:
             if 'no' in self._model['operands']: ui.setOperandsRange(no=self._model['operands']['no'])
         commands = (self._model['commands'] if 'commands' in self._model else {})
-        for name, nmodel in commands.items(): ui.addMode(name=name, mode=Builder().set(nmodel).build().get())
+        for name, nmodel in commands.items(): ui.addCommand(name=name, mode=Builder().set(nmodel).build().get())
         ui.propagate()
         self._mode = ui
         return self

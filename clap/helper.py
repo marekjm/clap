@@ -154,12 +154,12 @@ class Helper:
 
     def _gencommandslines(self, mode, name, level, deep):
         lines = []
-        modes = sorted(mode.modes())
+        modes = sorted(mode.commands())
         longest = 0
         for m in modes:
             if len(m) > longest: longest = len(m)
         for m in modes:
-            submode = mode.getmode(m)
+            submode = mode.getCommand(m)
             if deep:
                 lines.extend(self._genmodelines(submode, name=m, level=level+2))
                 lines.append( ('str', '') )
@@ -171,7 +171,7 @@ class Helper:
         lines = []
         self._lines.extend(self._gencommandhelp(mode, name, level=level))
         self._lines.extend(_getoptionlines(mode, indent=self._indent['string'], level=level+1))
-        if mode.modes(): self._lines.append( ('str', ((self._indent['string']*(level+1)) + 'commands:')) )
+        if mode.commands(): self._lines.append( ('str', ((self._indent['string']*(level+1)) + 'commands:')) )
         self._lines.extend(self._gencommandslines(mode, name, level, deep))
         return lines
 
@@ -271,16 +271,16 @@ class HelpRunner:
                 print('(option) {0}'.format(message))
                 self._displayed = True
                 break
-            elif not mode.hasmode(item):
+            elif not mode.hasCommand(item):
                 message = 'unrecognised mode: no help available'
                 print('{0}'.format(message))
                 self._displayed = True
                 break
             elif i < len(items):
-                mode = mode.getmode(item)
+                mode = mode.getCommand(item)
         if not self._displayed:
             helper = Helper(self._program_name, mode).setmaxlen(n=70)
-            print(helper.gen(deep=('--verbose' in ui or '--help' in ui)).render())
+            print(helper.full(deep=('--verbose' in ui or '--help' in ui)).render())
             self._displayed = True
 
     def adjust(self, options=None, commands=None, ignorecmds=None):

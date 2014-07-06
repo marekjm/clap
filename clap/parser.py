@@ -164,7 +164,7 @@ class Parser:
     def _getoperands(self, heur=True):
         """Returns list of operands passed.
         """
-        if heur and self._mode.modes() and self.getOperandsRange()[1] is not None: return self._getheuroperands()[0]
+        if heur and self._mode.commands() and self.getOperandsRange()[1] is not None: return self._getheuroperands()[0]
         n = len(self._getinput())
         operands = self._args[n:]
         if operands: self._breaker = (operands[0] == '--')
@@ -176,8 +176,8 @@ class Parser:
         """Return true if given option is accepted in at least one child mode.
         """
         accepted = False
-        for m in self._mode.modes():
-            if self._mode.getmode(m).accepts(option):
+        for m in self._mode.commands():
+            if self._mode.getCommand(m).accepts(option):
                 accepted = True
                 break
         return accepted
@@ -189,7 +189,7 @@ class Parser:
         i = 0
         while i < len(opers):
             item = opers[i]
-            if self._mode.hasmode(item): break
+            if self._mode.hasCommand(item): break
             if shared.lookslikeopt(item):
                 accepted = self._isAcceptedInChildModes(item)
                 if accepted:
