@@ -23,7 +23,7 @@ class RedChecker():
         except KeyError as e:
             raise errors.UnrecognizedOptionError(e)
         for i in input:
-            if shared.lookslikeopt(i) and not self._parser._mode.accepts(i): raise errors.UnrecognizedOptionError(i)
+            if shared.lookslikeopt(i) and not self._parser._command.accepts(i): raise errors.UnrecognizedOptionError(i)
 
     def _checkarguments(self):
         """Checks if arguments given to options which require them are valid.
@@ -34,12 +34,12 @@ class RedChecker():
         i = 0
         while i < len(input):
             opt = input[i]
-            if shared.lookslikeopt(opt) and self._parser._mode.getopt(opt).params():
-                types = self._parser._mode.getopt(opt).params()
+            if shared.lookslikeopt(opt) and self._parser._command.getopt(opt).params():
+                types = self._parser._command.getopt(opt).params()
                 if i+len(types) >= len(input):
                     # missing parameters at the end of input
                     raise errors.MissingArgumentError('{0}={1}'.format(opt, ', '.join(types)))
-                if shared.lookslikeopt(input[i+1]) and self._parser._mode.accepts(input[i+1]):
+                if shared.lookslikeopt(input[i+1]) and self._parser._command.accepts(input[i+1]):
                     # number of parameters too low before next option is passed
                     raise errors.MissingArgumentError(opt)
                 for n, atype in enumerate(types):
@@ -59,12 +59,12 @@ class RedChecker():
     def _checkrequired(self):
         """Checks if all required options are present in input list.
         """
-        for option in self._parser._mode.options():
+        for option in self._parser._command.options():
             check = option['required']
             for n in option['not_with']:
                 if not check: break
-                if not self._parser._mode.accepts(n): raise errors.UIDesignError('option "{0}" is not required with an option that is not recognized by parser: {1}'.format(option, n))
-                n = self._parser._mode.getopt(name=n)
+                if not self._parser._command.accepts(n): raise errors.UIDesignError('option "{0}" is not required with an option that is not recognized by parser: {1}'.format(option, n))
+                n = self._parser._command.getopt(name=n)
                 check = not self._parser._ininput(option=n)
             if not check: continue
             if not self._parser._ininput(option=option): raise errors.RequiredOptionNotFoundError(option)
@@ -72,12 +72,12 @@ class RedChecker():
     def _checkrequires(self):
         """Check if all options required by other options are present.
         """
-        for option in self._parser._mode.options():
+        for option in self._parser._command.options():
             if not self._parser._ininput(option): continue
             for n in option['requires']:
-                if not self._parser._mode.accepts(n):
+                if not self._parser._command.accepts(n):
                     raise errors.UIDesignError('\'{0}\' requires unrecognized option \'{1}\''.format(needs, n))
-                n = self._parser._mode.getopt(n)
+                n = self._parser._command.getopt(n)
                 if not self._parser._ininput(option=n):
                     needs = self._parser._whichaliasin(option)
                     raise errors.RequiredOptionNotFoundError('{0} -> {1}'.format(needs, n))
@@ -85,14 +85,14 @@ class RedChecker():
     def _checkwants(self):
         """Check for wanted options.
         """
-        for i in self._parser._mode.options():
+        for i in self._parser._command.options():
             alias_present = self._parser._whichaliasin(i)
             if not self._parser._ininput(i) or not i['wants']: continue
             fail = True
             for n in i['wants']:
-                if not self._parser._mode.accepts(str(n)):
+                if not self._parser._command.accepts(str(n)):
                     raise errors.UIDesignError('\'{0}\' wants unrecognized option \'{1}\''.format(alias_present, n))
-                if self._parser._ininput(option=self._parser._mode.getopt(n)):
+                if self._parser._ininput(option=self._parser._command.getopt(n)):
                     fail = False
                     break
             if fail:
@@ -101,22 +101,22 @@ class RedChecker():
     def _checkconflicts(self):
         """Check for conflicting options.
         """
-        for i in self._parser._mode.options():
+        for i in self._parser._command.options():
             conflicted = self._parser._whichaliasin(i)
             if not self._parser._ininput(i) or not i['conflicts']: continue
             for c in i['conflicts']:
-                if not self._parser._mode.accepts(str(c)):
+                if not self._parser._command.accepts(str(c)):
                     raise errors.UIDesignError('\'{0}\' conflicts with unrecognized option \'{1}\''.format(conflicted, c))
-                conflicting = self._parser._whichaliasin(self._parser._mode.getopt(c))
+                conflicting = self._parser._whichaliasin(self._parser._command.getopt(c))
                 if conflicting:
                     raise errors.ConflictingOptionsError('{0} | {1}'.format(conflicted, conflicting))
 
     def _checkoperandscompat(self):
         """Checks if operands types list length is compatible with specified range of operands.
         """
-        types = self._parser._mode.getOperandsTypes()
+        types = self._parser._command.getOperandsTypes()
         if not types: return
-        least, most = self._parser._mode.getOperandsRange()
+        least, most = self._parser._command.getOperandsRange()
         if most is not None and most < len(types):
             raise errors.UIDesignError('upper range of operands not compatible with given list of operand types: list of types too long: expected at most {0} but got {1}'.format(most, len(types)))
         if least is not None and most is not None and least == most and (least % len(types)):
@@ -130,7 +130,7 @@ class RedChecker():
         """Checks whether operands given match specified range.
         """
         got = len(self._parser._getheuroperands()[0])
-        least, most = self._parser._mode.getOperandsRange()
+        least, most = self._parser._command.getOperandsRange()
         fail = False
         if least is not None and least == most and got != least:
             msg = 'expected exactly {0} operands but got {1}'.format(least, got)
@@ -141,8 +141,8 @@ class RedChecker():
         if most is not None and got > most:
             msg = 'expected at most {0} operands but got {1}'.format(most, got)
             raise errors.InvalidOperandRangeError(msg)
-        if least is None and most is None and self._parser._mode.getOperandsTypes():
-            typeslen = len(self._parser._mode.getOperandsTypes())
+        if least is None and most is None and self._parser._command.getOperandsTypes():
+            typeslen = len(self._parser._command.getOperandsTypes())
             if got % typeslen and got > typeslen:
                 msg = 'expected number of operands divisible by {0} but got {1}'.format(typeslen, got)
                 raise errors.InvalidOperandRangeError(msg)
@@ -156,8 +156,8 @@ class RedChecker():
         operands, nested = self._parser._getheuroperands()
         if not nested: return
         child = nested.pop(0)
-        if not self._parser._mode.hasCommand(child): raise errors.UnrecognizedModeError(child)
-        else: RedChecker(parser.Parser(self._parser._mode._modes[child]).feed(nested)).check(rangecompat=rangecompat)
+        if not self._parser._command.hasCommand(child): raise errors.UnrecognizedModeError(child)
+        else: RedChecker(parser.Parser(self._parser._command.getCommand(child)).feed(nested)).check(rangecompat=rangecompat)
 
     def check(self, rangecompat=True):
         """Validates if the given input is correct for given UI and

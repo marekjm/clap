@@ -82,7 +82,7 @@ class Helper:
     after man pages in how option parameters are shown.
     """
     def __init__(self, progname, mode):
-        self._mode = mode
+        self._command = mode
         self._indent = {'string': '   ', 'level': 0}
         self._progname = progname
         self._maxlen = 140
@@ -109,7 +109,7 @@ class Helper:
         their descriptions.
         """
         lines = []
-        examples = (self._mode._doc['examples'] if 'examples' in self._mode._doc else [])
+        examples = (self._command._doc['examples'] if 'examples' in self._command._doc else [])
         if examples: lines.append( ('str', 'Examples:') )
         for i, example in enumerate(examples):
             if 'line' not in example: continue
@@ -128,7 +128,7 @@ class Helper:
             head = '{0}: {1} '.format(key, self._progname)
             indent = len(head) * ' '
             lines = []
-            what = (self._mode._doc[key] if key in self._mode._doc else [])
+            what = (self._command._doc[key] if key in self._command._doc else [])
             if what: lines.append( ('str', head + what[0]) )
             for line in what[1:]: lines.append( ('str', indent + line) )
             self._lines.extend(lines)
@@ -192,7 +192,7 @@ class Helper:
         """
         self._genusage()
         self._genexamples()
-        self._lines.extend(self._genmodelines(mode=self._mode, deep=deep))
+        self._lines.extend(self._genmodelines(mode=self._command, deep=deep))
         return self
 
     def render(self):
@@ -249,7 +249,7 @@ class HelpRunner:
             if cui.islast(): break
             cui = cui.down()
         if present:
-            helper = Helper(self._program_name, cui._mode).setmaxlen(n=70)
+            helper = Helper(self._program_name, cui._command).setmaxlen(n=70)
             print(helper.gen(deep=('--verbose' in cui)).render())
             self._displayed = True
 
@@ -260,11 +260,11 @@ class HelpRunner:
         if str(ui) != 'help': return
         items = ui.operands()
         if not items:
-            helper = Helper(self._program_name, ui.up()._mode).setmaxlen(n=70)
+            helper = Helper(self._program_name, ui.up()._command).setmaxlen(n=70)
             print(helper.full(deep=('--verbose' in ui or '--help' in ui)).render())
             self._displayed = True
         if self._displayed: return
-        mode, done = ui.top()._mode, False
+        mode, done = ui.top()._command, False
         for i, item in enumerate(items):
             if shared.lookslikeopt(item):
                 message = (renderOptionHelp(mode.getopt(item)).strip() if mode.accepts(item) else 'unrecognised option: no help available')
@@ -308,10 +308,10 @@ class HelpRunner:
         """
         self._ignore()
         if '--usage' in self._ui:
-            print(Helper(self._program_name, self._ui.top()._mode).usage().render())
+            print(Helper(self._program_name, self._ui.top()._command).usage().render())
             self._displayed = True
         if '--examples' in self._ui:
-            print(Helper(self._program_name, self._ui.top()._mode).examples().render())
+            print(Helper(self._program_name, self._ui.top()._command).examples().render())
             self._displayed = True
         if not self._displayed: self._byoptions()
         if not self._displayed: self._byhelpcommand()

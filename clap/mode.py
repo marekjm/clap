@@ -12,7 +12,7 @@ class RedMode:
     def __init__(self):
         self._options = {'local': [], 'global': []}
         self._operands = {'range': {'least': None, 'most': None}, 'types': []}
-        self._modes = {}
+        self._commands = {}
         self._doc = {'help': '', 'usage': []}
 
     def __eq__(self, other):
@@ -20,7 +20,7 @@ class RedMode:
         """
         opts = (self._options == other._options)
         operands = (self._operands == other._operands)
-        modes = (self._modes == other._modes)
+        modes = (self._commands == other._commands)
         doc = (self._doc == other._doc)
         return opts and operands and modes and doc
 
@@ -35,7 +35,7 @@ class RedMode:
     def addCommand(self, name, mode):
         """Adds nested command.
         """
-        self._modes[name] = mode
+        self._commands[name] = mode
         return self
 
     def hasCommand(self, name):
@@ -46,12 +46,12 @@ class RedMode:
     def getCommand(self, name):
         """Returns subcommand with given name.
         """
-        return self._modes[name]
+        return self._commands[name]
 
     def commands(self):
         """Returns list of subcommand.
         """
-        return [i for i in self._modes]
+        return [i for i in self._commands]
 
     def addLocalOption(self, o):
         """Appends option ot eh list of local options.
@@ -132,10 +132,10 @@ class RedMode:
         """Propagate global options and
         type handlers to child modes.
         """
-        for mode in self._modes:
+        for mode in self._commands:
             # do not overwrite options defined directly in nested modes
-            for opt in self._options['global']: (self._modes[mode].addGlobalOption(opt) if opt not in self._modes[mode]._options['global'] else None)
-            self._modes[mode].propagate()
+            for opt in self._options['global']: (self._commands[mode].addGlobalOption(opt) if opt not in self._commands[mode]._options['global'] else None)
+            self._commands[mode].propagate()
         return self
 
     def _setoperandsrange(self, least, most):

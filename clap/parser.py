@@ -8,11 +8,11 @@ from . import shared
 class ParsedUI:
     """Object returned by parser, containing parsed commandline arguments in a usale form.
     """
-    def __init__(self, mode=None):
+    def __init__(self, command=None):
         self._options = {}
         self._operands = []
         self._name = ''
-        self._mode = mode
+        self._command = command
         self._child, self._parent = None, None
 
     def __contains__(self, option):
@@ -35,11 +35,11 @@ class ParsedUI:
         """
         return len(self._operands)
 
-    def _appendmode(self, mode):
-        """Append parsed nested mode.
+    def _appendcommand(self, command):
+        """Append parsed subcommand.
         """
-        mode._parent = self
-        self._child = mode
+        command._parent = self
+        self._child = command
 
     def down(self):
         """Go to nested mode.
@@ -69,7 +69,7 @@ class ParsedUI:
         if self._child is not None:
             for k, v in self._options.items():
                 is_global, match = False, None
-                for o in self._mode.options(group='global'):
+                for o in self._command.options(group='global'):
                     if o.match(k):
                         is_global, match = True, o
                         break
@@ -92,7 +92,7 @@ class ParsedUI:
         in such case lists are returned for options that take at least two arguments and
         direct values for options taking one argumet or less.
         """
-        option = self._mode.getopt(key)
+        option = self._command.getopt(key)
         value = self._options[key]
         if option.isplural() and not option.params(): return value
         if not option.params(): return None
@@ -110,9 +110,9 @@ class Parser:
     """Object that, after being fed with command line arguments and mode,
     parses the arguments according to the mode.
     """
-    def __init__(self, mode, argv=[]):
+    def __init__(self, command, argv=[]):
         self._args = argv
-        self._mode, self._current = mode, mode
+        self._command, self._current = command, command
         self._parsed = {'options': {}, 'operands': []}
         self._breaker = False
         self._ui = None
@@ -148,12 +148,12 @@ class Parser:
             #   if non-option string is encountered and it's not an argument -> break
             if i == 0 and not shared.lookslikeopt(item): break
             if i > 0 and not shared.lookslikeopt(item) and not shared.lookslikeopt(self._args[i-1]): break
-            if i > 0 and not shared.lookslikeopt(item) and shared.lookslikeopt(self._args[i-1]) and not self._mode.params(self._args[i-1]): break
+            if i > 0 and not shared.lookslikeopt(item) and shared.lookslikeopt(self._args[i-1]) and not self._command.params(self._args[i-1]): break
             #   if non-option string is encountered and it's an argument
             #   increase counter by the number of arguments the option requests and
             #   proceed further
-            if i > 0 and not shared.lookslikeopt(item) and shared.lookslikeopt(self._args[i-1]) and self._mode.params(self._args[i-1]):
-                i += len(self._mode.params(self._args[i-1]))-1
+            if i > 0 and not shared.lookslikeopt(item) and shared.lookslikeopt(self._args[i-1]) and self._command.params(self._args[i-1]):
+                i += len(self._command.params(self._args[i-1]))-1
             index = i
             i += 1
         if index >= 0:
@@ -164,7 +164,7 @@ class Parser:
     def _getoperands(self, heur=True):
         """Returns list of operands passed.
         """
-        if heur and self._mode.commands() and self.getOperandsRange()[1] is not None: return self._getheuroperands()[0]
+        if heur and self._command.commands() and self.getOperandsRange()[1] is not None: return self._getheuroperands()[0]
         n = len(self._getinput())
         operands = self._args[n:]
         if operands: self._breaker = (operands[0] == '--')
@@ -176,8 +176,8 @@ class Parser:
         """Return true if given option is accepted in at least one child mode.
         """
         accepted = False
-        for m in self._mode.commands():
-            if self._mode.getCommand(m).accepts(option):
+        for m in self._command.commands():
+            if self._command.getCommand(m).accepts(option):
                 accepted = True
                 break
         return accepted
@@ -189,7 +189,7 @@ class Parser:
         i = 0
         while i < len(opers):
             item = opers[i]
-            if self._mode.hasCommand(item): break
+            if self._command.hasCommand(item): break
             if shared.lookslikeopt(item):
                 accepted = self._isAcceptedInChildModes(item)
                 if accepted:
@@ -226,7 +226,7 @@ class Parser:
             if option.match(s):
                 is_in = True
                 break
-            if shared.lookslikeopt(s) and self._mode.accepts(s): i += len(self._mode.getopt(s).params())
+            if shared.lookslikeopt(s) and self._command.accepts(s): i += len(self._command.getopt(s).params())
             i += 1
         return is_in
 
@@ -241,7 +241,7 @@ class Parser:
             if string == s:
                 is_in = True
                 break
-            if shared.lookslikeopt(s) and self._mode.accepts(s): i += len(self._mode.getopt(s).params())
+            if shared.lookslikeopt(s) and self._command.accepts(s): i += len(self._command.getopt(s).params())
             i += 1
         return is_in
 
@@ -272,10 +272,10 @@ class Parser:
         while i < len(input):
             item = input[i]
             i += 1
-            if not (shared.lookslikeopt(item) and self._mode.accepts(item)): break
-            n = len(self._mode.params(item))
+            if not (shared.lookslikeopt(item) and self._command.accepts(item)): break
+            n = len(self._command.params(item))
             params = (input[i:i+n] if n else None)  # if n(umber of parameters) if greater than 0 extract parameters, else set them to None
-            alias = self._mode.alias(item)
+            alias = self._command.alias(item)
             options.append( (item, params) )
             if alias and alias != item: options.append( (alias, params) )
             i += n
@@ -287,10 +287,10 @@ class Parser:
         """
         composed = {}
         for opt, args in options:
-            if self._mode.getopt(opt)['plural'] and self._mode.getopt(opt).params():
+            if self._command.getopt(opt)['plural'] and self._command.getopt(opt).params():
                 if opt not in composed: composed[opt] = []
                 composed[opt].append(args)
-            elif self._mode.getopt(opt)['plural'] and not self._mode.getopt(opt).params():
+            elif self._command.getopt(opt)['plural'] and not self._command.getopt(opt).params():
                 if opt not in composed: composed[opt] = 0
                 composed[opt] += 1
             else:
@@ -302,7 +302,7 @@ class Parser:
         """
         converted = []
         for opt, params in options:
-            for i, callback in enumerate(self._mode.params(opt)):
+            for i, callback in enumerate(self._command.params(opt)):
                 if type(callback) is str: callback = self._typehandlers[callback]
                 params[i] = callback(params[i])
             converted.append( (opt, params) )
@@ -311,7 +311,7 @@ class Parser:
     def parse(self):
         """Parsing method for RedCLAP.
         """
-        self._ui = ParsedUI(mode=self._mode)
+        self._ui = ParsedUI(command=self._command)
         input = self._getinput()
         options = self._composeoptions(self._convertoptionstypes(self._parseoptions(input)))
         operands, nested = self._getheuroperands()
@@ -319,10 +319,10 @@ class Parser:
         self._ui._options, self._ui._operands = options, operands
         if nested:
             name = nested.pop(0)
-            mode = self._mode._modes[name]
-            ui = Parser(mode).feed(nested).parse().ui()
+            command = self._command.getCommand(name)
+            ui = Parser(command).feed(nested).parse().ui()
             ui._name = name
-            self._ui._appendmode(mode=ui)
+            self._ui._appendcommand(command=ui)
         return self
 
     def state(self):
