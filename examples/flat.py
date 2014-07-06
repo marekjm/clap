@@ -55,7 +55,7 @@ if '--version' in ui:
 
 if '--help' in ui:
     helper = clap.helper.Helper(filename, mode)
-    print(helper.gen(deep=('--verbose' in ui)).render())
+    print(helper.full(deep=('--verbose' in ui)).render())
     exit(0)
 
 if '--echo' in ui:

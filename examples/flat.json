@@ -7,7 +7,7 @@
             "--ok [--verbose | --quiet] [opts...]"
         ]
     },
-    "modes": {},
+    "commands": {},
     "options": {
         "global": [
             {
