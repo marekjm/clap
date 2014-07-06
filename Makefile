@@ -26,3 +26,17 @@ test:
 
 test-builder:
 	python3 ./tests/clap/buildertests.py --catch --failfast --verbose 
+
+test-example-ui-run:
+	python3 ./examples/nested.py > /dev/null
+	python3 ./examples/nested.py help > /dev/null
+	python3 ./examples/nested.py help help > /dev/null
+	python3 ./examples/nested.py help help --help > /dev/null
+
+test-example-ui-helper-output:
+	python3 ./examples/nested.py
+	python3 ./examples/nested.py help
+	python3 ./examples/nested.py help help
+	python3 ./examples/nested.py help help --usage
+
+test-cover: test test-builder test-example-ui-run
