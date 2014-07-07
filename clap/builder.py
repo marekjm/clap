@@ -81,7 +81,7 @@ class Builder:
     def build(self):
         """Builds UI from loaded model.
         """
-        ui = mode.RedMode()
+        ui = mode.RedCommand()
         if 'doc' in self._model: ui.setdoc(**self._model['doc'])
         if 'options' in self._model:
             if 'local' in self._model['options']:

@@ -6,8 +6,10 @@ from . import shared
 from . import errors
 
 
-class RedMode:
-    """Mode implementation.
+class RedCommand:
+    """RedCLAP command implementation.
+    This class represents a ginle command of a commandline program's UI.
+    It may contain various options, and subcomand.
     """
     def __init__(self):
         self._options = {'local': [], 'global': []}

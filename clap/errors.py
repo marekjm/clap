@@ -8,8 +8,8 @@ class UnrecognizedOptionError(Exception):
     pass
 
 
-class UnrecognizedModeError(Exception):
-    """Raised when unrecognized mode is found in input list.
+class UnrecognizedCommandError(Exception):
+    """Raised when unrecognized command is found in input list.
     """
     pass
 
