@@ -63,14 +63,14 @@ class RedBuilderTests(unittest.TestCase):
             self.assertEqual(mode, clap.builder.Builder().set(model).build().get())
 
     def testBuildingNestedCommandEmpty(self):
-        mode = clap.mode.RedCommand().addCommand(name='child', mode=clap.mode.RedCommand())
+        mode = clap.mode.RedCommand().addCommand(name='child', command=clap.mode.RedCommand())
         model = {'commands': {'child': {}}}
         self.assertEqual(mode, clap.builder.Builder().set(model).build().get())
 
     def testBuildingNestedCommandWithSingleGlobalOption(self):
         mode = clap.mode.RedCommand()
         mode.addGlobalOption(clap.option.Option(short='g', long='global'))
-        mode.addCommand(name='child', mode=clap.mode.RedCommand().addCommand(name='infant', mode=clap.mode.RedCommand()))
+        mode.addCommand(name='child', command=clap.mode.RedCommand().addCommand(name='infant', command=clap.mode.RedCommand()))
         mode.propagate()
         model = {'commands': {'child': {'commands': {'infant': {}}}}, 'options': {'global': [{'short': 'g', 'long': 'global'}]}}
         self.assertEqual(mode, clap.builder.Builder().set(model).build().get())
@@ -122,7 +122,7 @@ class RedCommandExportingTests(unittest.TestCase):
         self.assertEqual(model, clap.builder.export(clap.builder.Builder().set(model).build().get()))
 
     def testExportingNestedCommandEmpty(self):
-        mode = clap.mode.RedCommand().addCommand(name='child', mode=clap.mode.RedCommand())
+        mode = clap.mode.RedCommand().addCommand(name='child', command=clap.mode.RedCommand())
         model = {'commands': {'child': {}}}
         self.assertEqual(model, clap.builder.export(mode))
         self.assertEqual(model, clap.builder.export(clap.builder.Builder().set(model).build().get()))
@@ -130,7 +130,7 @@ class RedCommandExportingTests(unittest.TestCase):
     def testExportingNestedCommandWithSingleGlobalOption(self):
         mode = clap.mode.RedCommand()
         mode.addGlobalOption(clap.option.Option(short='g', long='global'))
-        mode.addCommand(name='child', mode=clap.mode.RedCommand().addCommand(name='infant', mode=clap.mode.RedCommand()))
+        mode.addCommand(name='child', command=clap.mode.RedCommand().addCommand(name='infant', command=clap.mode.RedCommand()))
         mode.propagate()
         model = {'modes': {'child': {'modes': {'infant': {}}}}, 'options': {'global': [{'short': 'g', 'long': 'global'}]}}
         self.assertEqual(mode, clap.builder.Builder().set(clap.builder.export(mode)).build().get())

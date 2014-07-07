@@ -1,4 +1,4 @@
-"""Module containg mode implementation.
+"""Module containg CLAP command implementation.
 """
 
 
@@ -18,26 +18,26 @@ class RedCommand:
         self._doc = {'help': '', 'usage': []}
 
     def __eq__(self, other):
-        """Compares two modes for equality.
+        """Compares two commands for equality.
         """
         opts = (self._options == other._options)
         operands = (self._operands == other._operands)
-        modes = (self._commands == other._commands)
+        commands = (self._commands == other._commands)
         doc = (self._doc == other._doc)
-        return opts and operands and modes and doc
+        return opts and operands and commands and doc
 
     def setdoc(self, help=None, usage=None, examples=None):
-        """Set some basic doc about the mode.
+        """Set some basic doc about the command.
         """
         if help is not None: self._doc['help'] = help
         if usage is not None: self._doc['usage'] = usage
         if examples is not None: self._doc['examples'] = examples
         return self
 
-    def addCommand(self, name, mode):
-        """Adds nested command.
+    def addCommand(self, name, command):
+        """Adds subcommand.
         """
-        self._commands[name] = mode
+        self._commands[name] = command
         return self
 
     def hasCommand(self, name):
