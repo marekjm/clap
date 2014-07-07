@@ -45,7 +45,7 @@ def renderOptionHelp(option, help=True):
     if help: message += (' - {0}'.format(option['help']) if option['help'] else '')
     return message
 
-def _getoptionlines(mode, indent='    ', level=1):
+def _getoptionlines(command, indent='    ', level=1):
     """Renders lines with options' help messages.
     The lines with actual option help strings, have only put short and long
     variants into their strings to make nice padding available, so all options'
@@ -54,9 +54,9 @@ def _getoptionlines(mode, indent='    ', level=1):
     """
     lines = []
     for scope in ['global', 'local']:
-        if mode.options(group=scope): lines.append( ('str', indent*(level) + '{0} options:'.format(scope)) )
-        for o in mode.options(group=scope): lines.append( ('option', indent*(level+1) + renderOptionHelp(o, False), o) )
-        if mode.options(group=scope): lines.append( ('str', '') )
+        if command.options(group=scope): lines.append( ('str', indent*(level) + '{0} options:'.format(scope)) )
+        for o in command.options(group=scope): lines.append( ('option', indent*(level+1) + renderOptionHelp(o, False), o) )
+        if command.options(group=scope): lines.append( ('str', '') )
     return lines
 
 
@@ -81,8 +81,8 @@ class Helper:
     in the ways of how usage and examples are shown and how options are aligned; and
     after man pages in how option parameters are shown.
     """
-    def __init__(self, progname, mode):
-        self._command = mode
+    def __init__(self, progname, command):
+        self._command = command
         self._indent = {'string': '   ', 'level': 0}
         self._progname = progname
         self._maxlen = 140
@@ -134,13 +134,13 @@ class Helper:
             self._lines.extend(lines)
             if self._lines: self._lines.append( ('str', '') )
 
-    def _gencommandhelp(self, mode, name, level=0, longest=0):
+    def _gencommandhelp(self, command, name, level=0, longest=0):
         """Generate lines with command help message.
         """
         if not longest: longest = len(name)
         SPACING = (2 if longest else 0)  # CONF?
         lines = []
-        text = '{0}{1}'.format(name.ljust(longest+SPACING), mode._doc['help'].strip())
+        text = '{0}{1}'.format(name.ljust(longest+SPACING), command._doc['help'].strip())
         first = makelines(text, self._maxlen)[0]
         lines.append( ('str', ((self._indent['string']*level) + first)) )
         for l in makelines(text[len(first):], (self._maxlen-len(name)-3)):
@@ -152,27 +152,31 @@ class Helper:
         if text: lines.append( ('str', '') )
         return lines
 
-    def _gencommandslines(self, mode, name, level, deep):
+    def _gensubcommandslines(self, command, name, level, deep):
+        """Generate help screen lines with help for subcommands of given command.
+        """
         lines = []
-        modes = sorted(mode.commands())
+        commands = sorted(command.commands())
         longest = 0
-        for m in modes:
+        for m in commands:
             if len(m) > longest: longest = len(m)
-        for m in modes:
-            submode = mode.getCommand(m)
+        for m in commands:
+            subcommand = command.getCommand(m)
             if deep:
-                lines.extend(self._genmodelines(submode, name=m, level=level+2))
+                lines.extend(self._gencommandlines(subcommand, name=m, level=level+2))
                 lines.append( ('str', '') )
             else:
-                lines.extend(self._gencommandhelp(submode, name=m, level=level+2, longest=longest))
+                lines.extend(self._gencommandhelp(subcommand, name=m, level=level+2, longest=longest))
         return lines
 
-    def _genmodelines(self, mode, level=0, name='', deep=True):
+    def _gencommandlines(self, command, level=0, name='', deep=True):
+        """Generate help screen lines for current command.
+        """
         lines = []
-        self._lines.extend(self._gencommandhelp(mode, name, level=level))
-        self._lines.extend(_getoptionlines(mode, indent=self._indent['string'], level=level+1))
-        if mode.commands(): self._lines.append( ('str', ((self._indent['string']*(level+1)) + 'commands:')) )
-        self._lines.extend(self._gencommandslines(mode, name, level, deep))
+        self._lines.extend(self._gencommandhelp(command, name, level=level))
+        self._lines.extend(_getoptionlines(command, indent=self._indent['string'], level=level+1))
+        if command.commands(): self._lines.append( ('str', ((self._indent['string']*(level+1)) + 'commands:')) )
+        self._lines.extend(self._gensubcommandslines(command, name, level, deep))
         return lines
 
     def usage(self):
@@ -192,7 +196,7 @@ class Helper:
         """
         self._genusage()
         self._genexamples()
-        self._lines.extend(self._genmodelines(mode=self._command, deep=deep))
+        self._lines.extend(self._gencommandlines(command=self._command, deep=deep))
         return self
 
     def render(self):
