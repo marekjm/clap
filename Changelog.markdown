@@ -23,6 +23,8 @@ All deprecated features were removed from code.
 - **upd**:  `getmode()` method of `RedMode` renamed to `getCommand()`,
 - **upd**:  `modes()` method of `RedMode` renamed to `commands()`,
 - **upd**:  `mode` parameter in `clap.builder.export()` function renamed to `command`,
+- **upd**:  `RedMode` class renamed to `RedCommand`,
+- **upd**:  `UnrecognizedModeError` renamed to `UnrecognizedCommandError`,
 
 - **rem**:  removed support for features deprecated in 0.9.x line,
 - **rem**:  `readfile()` and `readjson()` functions were removed from `clap.builder` module,
