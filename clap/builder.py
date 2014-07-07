@@ -62,7 +62,7 @@ class Builder:
     """
     def __init__(self, model=None):
         self._model = model
-        self._mode = None
+        self._command = None
 
     def set(self, model):
         """Set model of the UI.
@@ -93,10 +93,10 @@ class Builder:
         commands = (self._model['commands'] if 'commands' in self._model else {})
         for name, nmodel in commands.items(): ui.addCommand(name=name, command=Builder().set(nmodel).build().get())
         ui.propagate()
-        self._mode = ui
+        self._command = ui
         return self
 
     def get(self):
-        """Returns built mode.
+        """Returns built command.
         """
-        return self._mode
+        return self._command

@@ -26,7 +26,7 @@ class ParsedUI:
         return iter(self._operands)
 
     def __str__(self):
-        """Return name of current mode.
+        """Return name of current command.
         """
         return self._name
 

@@ -1203,7 +1203,7 @@ class RedCheckerNestedCommandsCheckingTests(unittest.TestCase):
         argv = ['--foo', '-b', '-B', 'spam', 'ham', 'fake', '--answer', '42']
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
-        self.assertRaises(clap.errors.UnrecognizedCommandError, checker._checkchildmode)
+        self.assertRaises(clap.errors.UnrecognizedCommandError, checker._checksubcommand)
         self.assertRaises(clap.errors.UnrecognizedCommandError, checker.check)
 
     def testFixedRangeUnrecognizedOptionInNestedCommand(self):
@@ -1213,7 +1213,7 @@ class RedCheckerNestedCommandsCheckingTests(unittest.TestCase):
         argv = ['--foo', '-b', '-B', 'spam', 'ham', 'child', '--answer', '42', '--fake']
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
-        self.assertRaises(clap.errors.UnrecognizedOptionError, checker._checkchildmode)
+        self.assertRaises(clap.errors.UnrecognizedOptionError, checker._checksubcommand)
         self.assertRaises(clap.errors.UnrecognizedOptionError, checker.check)
 
     def testFixedRangeInvalidNumberOfOperandsBecauseCommandIsGivenTooFast(self):
@@ -1223,7 +1223,7 @@ class RedCheckerNestedCommandsCheckingTests(unittest.TestCase):
         argv = ['--foo', '-b', '-B', 'spam', 'child', '--answer', '42']
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
-        checker._checkchildmode()
+        checker._checksubcommand()
         self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
         self.assertRaises(clap.errors.InvalidOperandRangeError, checker.check)
 
@@ -1234,7 +1234,7 @@ class RedCheckerNestedCommandsCheckingTests(unittest.TestCase):
         argv = ['--foo', '-b', '-B', 'spam', 'fake', '--answer', '42']
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
-        self.assertRaises(clap.errors.UnrecognizedCommandError, checker._checkchildmode)
+        self.assertRaises(clap.errors.UnrecognizedCommandError, checker._checksubcommand)
         self.assertRaises(clap.errors.InvalidOperandRangeError, checker.check)
 
     def testFluidRangeItemTreatedAsCommandBecauseFollowedByOptionAcceptedByOneOfValidChildCommands(self):
@@ -1251,7 +1251,7 @@ class RedCheckerNestedCommandsCheckingTests(unittest.TestCase):
         for argv in argvariants:
             parser.feed(argv)
             checker = clap.checker.RedChecker(parser)
-            self.assertRaises(clap.errors.UnrecognizedCommandError, checker._checkchildmode)
+            self.assertRaises(clap.errors.UnrecognizedCommandError, checker._checksubcommand)
             self.assertRaises(clap.errors.UnrecognizedCommandError, checker.check)
 
     def testFluiddRangeUnrecognizedOptionInNestedCommand(self):
@@ -1268,7 +1268,7 @@ class RedCheckerNestedCommandsCheckingTests(unittest.TestCase):
         for argv in argvariants:
             parser.feed(argv)
             checker = clap.checker.RedChecker(parser)
-            self.assertRaises(clap.errors.UnrecognizedOptionError, checker._checkchildmode)
+            self.assertRaises(clap.errors.UnrecognizedOptionError, checker._checksubcommand)
             self.assertRaises(clap.errors.UnrecognizedOptionError, checker.check)
 
     def testFluidRangeInvalidNumberOfOperandsBecauseCommandIsGivenTooFast(self):
@@ -1278,7 +1278,7 @@ class RedCheckerNestedCommandsCheckingTests(unittest.TestCase):
         argv = ['--foo', '-b', '-B', 'child', '--answer', '42']
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
-        checker._checkchildmode()
+        checker._checksubcommand()
         self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
         self.assertRaises(clap.errors.InvalidOperandRangeError, checker.check)
 
@@ -1289,7 +1289,7 @@ class RedCheckerNestedCommandsCheckingTests(unittest.TestCase):
         argv = ['--foo', '-b', '-B', 'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'child', '--answer', '42']
         parser = clap.parser.Parser(mode).feed(argv)
         checker = clap.checker.RedChecker(parser)
-        checker._checkchildmode()
+        checker._checksubcommand()
         self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
         self.assertRaises(clap.errors.InvalidOperandRangeError, checker.check)
 
@@ -1305,7 +1305,7 @@ class RedCheckerNestedCommandsCheckingTests(unittest.TestCase):
         for argv in argvariants:
             parser.feed(argv)
             checker = clap.checker.RedChecker(parser)
-            self.assertRaises(clap.errors.UnrecognizedCommandError, checker._checkchildmode)
+            self.assertRaises(clap.errors.UnrecognizedCommandError, checker._checksubcommand)
             self.assertRaises(clap.errors.InvalidOperandRangeError, checker.check)
 
 

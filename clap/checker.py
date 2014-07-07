@@ -150,7 +150,7 @@ class RedChecker():
                 msg = 'expected at least {0} operands but got {1}'.format(typeslen, got)
                 raise errors.InvalidOperandRangeError(msg)
 
-    def _checkchildmode(self, rangecompat=False):
+    def _checksubcommand(self, rangecompat=False):
         """Checks if provided nested mode is accepted and has valid input.
         """
         operands, nested = self._parser._getheuroperands()
@@ -174,4 +174,4 @@ class RedChecker():
         self._checkwants()
         if rangecompat: self._checkoperandscompat()
         self._checkoperandsrange()
-        self._checkchildmode(rangecompat=rangecompat)
+        self._checksubcommand(rangecompat=rangecompat)
