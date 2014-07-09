@@ -15,8 +15,8 @@ model = json.loads(ifstream.read())
 ifstream.close()
 
 args = list(clap.formatter.Formatter(argv).format())
-mode = clap.builder.Builder(model).insertHelpCommand().build().get()
-parser = clap.parser.Parser(mode).feed(args)
+command = clap.builder.Builder(model).insertHelpCommand().build().get()
+parser = clap.parser.Parser(command).feed(args)
 checker = clap.checker.RedChecker(parser)
 
 
