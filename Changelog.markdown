@@ -14,11 +14,23 @@ It's mostly useful for developers who use the CLAP library.
 
 ----
 
+## Version 0.10.0-rc.3 (2014-07-)
+
+This release candidate adds two more parameters to the already available palette of
+customization options for CLAP options.
+
+- **new**:  `implies` parameter in `clap.option.Option`,
+- **new**:  `defaults` parameter in `clap.option.Option`,
+
+
+----
+
 ## Version 0.10.0-rc.2 (2014-07-09)
 
 - **fix**:  fixed bug introduced in 0.9.6 which cause help runner to crash if help was requested by option,
 
 - **upd**:  examples are no longer included in the full rendering of help screen, they need to be separately viewed,
+
 
 ----
 
