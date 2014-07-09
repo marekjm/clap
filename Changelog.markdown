@@ -14,7 +14,15 @@ It's mostly useful for developers who use the CLAP library.
 
 ----
 
-## Version 0.10.0-rc.1
+## Version 0.10.0-rc.2 (2014-07-)
+
+- **fix**:  fixed bug introduced in 0.9.6 which cause help runner to crash if help was requested by option,
+
+- **upd**:  examples are no longer included in the full rendering of help screen, they need to be separately viewed,
+
+----
+
+## Version 0.10.0-rc.1 (2014-07-08)
 
 All deprecated features were removed from code.
 
