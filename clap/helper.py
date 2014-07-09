@@ -195,7 +195,6 @@ class Helper:
         """Generate full help screen.
         """
         self._genusage()
-        self._genexamples()
         self._lines.extend(self._gencommandlines(command=self._command, deep=deep))
         return self
 
@@ -254,7 +253,7 @@ class HelpRunner:
             cui = cui.down()
         if present:
             helper = Helper(self._program_name, cui._command).setmaxlen(n=70)
-            print(helper.gen(deep=('--verbose' in cui)).render())
+            print(helper.full(deep=('--verbose' in cui)).render())
             self._displayed = True
 
     def _byhelpcommand(self):
@@ -312,10 +311,12 @@ class HelpRunner:
         """
         self._ignore()
         if '--usage' in self._ui:
-            print(Helper(self._program_name, self._ui.top()._command).usage().render())
+            msg = Helper(self._program_name, self._ui.top()._command).usage().render()
+            if msg: print(msg)
             self._displayed = True
         if '--examples' in self._ui:
-            print(Helper(self._program_name, self._ui.top()._command).examples().render())
+            msg = Helper(self._program_name, self._ui.top()._command).examples().render()
+            if msg: print(msg)
             self._displayed = True
         if not self._displayed: self._byoptions()
         if not self._displayed: self._byhelpcommand()
