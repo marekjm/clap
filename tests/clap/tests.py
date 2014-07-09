@@ -11,7 +11,7 @@ import clap
 
 
 # enable debugging output which is basically huge number of print() calls
-DEBUG = False
+DEBUG = True
 # enable information about TODOs in code (if any)
 TODOS = False
 
@@ -653,6 +653,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
                 ['--foo', '--bar', '42', '--baz'],  # both wanted present:: --bar and --baz
                 ['--foo', '-b', '42', '--baz'],     # both wanted present:: --bar and --baz
                 ['--foo', '--bar', '42', '-B'],     # both wanted present:: --bar and --baz
+                ['--foo', '-b', '42', '-B'],     # both wanted present:: --bar and --baz
                 ['--foo', '--bar', '42'],           # one wanted present: --bar
                 ['--foo', '-b', '42'],              # one wanted present: --bar
                 ['--foo', '--baz'],                 # one wanted present: --baz
