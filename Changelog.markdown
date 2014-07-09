@@ -14,7 +14,7 @@ It's mostly useful for developers who use the CLAP library.
 
 ----
 
-## Version 0.10.0-rc.2 (2014-07-)
+## Version 0.10.0-rc.2 (2014-07-09)
 
 - **fix**:  fixed bug introduced in 0.9.6 which cause help runner to crash if help was requested by option,
 
