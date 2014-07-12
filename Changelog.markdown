@@ -21,6 +21,7 @@ customization options for CLAP options.
 
 - **new**:  `implies` parameter in `clap.option.Option`,
 - **new**:  `defaults` parameter in `clap.option.Option`,
+- **new**:  `conflicts()` method in `clap.option.Option`,
 
 
 ----
