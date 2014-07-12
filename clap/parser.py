@@ -2,7 +2,7 @@
 providing programming interface to interact with them.
 """
 
-from . import shared
+from . import shared, errors
 
 
 class ParsedUI:
@@ -114,6 +114,7 @@ class Parser:
         self._args = argv
         self._command, self._current = command, command
         self._parsed = {'options': {}, 'operands': []}
+        self._implied_options = []
         self._breaker = False
         self._ui = None
         self._typehandlers = {'str': str, 'int': int, 'float': float}
@@ -141,7 +142,6 @@ class Parser:
         Simple description: returns input without operands.
         """
         index, i = -1, 0
-        input = []
         while i < len(self._args):
             item = self._args[i]
             if item == '--': break
@@ -149,17 +149,14 @@ class Parser:
             if i == 0 and not shared.lookslikeopt(item): break
             if i > 0 and not shared.lookslikeopt(item) and not shared.lookslikeopt(self._args[i-1]): break
             if i > 0 and not shared.lookslikeopt(item) and shared.lookslikeopt(self._args[i-1]) and not self._command.params(self._args[i-1]): break
-            #   if non-option string is encountered and it's an argument
+            #   if non-option string is encountered and it is an argument
             #   increase counter by the number of arguments the option requests and
             #   proceed further
             if i > 0 and not shared.lookslikeopt(item) and shared.lookslikeopt(self._args[i-1]) and self._command.params(self._args[i-1]):
                 i += len(self._command.params(self._args[i-1]))-1
             index = i
             i += 1
-        if index >= 0:
-            #   if index is at least equal to zero this means that some input was found
-            input = self._args[:index+1]
-        return input
+        return (self._args[:index+1] if index >= 0 else []) # if index is at least equal to zero this means that some input was found
 
     def _getoperands(self, heur=True):
         """Returns list of operands passed.
@@ -308,6 +305,53 @@ class Parser:
             converted.append( (opt, params) )
         return converted
 
+    def _checkImplicationConflicts(self, implying, present, implied, options):
+        """Checks if the <implied> option conflicts with any option from <options> or
+        if it is conflicted by an option already present.
+        """
+        # iterate over implied option's conflicts:
+        # if any is found in the provided input, the option cannot be added -- raise an error
+        for o in implied.conflicts():
+            if o in options:
+                raise errors.ConflictingOptionsError('option "{0}" implies option "{1}" which conflicts with already provided option "{2}"'.format(implying, present, o))
+        # iterate over already provided options, get their conflicts:
+        # if any of the already provided options says it has conflicts with the implied option, report it -- raise an error
+        for o in options:
+            if present in self._command.getopt(o).conflicts():
+                raise errors.ConflictingOptionsError('option "{0}" implies option "{1}" which conflicts with already provided option "{2}"'.format(implying, present, o))
+            implying
+
+    def _checkImplication(self, implying, implied, options):
+        """Checks if the <implied> option can be added to the input with
+        the <options> dictionary already present.
+        Returns list of strings which should be appended to input list.
+        """
+        ext = []
+        if not self._command.accepts(implied): raise errors.UIDesignError('option "{0}" implies option "{1}" which is unknown to the parser'.format(implying, implied))
+        # set name (present in the input list) of the option and get the object representing it
+        present, implied = implied, self._command.getopt(implied)
+        self._checkImplicationConflicts(implying, present, implied, options)
+        if not self._ininput(implied):
+            ext.append(present)
+            self._implied_options.append(implied)
+            if implied['arguments'] and not implied['defaults']:
+                raise errors.UIDesignError('option "{0}" implies option "{1}" which requires arguments but provides no default values for them'.format(implying, present))
+            if len(implied['arguments']) != len(implied['defaults']):
+                reason = ('big' if len(implied['arguments']) > len(implied['defaults']) else 'small')
+                raise errors.UIDesignError('option "{0}" implies option "{1}" which requires arguments but provides insufficient (too {2}) number of default values for them'.format(implying, present, reason))
+            ext.extend(implied['defaults'])
+        return ext
+
+    def _addimplied(self, input, options):
+        """Adds implied options to the input.
+        Implications are costly as they cause whole UI to be reparsed.
+        """
+        new_input = input[:]
+        for opt in options:
+            opt = self._command.getopt(opt)
+            for i in opt['implies']: new_input.extend(self._checkImplication(opt, i, options))
+        return new_input
+
     def parse(self):
         """Parsing method for RedCLAP.
         """
@@ -323,6 +367,11 @@ class Parser:
             ui = Parser(command).feed(nested).parse().ui()
             ui._name = name
             self._ui._appendcommand(command=ui)
+        new_input = self._addimplied(input, options)
+        if new_input != input:
+            new_args = new_input + self._getoperands(heur=False)
+            self._args = new_args
+            self.parse()
         return self
 
     def state(self):
