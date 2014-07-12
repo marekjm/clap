@@ -32,6 +32,7 @@ class Option:
 
         defaults:
             A list of default values for arguments of this option.
+            All items must be strings.
 
         requires:
             List of options that MUST be passed with this option. An excpetion is raised when EVEN ONE OF THEM
@@ -145,6 +146,11 @@ class Option:
         If you pass an option without the hyphen, match will fail.
         """
         return s == self['short'] or s == self['long']
+
+    def conflicts(self):
+        """Returns list of options this option has conflicts with.
+        """
+        return self['conflicts']
 
     def params(self):
         """Returns list of types of arguments for this option.
