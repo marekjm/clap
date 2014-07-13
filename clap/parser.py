@@ -271,7 +271,7 @@ class Parser:
             i += 1
             if not (shared.lookslikeopt(item) and self._command.accepts(item)): break
             n = len(self._command.params(item))
-            params = (input[i:i+n] if n else None)  # if n(umber of parameters) if greater than 0 extract parameters, else set them to None
+            params = (input[i:i+n] if n else None)  # if n(umber of parameters) is greater than 0, then extract parameters, else set them to None
             alias = self._command.alias(item)
             options.append( (item, params) )
             if alias and alias != item: options.append( (alias, params) )

@@ -19,9 +19,23 @@ It's mostly useful for developers who use the CLAP library.
 This release candidate adds two more parameters to the already available palette of
 customization options for CLAP options.
 
+Note, that however the `defaults` option may sound promising it can currently be only used to provide values
+for options added by CLAP (when running through `implies` hooks).
+Support for omitting arguments was not coded to keep the complexity of the parser on an acceptable level.
+Said complexity has to be decreased nevertheless, because the `implies` hook made available to developers caused
+the complexity level of parser to raise considerably.
+
+Even though, optional arguments should be requested as operands - it is safer and easier to manage them this way.
+
+This release candidate is not big in terms of List of Changes, but is *huge* in terms of functionality added.
+
 - **new**:  `implies` parameter in `clap.option.Option`,
 - **new**:  `defaults` parameter in `clap.option.Option`,
 - **new**:  `conflicts()` method in `clap.option.Option`,
+
+- **fix**:  checker can now correctly detect more cases when not enough arguments are provided to an option (i.e. instead of rising
+            the invalid-type exception it will raise the missing-argument exception when the item that caused it in the first place is
+            an option accepted by parser),
 
 
 ----

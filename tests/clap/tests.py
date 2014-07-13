@@ -148,7 +148,7 @@ class CommandTests(unittest.TestCase):
         self.assertEqual('', command.alias('--baz'))
 
 
-class RedParserGeneralTests(unittest.TestCase):
+class ParserGeneralTests(unittest.TestCase):
     def testGettingInputAndOperands(self):
         argvariants = [
                 (['--', '--foo', '--bar', 'baz', 'bax'], [], ['--foo', '--bar', 'baz', 'bax']),
@@ -242,7 +242,7 @@ class RedParserGeneralTests(unittest.TestCase):
             self.assertEqual(clap.shared.lookslikeopt(opt), expected)
 
 
-class RedParserParsingTests(unittest.TestCase):
+class ParserParsingTests(unittest.TestCase):
     def testParsingNoCommandNoOperands(self):
         command = clap.mode.RedCommand()
         command.addLocalOption(clap.option.Option(short='t', long='test'))
@@ -344,7 +344,7 @@ class RedParserParsingTests(unittest.TestCase):
         self.assertEqual('child', str(ui))
 
 
-class RedParserOptionsTests(unittest.TestCase):
+class ParserOptionsTests(unittest.TestCase):
     def testFeedingArgsToParser(self):
         command = clap.mode.RedCommand()
         parser = clap.parser.Parser(command)
@@ -481,7 +481,7 @@ class RedParserOptionsTests(unittest.TestCase):
         self.assertEqual(['foo'], state['operands'])
 
 
-class RedParserImpliedOptionsParsingTests(unittest.TestCase):
+class ParserImpliedOptionsParsingTests(unittest.TestCase):
     def testOptionImplyingOptionWhichIsUnknownRaisesAnExceptionDuringParsing(self):
         args = ['--spam']
         command = clap.mode.RedCommand()
@@ -538,7 +538,251 @@ class RedParserImpliedOptionsParsingTests(unittest.TestCase):
         self.assertTrue('--eggs' in ui)
 
 
-class RedCheckerOptionCheckingTests(unittest.TestCase):
+class ParserNestedCommandsTests(unittest.TestCase):
+    def testSimpleChildCommand(self):
+        command = clap.mode.RedCommand()
+        command.addLocalOption(clap.option.Option(short='b', long='breakfast', arguments=['str']))
+        command.addLocalOption(clap.option.Option(short='w', long='what'))
+        command.setOperandsRange(no=[2, 2])
+        command.addCommand(name='child', command=clap.mode.RedCommand().setOperandsRange(no=[2, 2]))
+        argv = ['--breakfast', 'yes', '--what', 'spam', 'ham', 'child', 'foo', 'bar']
+        operands = ['spam', 'ham']
+        nested = ['child', 'foo', 'bar']
+        parser = clap.parser.Parser(command).feed(argv)
+        got_operands, got_nested = parser._getheuroperands()
+        self.assertEqual(operands, got_operands)
+        self.assertEqual(nested, got_nested)
+
+    def testGettingOperandsAndNestedCommandItems(self):
+        command = getTestCommand().setOperandsRange(no=[2, 2])
+        child = clap.mode.RedCommand().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
+        command.addCommand(name='child', command=child)
+        argv = ['--foo', '-b', '-B', 'spam', 'ham', 'child', '--answer', '42']
+        parser = clap.parser.Parser(command).feed(argv)
+        self.assertEqual(['spam', 'ham'], parser._getheuroperands()[0])
+        self.assertEqual(['child', '--answer', '42'], parser._getheuroperands()[1])
+
+    def testPropagatingGlobalOptionsWithoutArgumentsToNestedCommands(self):
+        command = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
+        command.addLocalOption(clap.option.Option(short='l', long='local'))
+        command.addGlobalOption(clap.option.Option(short='g', long='global'))
+        child = clap.mode.RedCommand()
+        command.addCommand(name='child', command=child)
+        command.propagate()
+        argv = ['--local', '--global', 'child']
+        ui = clap.parser.Parser(command).feed(argv).parse().ui().finalise()
+        self.assertEqual('', str(ui))
+        self.assertIn('-l', ui)
+        self.assertIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        ui = ui.down()
+        self.assertEqual('child', str(ui))
+        self.assertNotIn('-l', ui)
+        self.assertNotIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+
+    def testPropagatingGlobalOptionsWithArgumentsToNestedCommands(self):
+        command = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
+        command.addLocalOption(clap.option.Option(short='l', long='local'))
+        command.addGlobalOption(clap.option.Option(short='g', long='global', arguments=['int']))
+        child = clap.mode.RedCommand()
+        command.addCommand(name='child', command=child)
+        command.propagate()
+        argv = ['--local', '--global', '42', 'child']
+        ui = clap.parser.Parser(command).feed(argv).parse().ui().finalise()
+        self.assertEqual('', str(ui))
+        self.assertIn('-l', ui)
+        self.assertIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        self.assertEqual(42, ui.get('-g'))
+        self.assertEqual(42, ui.get('--global'))
+        ui = ui.down()
+        self.assertEqual('child', str(ui))
+        self.assertNotIn('-l', ui)
+        self.assertNotIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        self.assertEqual(42, ui.get('-g'))
+        self.assertEqual(42, ui.get('--global'))
+
+    def testPropagatingGlobalOptionsWithArgumentsToNestedCommandsDoesNotOverwriteArgumentsPassedInNestedCommand(self):
+        command = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
+        command.addLocalOption(clap.option.Option(short='l', long='local'))
+        command.addGlobalOption(clap.option.Option(short='g', long='global', arguments=['int']))
+        child = clap.mode.RedCommand()
+        command.addCommand(name='child', command=child)
+        command.propagate()
+        argv = ['--local', '--global', '42', 'child', '-g', '69']
+        ui = clap.parser.Parser(command).feed(argv).parse().ui().finalise()
+        self.assertEqual('', str(ui))
+        self.assertIn('-l', ui)
+        self.assertIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        self.assertEqual(42, ui.get('-g'))
+        self.assertEqual(42, ui.get('--global'))
+        ui = ui.down()
+        self.assertEqual('child', str(ui))
+        self.assertNotIn('-l', ui)
+        self.assertNotIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        self.assertEqual(69, ui.get('-g'))
+        self.assertEqual(69, ui.get('--global'))
+
+    def testPropagatingGlobalPluralOptionsWithoutArguments(self):
+        command = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
+        command.addLocalOption(clap.option.Option(short='l', long='local'))
+        command.addGlobalOption(clap.option.Option(short='g', long='global', plural=True))
+        child = clap.mode.RedCommand()
+        command.addCommand(name='child', command=child)
+        command.propagate()
+        argv = ['--local', '--global', 'child']
+        ui = clap.parser.Parser(command).feed(argv).parse().ui().finalise()
+        self.assertEqual('', str(ui))
+        self.assertIn('-l', ui)
+        self.assertIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        self.assertEqual(1, ui.get('-g'))
+        self.assertEqual(1, ui.get('--global'))
+        ui = ui.down()
+        self.assertEqual('child', str(ui))
+        self.assertNotIn('-l', ui)
+        self.assertNotIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        self.assertEqual(1, ui.get('-g'))
+        self.assertEqual(1, ui.get('--global'))
+
+    def testPropagatingGlobalPluralOptionsWithoutArgumentsIncreasesCountIfOptionIsFoundInNestedCommand(self):
+        command = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
+        command.addLocalOption(clap.option.Option(short='l', long='local'))
+        command.addGlobalOption(clap.option.Option(short='g', long='global', plural=True))
+        child = clap.mode.RedCommand().addCommand(name='second', command=clap.mode.RedCommand())
+        command.addCommand(name='child', command=child)
+        command.propagate()
+        argv = ['--local', '--global', 'child', '-g', '--global', 'second', '--global']
+        ui = clap.parser.Parser(command).feed(argv).parse().ui().finalise()
+        self.assertEqual('', str(ui))
+        self.assertIn('-l', ui)
+        self.assertIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        self.assertEqual(1, ui.get('-g'))
+        self.assertEqual(1, ui.get('--global'))
+        ui = ui.down()
+        self.assertEqual('child', str(ui))
+        self.assertNotIn('-l', ui)
+        self.assertNotIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        self.assertEqual(3, ui.get('-g'))
+        self.assertEqual(3, ui.get('--global'))
+        ui = ui.down()
+        self.assertEqual('second', str(ui))
+        self.assertNotIn('-l', ui)
+        self.assertNotIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        self.assertEqual(4, ui.get('-g'))
+        self.assertEqual(4, ui.get('--global'))
+
+    def testPropagatingGlobalOptionsThatStartAppearingInNonfirstCommand(self):
+        command = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
+        command.addLocalOption(clap.option.Option(short='l', long='local'))
+        child = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
+        child.addGlobalOption(clap.option.Option(short='g', long='global', plural=True))
+        child.addCommand(name='second', command=clap.mode.RedCommand())
+        command.addCommand(name='child', command=child)
+        command.propagate()
+        argv = ['--local', 'child', '-g', '--global', 'second', '--global']
+        ui = clap.parser.Parser(command).feed(argv).parse().ui().finalise()
+        self.assertEqual('', str(ui))
+        self.assertIn('-l', ui)
+        self.assertIn('--local', ui)
+        self.assertNotIn('-g', ui)
+        self.assertNotIn('--global', ui)
+        ui = ui.down()
+        self.assertEqual('child', str(ui))
+        self.assertNotIn('-l', ui)
+        self.assertNotIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        self.assertEqual(2, ui.get('-g'))
+        self.assertEqual(2, ui.get('--global'))
+        ui = ui.down()
+        self.assertEqual('second', str(ui))
+        self.assertNotIn('-l', ui)
+        self.assertNotIn('--local', ui)
+        self.assertIn('-g', ui)
+        self.assertIn('--global', ui)
+        self.assertEqual(3, ui.get('-g'))
+        self.assertEqual(3, ui.get('--global'))
+
+
+class ParserOperandsTests(unittest.TestCase):
+    def testSettingRangeAny(self):
+        command = clap.mode.RedCommand()
+        command.setOperandsRange(no=[])
+        self.assertEqual((None, None), command.getOperandsRange())
+        command.setOperandsRange()
+        self.assertEqual((None, None), command.getOperandsRange())
+
+    def testSettingRangeBetween(self):
+        command = clap.mode.RedCommand()
+        command.setOperandsRange(no=[1, 2])
+        self.assertEqual((1, 2), command.getOperandsRange())
+
+    def testSettingRangeAtLeast(self):
+        command = clap.mode.RedCommand()
+        command.setOperandsRange(no=[2])
+        self.assertEqual((2, None), command.getOperandsRange())
+
+    def testSettingRangeAtMost(self):
+        command = clap.mode.RedCommand()
+        command.setOperandsRange(no=[-2])
+        self.assertEqual((0, 2), command.getOperandsRange())
+
+    def testSettingRangeInvalid(self):
+        command = clap.mode.RedCommand()
+        ranges = [
+                [-1, -1],
+                [1, 2, 3],
+                [4, 2],
+                ]
+        for i in ranges:
+            self.assertRaises(clap.errors.InvalidOperandRangeError, command.setOperandsRange, i)
+
+    def testSettingTypesForOperands(self):
+        types = ['str', 'int', 'int', 'int']
+        command = clap.mode.RedCommand()
+        command.setOperandsTypes(types)
+        self.assertEqual(types, command.getOperandsTypes())
+
+    def testGettingOperandsEnclosed(self):
+        argv = ['--foo', '--', '--bar', 'baz', '---', '--baz', 'this', 'is', 'discarded']
+        command = clap.mode.RedCommand()
+        command.addLocalOption(clap.option.Option(short='f', long='foo'))
+        command.addLocalOption(clap.option.Option(short='b', long='bar'))
+        command.addLocalOption(clap.option.Option(short='B', long='baz'))
+        parser = clap.parser.Parser(command).feed(argv)
+        self.assertEqual(['--bar', 'baz'], parser._getoperands())
+
+    def testGettingOperandsEnclosingNotWorkingWhenThereIsNoTerminator(self):
+        argv = ['--foo', '--bar', 'baz', '---', '--baz', 'this', 'is', 'not', 'discarded']
+        command = clap.mode.RedCommand()
+        command.addLocalOption(clap.option.Option(short='f', long='foo'))
+        command.addLocalOption(clap.option.Option(short='b', long='bar'))
+        command.addLocalOption(clap.option.Option(short='B', long='baz'))
+        parser = clap.parser.Parser(command).feed(argv)
+        self.assertEqual(['baz', '---', '--baz', 'this', 'is', 'not', 'discarded'], parser._getoperands())
+
+
+class CheckerOptionCheckingTests(unittest.TestCase):
     def testUnrecognizedOptions(self):
         argv = ['--foo', '--bar', '--baz']
         command = clap.mode.RedCommand()
@@ -600,6 +844,16 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
         argv = ['--foo', '--bar']
         command = clap.mode.RedCommand()
         command.addLocalOption(clap.option.Option(long='foo', arguments=['int']))
+        command.addLocalOption(clap.option.Option(long='bar'))
+        parser = clap.parser.Parser(command).feed(argv)
+        checker = clap.checker.RedChecker(parser)
+        self.assertRaises(clap.errors.MissingArgumentError, checker._checkarguments)
+        self.assertRaises(clap.errors.MissingArgumentError, checker.check)
+
+    def testAnotherOptionGivenAsArgumentWhenMultipleArgumentsAreRequested(self):
+        argv = ['--foo', '42', '--bar']
+        command = clap.mode.RedCommand()
+        command.addLocalOption(clap.option.Option(long='foo', arguments=['int', 'int']))
         command.addLocalOption(clap.option.Option(long='bar'))
         parser = clap.parser.Parser(command).feed(argv)
         checker = clap.checker.RedChecker(parser)
@@ -784,65 +1038,7 @@ class RedCheckerOptionCheckingTests(unittest.TestCase):
             checker.check()
 
 
-class RedParserOperandsTests(unittest.TestCase):
-    def testSettingRangeAny(self):
-        command = clap.mode.RedCommand()
-        command.setOperandsRange(no=[])
-        self.assertEqual((None, None), command.getOperandsRange())
-        command.setOperandsRange()
-        self.assertEqual((None, None), command.getOperandsRange())
-
-    def testSettingRangeBetween(self):
-        command = clap.mode.RedCommand()
-        command.setOperandsRange(no=[1, 2])
-        self.assertEqual((1, 2), command.getOperandsRange())
-
-    def testSettingRangeAtLeast(self):
-        command = clap.mode.RedCommand()
-        command.setOperandsRange(no=[2])
-        self.assertEqual((2, None), command.getOperandsRange())
-
-    def testSettingRangeAtMost(self):
-        command = clap.mode.RedCommand()
-        command.setOperandsRange(no=[-2])
-        self.assertEqual((0, 2), command.getOperandsRange())
-
-    def testSettingRangeInvalid(self):
-        command = clap.mode.RedCommand()
-        ranges = [
-                [-1, -1],
-                [1, 2, 3],
-                [4, 2],
-                ]
-        for i in ranges:
-            self.assertRaises(clap.errors.InvalidOperandRangeError, command.setOperandsRange, i)
-
-    def testSettingTypesForOperands(self):
-        types = ['str', 'int', 'int', 'int']
-        command = clap.mode.RedCommand()
-        command.setOperandsTypes(types)
-        self.assertEqual(types, command.getOperandsTypes())
-
-    def testGettingOperandsEnclosed(self):
-        argv = ['--foo', '--', '--bar', 'baz', '---', '--baz', 'this', 'is', 'discarded']
-        command = clap.mode.RedCommand()
-        command.addLocalOption(clap.option.Option(short='f', long='foo'))
-        command.addLocalOption(clap.option.Option(short='b', long='bar'))
-        command.addLocalOption(clap.option.Option(short='B', long='baz'))
-        parser = clap.parser.Parser(command).feed(argv)
-        self.assertEqual(['--bar', 'baz'], parser._getoperands())
-
-    def testGettingOperandsEnclosingNotWorkingWhenThereIsNoTerminator(self):
-        argv = ['--foo', '--bar', 'baz', '---', '--baz', 'this', 'is', 'not', 'discarded']
-        command = clap.mode.RedCommand()
-        command.addLocalOption(clap.option.Option(short='f', long='foo'))
-        command.addLocalOption(clap.option.Option(short='b', long='bar'))
-        command.addLocalOption(clap.option.Option(short='B', long='baz'))
-        parser = clap.parser.Parser(command).feed(argv)
-        self.assertEqual(['baz', '---', '--baz', 'this', 'is', 'not', 'discarded'], parser._getoperands())
-
-
-class RedCheckerOperandCheckingTests(unittest.TestCase):
+class CheckerOperandCheckingTests(unittest.TestCase):
     def testOperandRangeAny(self):
         argvariants = [
                 ['--foo', '-b'],                    # no operands
@@ -1067,193 +1263,7 @@ class RedCheckerOperandCheckingTests(unittest.TestCase):
             self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
 
 
-class RedParserNestedCommandsTests(unittest.TestCase):
-    def testSimpleChildCommand(self):
-        command = clap.mode.RedCommand()
-        command.addLocalOption(clap.option.Option(short='b', long='breakfast', arguments=['str']))
-        command.addLocalOption(clap.option.Option(short='w', long='what'))
-        command.setOperandsRange(no=[2, 2])
-        command.addCommand(name='child', command=clap.mode.RedCommand().setOperandsRange(no=[2, 2]))
-        argv = ['--breakfast', 'yes', '--what', 'spam', 'ham', 'child', 'foo', 'bar']
-        operands = ['spam', 'ham']
-        nested = ['child', 'foo', 'bar']
-        parser = clap.parser.Parser(command).feed(argv)
-        got_operands, got_nested = parser._getheuroperands()
-        self.assertEqual(operands, got_operands)
-        self.assertEqual(nested, got_nested)
-
-    def testGettingOperandsAndNestedCommandItems(self):
-        command = getTestCommand().setOperandsRange(no=[2, 2])
-        child = clap.mode.RedCommand().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
-        command.addCommand(name='child', command=child)
-        argv = ['--foo', '-b', '-B', 'spam', 'ham', 'child', '--answer', '42']
-        parser = clap.parser.Parser(command).feed(argv)
-        self.assertEqual(['spam', 'ham'], parser._getheuroperands()[0])
-        self.assertEqual(['child', '--answer', '42'], parser._getheuroperands()[1])
-
-    def testPropagatingGlobalOptionsWithoutArgumentsToNestedCommands(self):
-        command = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
-        command.addLocalOption(clap.option.Option(short='l', long='local'))
-        command.addGlobalOption(clap.option.Option(short='g', long='global'))
-        child = clap.mode.RedCommand()
-        command.addCommand(name='child', command=child)
-        command.propagate()
-        argv = ['--local', '--global', 'child']
-        ui = clap.parser.Parser(command).feed(argv).parse().ui().finalise()
-        self.assertEqual('', str(ui))
-        self.assertIn('-l', ui)
-        self.assertIn('--local', ui)
-        self.assertIn('-g', ui)
-        self.assertIn('--global', ui)
-        ui = ui.down()
-        self.assertEqual('child', str(ui))
-        self.assertNotIn('-l', ui)
-        self.assertNotIn('--local', ui)
-        self.assertIn('-g', ui)
-        self.assertIn('--global', ui)
-
-    def testPropagatingGlobalOptionsWithArgumentsToNestedCommands(self):
-        command = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
-        command.addLocalOption(clap.option.Option(short='l', long='local'))
-        command.addGlobalOption(clap.option.Option(short='g', long='global', arguments=['int']))
-        child = clap.mode.RedCommand()
-        command.addCommand(name='child', command=child)
-        command.propagate()
-        argv = ['--local', '--global', '42', 'child']
-        ui = clap.parser.Parser(command).feed(argv).parse().ui().finalise()
-        self.assertEqual('', str(ui))
-        self.assertIn('-l', ui)
-        self.assertIn('--local', ui)
-        self.assertIn('-g', ui)
-        self.assertIn('--global', ui)
-        self.assertEqual(42, ui.get('-g'))
-        self.assertEqual(42, ui.get('--global'))
-        ui = ui.down()
-        self.assertEqual('child', str(ui))
-        self.assertNotIn('-l', ui)
-        self.assertNotIn('--local', ui)
-        self.assertIn('-g', ui)
-        self.assertIn('--global', ui)
-        self.assertEqual(42, ui.get('-g'))
-        self.assertEqual(42, ui.get('--global'))
-
-    def testPropagatingGlobalOptionsWithArgumentsToNestedCommandsDoesNotOverwriteArgumentsPassedInNestedCommand(self):
-        command = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
-        command.addLocalOption(clap.option.Option(short='l', long='local'))
-        command.addGlobalOption(clap.option.Option(short='g', long='global', arguments=['int']))
-        child = clap.mode.RedCommand()
-        command.addCommand(name='child', command=child)
-        command.propagate()
-        argv = ['--local', '--global', '42', 'child', '-g', '69']
-        ui = clap.parser.Parser(command).feed(argv).parse().ui().finalise()
-        self.assertEqual('', str(ui))
-        self.assertIn('-l', ui)
-        self.assertIn('--local', ui)
-        self.assertIn('-g', ui)
-        self.assertIn('--global', ui)
-        self.assertEqual(42, ui.get('-g'))
-        self.assertEqual(42, ui.get('--global'))
-        ui = ui.down()
-        self.assertEqual('child', str(ui))
-        self.assertNotIn('-l', ui)
-        self.assertNotIn('--local', ui)
-        self.assertIn('-g', ui)
-        self.assertIn('--global', ui)
-        self.assertEqual(69, ui.get('-g'))
-        self.assertEqual(69, ui.get('--global'))
-
-    def testPropagatingGlobalPluralOptionsWithoutArguments(self):
-        command = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
-        command.addLocalOption(clap.option.Option(short='l', long='local'))
-        command.addGlobalOption(clap.option.Option(short='g', long='global', plural=True))
-        child = clap.mode.RedCommand()
-        command.addCommand(name='child', command=child)
-        command.propagate()
-        argv = ['--local', '--global', 'child']
-        ui = clap.parser.Parser(command).feed(argv).parse().ui().finalise()
-        self.assertEqual('', str(ui))
-        self.assertIn('-l', ui)
-        self.assertIn('--local', ui)
-        self.assertIn('-g', ui)
-        self.assertIn('--global', ui)
-        self.assertEqual(1, ui.get('-g'))
-        self.assertEqual(1, ui.get('--global'))
-        ui = ui.down()
-        self.assertEqual('child', str(ui))
-        self.assertNotIn('-l', ui)
-        self.assertNotIn('--local', ui)
-        self.assertIn('-g', ui)
-        self.assertIn('--global', ui)
-        self.assertEqual(1, ui.get('-g'))
-        self.assertEqual(1, ui.get('--global'))
-
-    def testPropagatingGlobalPluralOptionsWithoutArgumentsIncreasesCountIfOptionIsFoundInNestedCommand(self):
-        command = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
-        command.addLocalOption(clap.option.Option(short='l', long='local'))
-        command.addGlobalOption(clap.option.Option(short='g', long='global', plural=True))
-        child = clap.mode.RedCommand().addCommand(name='second', command=clap.mode.RedCommand())
-        command.addCommand(name='child', command=child)
-        command.propagate()
-        argv = ['--local', '--global', 'child', '-g', '--global', 'second', '--global']
-        ui = clap.parser.Parser(command).feed(argv).parse().ui().finalise()
-        self.assertEqual('', str(ui))
-        self.assertIn('-l', ui)
-        self.assertIn('--local', ui)
-        self.assertIn('-g', ui)
-        self.assertIn('--global', ui)
-        self.assertEqual(1, ui.get('-g'))
-        self.assertEqual(1, ui.get('--global'))
-        ui = ui.down()
-        self.assertEqual('child', str(ui))
-        self.assertNotIn('-l', ui)
-        self.assertNotIn('--local', ui)
-        self.assertIn('-g', ui)
-        self.assertIn('--global', ui)
-        self.assertEqual(3, ui.get('-g'))
-        self.assertEqual(3, ui.get('--global'))
-        ui = ui.down()
-        self.assertEqual('second', str(ui))
-        self.assertNotIn('-l', ui)
-        self.assertNotIn('--local', ui)
-        self.assertIn('-g', ui)
-        self.assertIn('--global', ui)
-        self.assertEqual(4, ui.get('-g'))
-        self.assertEqual(4, ui.get('--global'))
-
-    def testPropagatingGlobalOptionsThatStartAppearingInNonfirstCommand(self):
-        command = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
-        command.addLocalOption(clap.option.Option(short='l', long='local'))
-        child = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
-        child.addGlobalOption(clap.option.Option(short='g', long='global', plural=True))
-        child.addCommand(name='second', command=clap.mode.RedCommand())
-        command.addCommand(name='child', command=child)
-        command.propagate()
-        argv = ['--local', 'child', '-g', '--global', 'second', '--global']
-        ui = clap.parser.Parser(command).feed(argv).parse().ui().finalise()
-        self.assertEqual('', str(ui))
-        self.assertIn('-l', ui)
-        self.assertIn('--local', ui)
-        self.assertNotIn('-g', ui)
-        self.assertNotIn('--global', ui)
-        ui = ui.down()
-        self.assertEqual('child', str(ui))
-        self.assertNotIn('-l', ui)
-        self.assertNotIn('--local', ui)
-        self.assertIn('-g', ui)
-        self.assertIn('--global', ui)
-        self.assertEqual(2, ui.get('-g'))
-        self.assertEqual(2, ui.get('--global'))
-        ui = ui.down()
-        self.assertEqual('second', str(ui))
-        self.assertNotIn('-l', ui)
-        self.assertNotIn('--local', ui)
-        self.assertIn('-g', ui)
-        self.assertIn('--global', ui)
-        self.assertEqual(3, ui.get('-g'))
-        self.assertEqual(3, ui.get('--global'))
-
-
-class RedCheckerNestedCommandsCheckingTests(unittest.TestCase):
+class CheckerNestedCommandsCheckingTests(unittest.TestCase):
     def testFixedRangeItemTreatedAsCommandBecauseFollowedByOptionAcceptedByOneOfValidChildCommands(self):
         command = getTestCommand().setOperandsRange(no=[2, 2])
         child = clap.mode.RedCommand().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
