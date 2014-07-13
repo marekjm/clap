@@ -33,6 +33,9 @@ class Option:
         defaults:
             A list of default values for arguments of this option.
             All items must be strings.
+            This values are used when option is added by another option (i.e. is implied by another option) and
+            was not passed by the user directly.
+            They cannot, however be used to omit their arguments on command line.
 
         requires:
             List of options that MUST be passed with this option. An excpetion is raised when EVEN ONE OF THEM
@@ -46,6 +49,11 @@ class Option:
         implies:
             List of options this option implies are used.
             If they are not present, they are appended to the list of options.
+            For options that require arguments, default values are used.
+
+            It is recommended to not overuse this feature; it is loop-safe,
+            well documented and should work as intended but debugging problems caused
+            by multiple implications can be challenging.
 
         required:
             Boolean. If `True` an exception is raised if option is not found in `argv`.
