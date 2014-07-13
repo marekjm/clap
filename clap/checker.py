@@ -4,8 +4,15 @@
 from . import shared, errors, parser
 
 
-"""This module contains Checker() object which is used internaly, by
-Parser() to check correctness of input.
+"""This module contains Checker() object which is used to test correctness of input.
+
+It can check if provided input is correct and can be parsed but is not able to validate few things,
+as they appear only during the parsing stage.
+
+One of such things is, the Checker cannot validate the implications of some options make.
+Here, *implications* mean options that are implied by other options (via `implies` hook).
+It is not possible because the checker is stateless and does know nothing about the input except
+the part of it in which it is currently.
 """
 
 
@@ -37,23 +44,28 @@ class RedChecker():
             if shared.lookslikeopt(opt) and self._parser._command.getopt(opt).params():
                 types = self._parser._command.getopt(opt).params()
                 if i+len(types) >= len(input):
-                    # missing parameters at the end of input
+                    # missing arguments (at the end of input list)
                     raise errors.MissingArgumentError('{0}={1}'.format(opt, ', '.join(types)))
                 if shared.lookslikeopt(input[i+1]) and self._parser._command.accepts(input[i+1]):
-                    # number of parameters too low before next option is passed
+                    # no arguments before next option is passed
                     raise errors.MissingArgumentError(opt)
+                expected_types = ', '.join([str(t)[8:-2] for t in types])
                 for n, atype in enumerate(types):
                     i += 1
+                    got_types = ', '.join([str(t)[8:-2] for t in types[:n]])
+                    item = input[i]
                     try:
-                        (atype if type(atype) is not str else self._parser._typehandlers[atype])(input[i])
+                        (atype if type(atype) is not str else self._parser._typehandlers[atype])(item)
                     except KeyError:
                         raise errors.UIDesignError('missing type handler "{0}" for option: {1}'.format())
                     except IndexError:
-                        expected = ', '.join([str(t)[8:-2] for t in types])
-                        got = ', '.join([str(t)[8:-2] for t in types[:n]])
-                        raise errors.MissingArgumentError('{0} requires ({1}) but got only ({2})'.format(opt, expected, got))
+                        raise errors.MissingArgumentError('{0} requires ({1}) but got only ({2})'.format(opt, expected_types, got_types))
                     except ValueError as e:
-                        raise errors.InvalidArgumentTypeError('{0}: {1}: {2}'.format(opt, n, e))
+                        print('DEBUG: got ValueError when checking option arguments\' types: {0} is{1} accepted option'.format(e, ('' if self._parser._command.accepts(item) else ' not')))
+                        if self._parser._command.accepts(item):
+                            raise errors.MissingArgumentError('{0} requires ({1}) but got only ({2})'.format(opt, expected_types, got_types))
+                        else:
+                            raise errors.InvalidArgumentTypeError('{0}: {1}: {2}'.format(opt, n, e))
             i += 1
 
     def _checkrequired(self):
