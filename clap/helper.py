@@ -75,7 +75,7 @@ def _getoptionlines(command, indent='    ', level=1, colorize=True):
 def _cleanback(lines):
     """Removes whitespace-only lines from the end of lines list.
     """
-    while True:
+    while True and lines:
         type, content = lines[-1]
         if type != 'str': break
         if content.strip() == '': lines.pop(-1)
