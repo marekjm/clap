@@ -49,6 +49,11 @@ HELP_COMMAND = {
                         'short': 'e',
                         'long': 'examples',
                         'help': 'display example invocations (discards operands)'
+                    },
+                    {
+                        'short': 'c',
+                        'long': 'colorize',
+                        'help': 'colorize output'
                     }
                 ]
             },
