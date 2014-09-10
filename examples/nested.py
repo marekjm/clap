@@ -2,10 +2,13 @@
 
 import json
 import os
+import sys
 
-from sys import argv
+sys.path.insert(0, os.getcwd())
 
 import clap
+
+argv = sys.argv[:]
 
 base, filename = os.path.split(argv.pop(0))
 filename_ui = os.path.splitext(filename)[0] + '.json'
