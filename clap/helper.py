@@ -294,7 +294,7 @@ class HelpRunner:
         mode, done = ui.top()._command, False
         for i, item in enumerate(items):
             if shared.lookslikeopt(item):
-                message = (renderOptionHelp(mode.getopt(item)).strip() if mode.accepts(item) else 'unrecognised option: no help available')
+                message = (' '.join(renderOptionHelp(mode.getopt(item))) if mode.accepts(item) else 'unrecognised option: no help available')
                 print('(option) {0}'.format(message))
                 self._displayed = True
                 break
