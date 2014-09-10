@@ -5,6 +5,10 @@ Python objects representing modes and options.
 import json
 import warnings
 
+try: import colored
+except ImportError: colored = None
+finally: pass
+
 from . import option
 from . import mode
 from . import shared
@@ -31,19 +35,23 @@ def makelines(s, maxlen):
     return lines
 
 
-def renderOptionHelp(option, help=True):
+def renderOptionHelp(option):
     """Renders a single help line for passed option.
     if `help` is passed as false, it will not render help message but only
     short and long variants.
+
+    Returns three-tuple, suitable for rendering: (name-string, params,  help-string)
+                                                 ('-o, --ok',  '<str>', 'parameter can be "yes" or "no"')
     """
-    message = (option['short'] if option['short'] else '    ')
-    if option['short'] and option['long']: message += ', '
-    message += (option['long'] if option['long'] else '')
+    name_string = (option['short'] if option['short'] else '    ')
+    if option['short'] and option['long']: name_string += ', '
+    name_string += (option['long'] if option['long'] else '')
+    param_string = ''
     if option.params():
-        message += ('=' if option['long'] else ' ')
-        message += ' '.join(['<{0}>'.format(i) for i in option.params()])
-    if help: message += (' - {0}'.format(option['help']) if option['help'] else '')
-    return message
+        param_string += ('=' if option['long'] else ' ')
+        param_string += ' '.join(['<{0}>'.format(i) for i in option.params()])
+    help_string = (' - {0}'.format(option['help']) if option['help'] else '')
+    return (name_string, param_string, help_string)
 
 def _getoptionlines(command, indent='    ', level=1):
     """Renders lines with options' help messages.
@@ -54,8 +62,13 @@ def _getoptionlines(command, indent='    ', level=1):
     """
     lines = []
     for scope in ['global', 'local']:
-        if command.options(group=scope): lines.append( ('str', indent*(level) + '{0} options:'.format(scope)) )
-        for o in command.options(group=scope): lines.append( ('option', indent*(level+1) + renderOptionHelp(o, False), o) )
+        if command.options(group=scope):
+            ln = '[{0} options]:'.format(scope)
+            if colored is not None: ln = colored.fg('red') + ln + colored.attr('reset')
+            lines.append( ('str', indent*(level) + ln) )
+        for o in command.options(group=scope):
+            rendered_option = renderOptionHelp(o)
+            lines.append( ('option', indent*(level+1) + rendered_option[0], o) )
         if command.options(group=scope): lines.append( ('str', '') )
     return lines
 
@@ -110,7 +123,10 @@ class Helper:
         """
         lines = []
         examples = (self._command._doc['examples'] if 'examples' in self._command._doc else [])
-        if examples: lines.append( ('str', 'Examples:') )
+        ln = 'examples'
+        if colored is not None: ln = colored.fg('cyan') + ln + colored.attr('reset')
+        ln += ':'
+        if examples: lines.append( ('str', ln) )
         for i, example in enumerate(examples):
             if 'line' not in example: continue
             lines.append( ('str', '{0}{1} {2}'.format(self._indent['string'], self._progname, example['line'])) )
@@ -124,15 +140,17 @@ class Helper:
         """Generate `usage` part of help screen.
         Modelled after `git --help` invocation usage message.
         """
-        for key in ['usage']:
-            head = '{0}: {1} '.format(key, self._progname)
-            indent = len(head) * ' '
-            lines = []
-            what = (self._command._doc[key] if key in self._command._doc else [])
-            if what: lines.append( ('str', head + what[0]) )
-            for line in what[1:]: lines.append( ('str', indent + line) )
-            self._lines.extend(lines)
-            if self._lines: self._lines.append( ('str', '') )
+        key = 'usage'
+        opening = 'usage'
+        if colored is not None: opening = colored.fg('cyan') + opening + colored.attr('reset')
+        head = '{0}: {1} '.format(opening, self._progname)
+        indent = (len(head) - len(opening) + len(key)) * ' '
+        lines = []
+        what = (self._command._doc[key] if key in self._command._doc else [])
+        if what: lines.append( ('str', head + what[0]) )
+        for line in what[1:]: lines.append( ('str', indent + line) )
+        self._lines.extend(lines)
+        if self._lines: self._lines.append( ('str', '') )
 
     def _gencommandhelp(self, command, name, level=0, longest=0):
         """Generate lines with command help message.
@@ -140,7 +158,9 @@ class Helper:
         if not longest: longest = len(name)
         SPACING = (2 if longest else 0)  # CONF?
         lines = []
-        text = '{0}{1}'.format(name.ljust(longest+SPACING), command._doc['help'].strip())
+        adjusted_name = name.ljust(longest+SPACING)
+        if colored is not None: adjusted_name = colored.fg('yellow') + adjusted_name + colored.attr('reset')
+        text = '{0}{1}'.format(adjusted_name, command._doc['help'].strip())
         first = makelines(text, self._maxlen)[0]
         lines.append( ('str', ((self._indent['string']*level) + first)) )
         for l in makelines(text[len(first):], (self._maxlen-len(name)-3)):
@@ -175,7 +195,11 @@ class Helper:
         lines = []
         self._lines.extend(self._gencommandhelp(command, name, level=level))
         self._lines.extend(_getoptionlines(command, indent=self._indent['string'], level=level+1))
-        if command.commands(): self._lines.append( ('str', ((self._indent['string']*(level+1)) + 'commands:')) )
+        if command.commands():
+            ln = 'commands'
+            if colored is not None: ln = colored.fg('red') + ln + colored.attr('reset')
+            ln += ':'
+            self._lines.append( ('str', ((self._indent['string']*(level+1)) + ln)) )
         self._lines.extend(self._gensubcommandslines(command, name, level, deep))
         return lines
 
@@ -221,7 +245,7 @@ class Helper:
         while lines:
             if lines[-1] == '': lines.pop(-1)
             else: break
-        return '\n'.join(lines)
+        return (colored.attr('reset') if colored is not None else '') + '\n'.join(lines)
 
 
 class HelpRunner:
