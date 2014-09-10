@@ -53,7 +53,7 @@ HELP_COMMAND = {
                     {
                         'short': 'c',
                         'long': 'colorize',
-                        'help': 'colorize output'
+                        'help': 'colorize output (do not use with "less" pager unless you want to see escape sequences, or you can use "less -R" too nicely display them)'
                     }
                 ]
             },

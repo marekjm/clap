@@ -53,7 +53,7 @@ def renderOptionHelp(option):
     help_string = (' - {0}'.format(option['help']) if option['help'] else '')
     return (name_string, param_string, help_string)
 
-def _getoptionlines(command, indent='    ', level=1):
+def _getoptionlines(command, indent='    ', level=1, colorize=True):
     """Renders lines with options' help messages.
     The lines with actual option help strings, have only put short and long
     variants into their strings to make nice padding available, so all options'
@@ -61,11 +61,10 @@ def _getoptionlines(command, indent='    ', level=1):
     Renderer handles the help messages (if they are present).
     """
     lines = []
+    ln = 'options'
+    if colored is not None and colorize: ln = colored.fg('red') + ln + colored.attr('reset')
+    lines.append( ('str', indent*(level) + ln + ':') )
     for scope in ['global', 'local']:
-        if command.options(group=scope):
-            ln = '[{0} options]:'.format(scope)
-            if colored is not None: ln = colored.fg('red') + ln + colored.attr('reset')
-            lines.append( ('str', indent*(level) + ln) )
         for o in command.options(group=scope):
             rendered_option = renderOptionHelp(o)
             lines.append( ('option', indent*(level+1) + rendered_option[0], o) )
@@ -94,10 +93,11 @@ class Helper:
     in the ways of how usage and examples are shown and how options are aligned; and
     after man pages in how option parameters are shown.
     """
-    def __init__(self, progname, command):
+    def __init__(self, progname, command, colorize=False):
         self._command = command
         self._indent = {'string': '   ', 'level': 0}
         self._progname = progname
+        self._colorize = colorize
         self._maxlen = 140
         self._opt_desc_start = 0
         self._lines = []
@@ -124,7 +124,7 @@ class Helper:
         lines = []
         examples = (self._command._doc['examples'] if 'examples' in self._command._doc else [])
         ln = 'examples'
-        if colored is not None: ln = colored.fg('cyan') + ln + colored.attr('reset')
+        if colored is not None and self._colorize: ln = colored.fg('cyan') + ln + colored.attr('reset')
         ln += ':'
         if examples: lines.append( ('str', ln) )
         for i, example in enumerate(examples):
@@ -142,7 +142,7 @@ class Helper:
         """
         key = 'usage'
         opening = 'usage'
-        if colored is not None: opening = colored.fg('cyan') + opening + colored.attr('reset')
+        if colored is not None and self._colorize: opening = colored.fg('cyan') + opening + colored.attr('reset')
         head = '{0}: {1} '.format(opening, self._progname)
         indent = (len(head) - len(opening) + len(key)) * ' '
         lines = []
@@ -159,7 +159,7 @@ class Helper:
         SPACING = (2 if longest else 0)  # CONF?
         lines = []
         adjusted_name = name.ljust(longest+SPACING)
-        if colored is not None: adjusted_name = colored.fg('yellow') + adjusted_name + colored.attr('reset')
+        if colored is not None and self._colorize: adjusted_name = colored.fg('yellow') + adjusted_name + colored.attr('reset')
         text = '{0}{1}'.format(adjusted_name, command._doc['help'].strip())
         first = makelines(text, self._maxlen)[0]
         lines.append( ('str', ((self._indent['string']*level) + first)) )
@@ -194,10 +194,10 @@ class Helper:
         """
         lines = []
         self._lines.extend(self._gencommandhelp(command, name, level=level))
-        self._lines.extend(_getoptionlines(command, indent=self._indent['string'], level=level+1))
+        self._lines.extend(_getoptionlines(command, indent=self._indent['string'], level=level+1, colorize=self._colorize))
         if command.commands():
             ln = 'commands'
-            if colored is not None: ln = colored.fg('red') + ln + colored.attr('reset')
+            if colored is not None and self._colorize: ln = colored.fg('red') + ln + colored.attr('reset')
             ln += ':'
             self._lines.append( ('str', ((self._indent['string']*(level+1)) + ln)) )
         self._lines.extend(self._gensubcommandslines(command, name, level, deep))
@@ -276,7 +276,7 @@ class HelpRunner:
             if cui.islast(): break
             cui = cui.down()
         if present:
-            helper = Helper(self._program_name, cui._command).setmaxlen(n=70)
+            helper = Helper(self._program_name, cui._command, colorize=('--colorize' in cui)).setmaxlen(n=70)
             print(helper.full(deep=('--verbose' in cui)).render())
             self._displayed = True
 
@@ -287,7 +287,7 @@ class HelpRunner:
         if str(ui) != 'help': return
         items = ui.operands()
         if not items:
-            helper = Helper(self._program_name, ui.up()._command).setmaxlen(n=70)
+            helper = Helper(self._program_name, ui.up()._command, colorize=('--colorize' in ui)).setmaxlen(n=70)
             print(helper.full(deep=('--verbose' in ui or '--help' in ui)).render())
             self._displayed = True
         if self._displayed: return
@@ -306,7 +306,7 @@ class HelpRunner:
             elif i < len(items):
                 mode = mode.getCommand(item)
         if not self._displayed:
-            helper = Helper(self._program_name, mode).setmaxlen(n=70)
+            helper = Helper(self._program_name, mode, colorize=('--colorize' in ui)).setmaxlen(n=70)
             print(helper.full(deep=('--verbose' in ui or '--help' in ui)).render())
             self._displayed = True
 
@@ -335,11 +335,11 @@ class HelpRunner:
         """
         self._ignore()
         if '--usage' in self._ui:
-            msg = Helper(self._program_name, self._ui.top()._command).usage().render()
+            msg = Helper(self._program_name, self._ui.top()._command, colorize=('--colorize' in self._ui.top())).usage().render()
             if msg: print(msg)
             self._displayed = True
         if '--examples' in self._ui:
-            msg = Helper(self._program_name, self._ui.top()._command).examples().render()
+            msg = Helper(self._program_name, self._ui.top()._command, colorize=('--colorize' in self._ui.top())).examples().render()
             if msg: print(msg)
             self._displayed = True
         if not self._displayed: self._byoptions()
