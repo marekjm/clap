@@ -35,36 +35,23 @@ def makelines(s, maxlen):
     return lines
 
 
-def getOptionHelpTuple(o):
+def renderOptionHelp(option):
     """Renders a single help line for passed option.
+    if `help` is passed as false, it will not render help message but only
+    short and long variants.
 
     Returns three-tuple, suitable for rendering: (name-string, params,  help-string)
                                                  ('-o, --ok',  '<str>', 'parameter can be "yes" or "no"')
     """
-    name_string = (o['short'] if o['short'] else '    ')
-    if o['short'] and o['long']: name_string += ', '
-    name_string += (o['long'] if o['long'] else '')
+    name_string = (option['short'] if option['short'] else '    ')
+    if option['short'] and option['long']: name_string += ', '
+    name_string += (option['long'] if option['long'] else '')
     param_string = ''
-    if o.params():
-        param_string += ('=' if o['long'] else ' ')
-        param_string += ' '.join(['<{0}>'.format(i) for i in o.params()])
-    help_string = (' - {0}'.format(o['help']) if o['help'] else '')
+    if option.params():
+        param_string += ('=' if option['long'] else ' ')
+        param_string += ' '.join(['<{0}>'.format(i) for i in option.params()])
+    help_string = (' - {0}'.format(option['help']) if option['help'] else '')
     return (name_string, param_string, help_string)
-
-
-def renderOptionHelp(o, scope=3, colorize=False):
-    """Renders a single help line for passed option.
-    """
-    name, params, doc = getOptionHelpTuple(o)
-    if colored and colorize:
-        name = colored.fg('yellow') + name + colored.attr('reset')
-        if params: params = colored.fg('cyan') + params + colored.attr('reset')
-    string = ''
-    for i, part in enumerate([name, params, doc]):
-        if i >= scope: break
-        string += part
-    return string
-
 
 def _getoptionlines(command, indent='    ', level=1, colorize=True):
     """Renders lines with options' help messages.
@@ -79,7 +66,8 @@ def _getoptionlines(command, indent='    ', level=1, colorize=True):
     lines.append( ('str', indent*(level) + ln + ':') )
     for scope in ['global', 'local']:
         for o in command.options(group=scope):
-            lines.append( ('option', indent*(level+1), o) )
+            rendered_option = renderOptionHelp(o)
+            lines.append( ('option', indent*(level+1) + rendered_option[0], o) )
     lines.append( ('str', '') )
     return lines
 
@@ -240,8 +228,7 @@ class Helper:
         """
         for i in self._lines:
             if i[0] == 'option':
-                n = len(renderOptionHelp(i[2], scope=2, colorize=False))
-                if n > self._opt_desc_start: self._opt_desc_start = n
+                if len(i[1]) > self._opt_desc_start: self._opt_desc_start = len(i[1])
         self._opt_desc_start += 2
 
         lines = []
@@ -249,10 +236,8 @@ class Helper:
             if i[0] == 'str':
                 type, string = i
             elif i[0] == 'option':
-                type, indent, opt = i
-                raise
-                string = indent + renderOptionHelp(opt, scope=2, colorize=self._colorize)
-                while len(indent + renderOptionHelp(opt, scope=2, colorize=False)) < self._opt_desc_start: string += ' '
+                type, string, opt = i
+                while len(string) < self._opt_desc_start: string += ' '
                 string += ('- {0}'.format(opt['help']) if opt['help'] else '')
             else:
                 raise Exception('line {0}: unknown type: {1}: {2}'.format(no, i[0], i))
@@ -309,14 +294,7 @@ class HelpRunner:
         mode, done = ui.top()._command, False
         for i, item in enumerate(items):
             if shared.lookslikeopt(item):
-                name_string, param_string, help_string = getOptionHelpTuple(mode.getopt(item))
-                if colored and '--colorize' in self._ui:
-                    name_string = colored.fg('yellow') + name_string + colored.attr('reset')
-                    if param_string: param_string = colored.fg('cyan') + param_string + colored.attr('reset')
-                message = ''
-                message += name_string
-                if param_string: message += param_string
-                if help_string: message += help_string
+                message = (' '.join(renderOptionHelp(mode.getopt(item))) if mode.accepts(item) else 'unrecognised option: no help available')
                 print('(option) {0}'.format(message))
                 self._displayed = True
                 break
