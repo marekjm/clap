@@ -68,7 +68,7 @@ def _getoptionlines(command, indent='    ', level=1, colorize=True):
         for o in command.options(group=scope):
             rendered_option = renderOptionHelp(o)
             lines.append( ('option', indent*(level+1) + rendered_option[0], o) )
-        if command.options(group=scope): lines.append( ('str', '') )
+    lines.append( ('str', '') )
     return lines
 
 
