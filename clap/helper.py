@@ -25,6 +25,19 @@ def makelines(s, maxlen):
     i = 0
     while i < len(words):
         word = words[i]
+        if '\n' in word:
+            parts = word.split('\n')
+            if len(line+parts[0]) <= maxlen-1:
+                line += (parts.pop(0) + ' ')
+            lines.append(line)
+            line = ''
+            if parts:
+                word = parts.pop(-1)
+                for p in parts:
+                    lines.append(p)
+            else:
+                i += 1
+                continue
         if len(line + word) <= maxlen-1:
             line += (word + ' ')
             i += 1
