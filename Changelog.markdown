@@ -19,10 +19,10 @@ It's mostly useful for developers who use the CLAP library.
 This release candidate adds two more parameters to the already available palette of
 customization options for CLAP options.
 
-Note, that however the `defaults` option may sound promising it can currently be only used to provide values
+Note that however promising the `defaults` option may sound it can currently be only used to provide values
 for options added by CLAP (when running through `implies` hooks).
 Support for omitting arguments was not coded to keep the complexity of the parser on an acceptable level.
-Said complexity has to be decreased nevertheless, because the `implies` hook made available to developers caused
+Said complexity has to be decreased nevertheless, because the `implies` hook that became available to developers caused
 the complexity level of parser to raise considerably.
 
 Even though, optional arguments should be requested as operands - it is safer and easier to manage them this way.
