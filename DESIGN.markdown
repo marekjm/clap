@@ -314,27 +314,6 @@ Type converters MUST BE functions taking single string as their parameter and:
 
 Type handlers have to be added to every parser indivdually, via API of the parser object.
 
-Other solution if to put special `clap_typehandlers.py` file in one of the `$PYTHONPATH` directories.
-This file MUST contain `TYPEHANDLERS` dictionary from which handlers will be pulled to parsers.
-
-Example `clap_typehandlers.py` file:
-
-```
-def hexadecimal(n):
-    return int(n, 16)
-
-def octal(n):
-    return int(n, 8)
-
-TYPEHANDLERS = {
-                'hex': hexadecimal,
-                'oct': octal,
-               }
-```
-
-If such file is placed in such a diretory that RedCLAP will be able to import it, it will do and
-all type handlers set there will be available to all RedCLAP programs.
-
 ----
 
 ## JSON representations of UIs
@@ -343,9 +322,6 @@ RedCLAP UIs can be saved as JSON encoded files and
 built dynamically.
 This provides for easier interface building as a developer can create the UI structire in a declarative way and
 let the code do the heavy lifting.
-
-Only thing that is required and must be done in code is to set handlers for custom types.
-However, if `clap_typehandlers` is used it may not be necessary.
 
 
 ### Modes
