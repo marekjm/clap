@@ -1,4 +1,4 @@
-PYTHONVERSION=3.4
+PYTHONVERSION=`python -c 'import sys; print("{}.{}".format(sys.version_info.major, sys.version_info.minor))'`
 
 .PHONY: tests tests-python2
 
@@ -18,7 +18,7 @@ local-install: ./clap/*.py
 	cp -v ./clap/*.py ~/.local/lib/python${PYTHONVERSION}/site-packages/clap/
 
 clean:
-	rm -rv ./clap/__pycache__
+	rm -rf ./clap/__pycache__
 
 
 test:
