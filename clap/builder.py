@@ -95,6 +95,7 @@ class Builder:
                 for opt in self._model['options']['global']: ui.addGlobalOption(option.Option(**opt))
         if 'operands' in self._model:
             if 'no' in self._model['operands']: ui.setOperandsRange(no=self._model['operands']['no'])
+            if 'with' in self._model['operands']: ui.setAlternativeOperandsRange(no=self._model['operands']['with'])
         commands = (self._model['commands'] if 'commands' in self._model else {})
         for name, nmodel in commands.items(): ui.addCommand(name=name, command=Builder().set(nmodel).build().get())
         ui.propagate()

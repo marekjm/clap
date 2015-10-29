@@ -143,6 +143,10 @@ class RedChecker():
         """
         got = len(self._parser._getheuroperands()[0])
         least, most = self._parser._command.getOperandsRange()
+        for key in sorted(self._parser._command._altoperands.keys()):
+            if not self._parser._ininput(option=self._parser._command.getopt(key)): continue
+            least, most = self._parser._command.getAlternativeOperandsRange(key)
+            break
         fail = False
         if least is not None and least == most and got != least:
             msg = 'expected exactly {0} operands but got {1}'.format(least, got)

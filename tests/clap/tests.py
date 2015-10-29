@@ -747,6 +747,15 @@ class ParserOperandsTests(unittest.TestCase):
         command.setOperandsRange(no=[-2])
         self.assertEqual((0, 2), command.getOperandsRange())
 
+    def testSettingAlternativeRange(self):
+        command = clap.mode.RedCommand()
+        command.setOperandsRange(no=[-2])
+        command.setAlternativeOperandsRange(no={
+            '--foo': [0, 0]
+        })
+        self.assertEqual((0, 2), command.getOperandsRange())
+        self.assertEqual((0, 0), command.getAlternativeOperandsRange('--foo'))
+
     def testSettingRangeInvalid(self):
         command = clap.mode.RedCommand()
         ranges = [
@@ -1176,6 +1185,36 @@ class CheckerOperandCheckingTests(unittest.TestCase):
                 if DEBUG: print('fail checking range {0} with input: {1}'.format(r, parser._getoperands()))
                 checker = clap.checker.RedChecker(parser)
                 self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
+
+    def testOperandRangeAlternative(self):
+        argvariants = [
+                ['--foo'],
+                ['a', 'b'],
+                ['--foo', '--'],
+                ['--', 'a', 'b'],
+        ]
+        failvariants = [
+                ['--foo', 'a'],
+                [],
+                ['--foo', '--', 'a', 'b'],
+                ['--',],
+        ]
+        command = clap.mode.RedCommand()
+        command.addLocalOption(clap.option.Option(short='f', long='foo'))
+        command.addLocalOption(clap.option.Option(short='b', long='bar'))
+        command.setAlternativeOperandsRange(no={
+            '--foo': [0, 0]
+        })
+        command.setOperandsRange(no=(1, 2))
+        parser = clap.parser.Parser(command)
+        for argv in argvariants:
+            parser.feed(argv)
+            checker = clap.checker.RedChecker(parser)
+            checker._checkoperandsrange()
+        for argv in failvariants:
+            parser.feed(argv)
+            checker = clap.checker.RedChecker(parser)
+            self.assertRaises(clap.errors.InvalidOperandRangeError, checker._checkoperandsrange)
 
     def testOperandsRangeNotCompatibleWithListOfTypesInvalidLeast(self):
         command = clap.mode.RedCommand()

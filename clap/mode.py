@@ -14,6 +14,7 @@ class RedCommand:
     def __init__(self):
         self._options = {'local': [], 'global': []}
         self._operands = {'range': {'least': None, 'most': None}, 'types': []}
+        self._altoperands = {}
         self._commands = {}
         self._doc = {'help': '', 'usage': []}
 
@@ -143,10 +144,16 @@ class RedCommand:
     def _setoperandsrange(self, least, most):
         """Sets range of operands.
         Both arguments can be integers or None.
-        None has different meaning in 
+        None has different meaning in
         """
         self._operands['range']['least'] = least
         self._operands['range']['most'] = most
+
+    def _setaltoperandsrange(self, conf):
+        """Sets alternative range of operands.
+        Allows to configure operand settings based on what options were passed.
+        """
+        self._altoperands = conf
 
     def setOperandsRange(self, no=()):
         """Sets range of operands.
@@ -169,10 +176,22 @@ class RedCommand:
         self._setoperandsrange(least, most)
         return self
 
+    def setAlternativeOperandsRange(self, no):
+        """Sets range of operands.
+        Valid `no` is a sequence - tuple or list - of zero, one, or two integers.
+        """
+        self._setaltoperandsrange(no)
+        return self
+
     def getOperandsRange(self):
         """Returns operands range.
         """
         return (self._operands['range']['least'], self._operands['range']['most'])
+
+    def getAlternativeOperandsRange(self, with_option):
+        """Returns alternative operands range.
+        """
+        return tuple(self._altoperands.get(with_option, (None, None)))
 
     def setOperandsTypes(self, types):
         """Sets a list of operands types.
