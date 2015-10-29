@@ -1,4 +1,4 @@
-PYTHONVERSION=3.4
+PYTHONVERSION=3.5
 
 .PHONY: tests tests-python2
 
