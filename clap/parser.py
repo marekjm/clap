@@ -87,7 +87,7 @@ class ParsedUI:
         - options that take at least two arguments return tuple containing their arguments,
         - options that take at least one argument AND are plural return list of tuples containing arguments passed
           to each occurence of the option in input,
-        
+
         Tuple-isation can be switched off by passing 'tuplise` parameter as false;
         in such case lists are returned for options that take at least two arguments and
         direct values for options taking one argumet or less.
@@ -362,8 +362,8 @@ class Parser:
         self._parsed['options'], self._parsed['operands'] = options, operands
         self._ui._options, self._ui._operands = options, operands
         if nested:
-            name = nested.pop(0)
-            command = self._command.getCommand(name)
+            name = self._command.expandCommandName(nested.pop(0))
+            command = self._command.getCommand(name, False)
             ui = Parser(command).feed(nested).parse().ui()
             ui._name = name
             self._ui._appendcommand(command=ui)

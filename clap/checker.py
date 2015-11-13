@@ -172,6 +172,7 @@ class RedChecker():
         operands, nested = self._parser._getheuroperands()
         if not nested: return
         child = nested.pop(0)
+        child = self._parser._command.expandCommandName(child)
         if not self._parser._command.hasCommand(child): raise errors.UnrecognizedCommandError(child)
         else: RedChecker(parser.Parser(self._parser._command.getCommand(child)).feed(nested)).check(rangecompat=rangecompat)
 

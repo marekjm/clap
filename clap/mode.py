@@ -41,15 +41,38 @@ class RedCommand:
         self._commands[name] = command
         return self
 
+    def expandCommandName(self, name):
+        """Accepts a string and returns a command name it can be expanded to.
+        Raises exceptions on ambiguous or unmatched strings.
+
+        Examples:
+
+            commands = ['foo', 'bar'] and name = 'f' -> command = 'foo'
+            commands = ['foo', 'bar'] and name = 'x' -> UnrecognizedCommandError
+            commands = ['foo', 'far'] and name = 'f' -> AmbiguousCommandError
+        """
+        candidates = []
+        for cmd in self.commands():
+            if cmd.startswith(name):
+                if len(cmd) == len(name):
+                    candidates = [cmd]
+                    break
+                candidates.append(cmd)
+        if not candidates:
+            raise errors.UnrecognizedCommandError(name)
+        if len(candidates) > 1:
+            raise errors.AmbiguousCommandError('{0}: {1}'.format(name, ', '.join(candidates)))
+        return candidates[0]
+
     def hasCommand(self, name):
         """Returns true if command has a subcommand with given name.
         """
         return name in self.commands()
 
-    def getCommand(self, name):
+    def getCommand(self, name, expand=True):
         """Returns subcommand with given name.
         """
-        return self._commands[name]
+        return self._commands[(self.expandCommandName(name) if expand else name)]
 
     def commands(self):
         """Returns list of subcommand.
