@@ -20,6 +20,12 @@ class UnrecognizedCommandError(CLAPError):
     pass
 
 
+class AmbiguousCommandError(CLAPError):
+    """Raised when ambiguous command is found in input list.
+    """
+    pass
+
+
 class RequiredOptionNotFoundError(CLAPError):
     """Raised when required option is not found in input list.
     """
