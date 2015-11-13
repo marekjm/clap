@@ -147,6 +147,38 @@ class CommandTests(unittest.TestCase):
         self.assertEqual('--bar', command.alias('-b'))
         self.assertEqual('', command.alias('--baz'))
 
+    def testShortenedCommandNamesExpandProperly(self):
+        command = clap.mode.RedCommand()
+        command.addCommand('foo', clap.mode.RedCommand())
+        command.addCommand('bar', clap.mode.RedCommand())
+        self.assertTrue(command.hasCommand('foo'))
+        self.assertTrue(command.hasCommand('bar'))
+        self.assertEqual('foo', command.expandCommandName('f'))
+        self.assertEqual('bar', command.expandCommandName('b'))
+        self.assertTrue(command.hasCommand(command.expandCommandName('f')))
+        self.assertTrue(command.hasCommand(command.expandCommandName('b')))
+
+    def testShortenedCommandNamesExpandAmbiguously(self):
+        command = clap.mode.RedCommand()
+        command.addCommand('foo', clap.mode.RedCommand())
+        command.addCommand('far', clap.mode.RedCommand())
+        self.assertRaises(clap.errors.AmbiguousCommandError, command.expandCommandName, 'f')
+        self.assertEqual('foo', command.expandCommandName('fo'))
+        self.assertEqual('far', command.expandCommandName('fa'))
+
+    def testShortenedCommandNamesNotFound(self):
+        command = clap.mode.RedCommand()
+        command.addCommand('foo', clap.mode.RedCommand())
+        command.addCommand('far', clap.mode.RedCommand())
+        self.assertRaises(clap.errors.UnrecognizedCommandError, command.expandCommandName, 'b')
+
+    def testShortenedCommandNamesDoNotShadow(self):
+        command = clap.mode.RedCommand()
+        command.addCommand('foo', clap.mode.RedCommand())
+        command.addCommand('foobar', clap.mode.RedCommand())
+        self.assertEqual('foo', command.expandCommandName('foo'))
+        self.assertEqual('foobar', command.expandCommandName('foob'))
+
 
 class ParserGeneralTests(unittest.TestCase):
     def testGettingInputAndOperands(self):
@@ -333,6 +365,24 @@ class ParserParsingTests(unittest.TestCase):
         self.assertIn('--test', ui)
         self.assertEqual(1, len(ui))
         self.assertEqual(['alpha'], ui.operands())
+        self.assertEqual('', str(ui))
+        ui = ui.down()
+        self.assertEqual(None, ui.get('-s'))
+        self.assertEqual(None, ui.get('--spam'))
+        self.assertIn('-s', ui)
+        self.assertIn('--spam', ui)
+        self.assertEqual(0, len(ui))
+        self.assertEqual([], ui.operands())
+        self.assertEqual('child', str(ui))
+
+    def testParsingWithShortenedCommand(self):
+        command = clap.mode.RedCommand()
+        child = clap.mode.RedCommand()
+        child.addLocalOption(clap.option.Option(short='s', long='spam'))
+        command.addCommand(name='child', command=child)
+        argv = ['ch', '--spam']
+        parser = clap.parser.Parser(command).feed(argv)
+        ui = parser.parse().ui().finalise()
         self.assertEqual('', str(ui))
         ui = ui.down()
         self.assertEqual(None, ui.get('-s'))
