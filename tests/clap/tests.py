@@ -612,6 +612,21 @@ class ParserNestedCommandsTests(unittest.TestCase):
         self.assertEqual(['spam', 'ham'], parser._getheuroperands()[0])
         self.assertEqual(['child', '--answer', '42'], parser._getheuroperands()[1])
 
+    def testNestedCommandsOptionsNotPropragatedToHigherLevelCommands(self):
+        command = clap.mode.RedCommand()
+        command.addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
+        child = clap.mode.RedCommand().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
+        command.addCommand(name='child', command=child)
+        argv = ['child', '--answer', '42']
+        parser = clap.parser.Parser(command).feed(argv)
+        self.assertEqual(['child', '--answer', '42'], parser._getheuroperands()[1])
+        ui = parser.parse().ui()
+        self.assertEqual('', str(ui))
+        self.assertFalse('--answer' in ui)
+        ui = ui.down()
+        self.assertEqual('child', str(ui))
+        self.assertTrue('--answer' in ui)
+
     def testPropagatingGlobalOptionsWithoutArgumentsToNestedCommands(self):
         command = clap.mode.RedCommand().setOperandsRange(no=[0, 0])
         command.addLocalOption(clap.option.Option(short='l', long='local'))
