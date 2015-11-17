@@ -789,6 +789,49 @@ class ParserNestedCommandsTests(unittest.TestCase):
         self.assertEqual(3, ui.get('--global'))
 
 
+class ParserShortenedCommandNamesTests(unittest.TestCase):
+    def testSimpleCommandNameExpansion(self):
+        command = clap.mode.RedCommand()
+        command.setOperandsRange(no=[2, 2])
+        command.addCommand(name='foo', command=clap.mode.RedCommand())
+        command.addCommand(name='bar', command=clap.mode.RedCommand())
+        command.addCommand(name='far', command=clap.mode.RedCommand())
+        argv = ['b']
+        parser = clap.parser.Parser(command).feed(argv)
+        ui = parser.parse().ui().down()
+        self.assertEqual('bar', str(ui))
+        self.assertEqual([], ui.operands())
+
+    def testFalsePositivesSuppression(self):
+        command = clap.mode.RedCommand()
+        command.setOperandsRange(no=[2, 2])
+        command.addCommand(name='foo', command=clap.mode.RedCommand())
+        command.addCommand(name='bar', command=clap.mode.RedCommand())
+        command.addCommand(name='far', command=clap.mode.RedCommand())
+        argv = ['--', 'fa']
+        parser = clap.parser.Parser(command).feed(argv)
+        ui = parser.parse().ui().down()
+        self.assertEqual('', str(ui))
+        self.assertEqual(['fa'], ui.operands())
+
+    def testNestedCommandNameExpansion(self):
+        command = clap.mode.RedCommand()
+        command.setOperandsRange(no=[2, 2])
+        command.addCommand(name='foo', command=clap.mode.RedCommand().addCommand(name='bar', command=clap.mode.RedCommand().addCommand(name='baz', command=clap.mode.RedCommand())))
+        argv = ['f', 'b', 'b']
+        parser = clap.parser.Parser(command).feed(argv)
+        ui = parser.parse().ui()
+        ui = ui.down()
+        self.assertEqual('foo', str(ui))
+        self.assertEqual([], ui.operands())
+        ui = ui.down()
+        self.assertEqual('bar', str(ui))
+        self.assertEqual([], ui.operands())
+        ui = ui.down()
+        self.assertEqual('baz', str(ui))
+        self.assertEqual([], ui.operands())
+
+
 class ParserOperandsTests(unittest.TestCase):
     def testSettingRangeAny(self):
         command = clap.mode.RedCommand()

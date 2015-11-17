@@ -186,7 +186,19 @@ class Parser:
         i = 0
         while i < len(opers):
             item = opers[i]
-            if self._command.hasCommand(item): break
+            command_name = item
+            try:
+                command_name = self._command.expandCommandName(command_name)
+            except errors.UnrecognizedCommandError:
+                # if an item does not expand as nested command name
+                # assume that it is just an operand
+                pass
+            except errors.AmbiguousCommandError:
+                # if an item could be expanded as nested command name, but
+                # the expansion is ambiguous - reraise the exception to signal this
+                # user can suppress false positives using the -- separator
+                raise
+            if self._command.hasCommand(command_name): break
             if shared.lookslikeopt(item):
                 accepted = self._isAcceptedInChildModes(item)
                 if accepted:
