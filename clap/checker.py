@@ -141,12 +141,30 @@ class RedChecker():
     def _checkoperandsrange(self):
         """Checks whether operands given match specified range.
         """
-        got = len(self._parser._getheuroperands()[0])
+        got, nested = self._parser._getheuroperands()
+        got = len(got)
         least, most = self._parser._command.getOperandsRange()
         for key in sorted(self._parser._command._altoperands.keys()):
             if not self._parser._ininput(option=self._parser._command.getopt(key)): continue
             least, most = self._parser._command.getAlternativeOperandsRange(key)
             break
+
+        # Do not check operands if none are given, and
+        # at the same time there is nested command present in input.
+        #
+        # This allows for behaviour like the following one, assuming that
+        # the first command requires exactly two operands:
+        #
+        #   $ program command --foo op0 op1
+        #   OK
+        #   $ program command --foo nestedcommand --bar op0 op1
+        #   OK
+        #   $ program command --foo op0 nestedcommand --bar op0 op1
+        #   fatal: expected exactly 2 operands but got 1
+        #
+        if (nested and nested[0] in self._parser._command.commands()) and got == 0:
+            return
+
         fail = False
         if least is not None and least == most and got != least:
             msg = 'expected exactly {0} operands but got {1}'.format(least, got)

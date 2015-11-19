@@ -788,6 +788,20 @@ class ParserNestedCommandsTests(unittest.TestCase):
         self.assertEqual(3, ui.get('-g'))
         self.assertEqual(3, ui.get('--global'))
 
+    def testFixedRangeOperandsNotNeededWhenCommandImmediatelyFollowedByNestedCommand(self):
+        command = getTestCommand().setOperandsRange(no=[2, 2])
+        child = clap.mode.RedCommand().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
+        command.addCommand(name='child', command=child)
+        argv = ['--foo', '-b', '-B', 'child', '--answer', '42']
+        parser = clap.parser.Parser(command).feed(argv)
+        checker = clap.checker.RedChecker(parser)
+        checker.check()
+        parser.parse()
+        ui = parser.ui()
+        self.assertEqual('', str(ui))
+        ui = ui.down()
+        self.assertEqual('child', str(ui))
+
 
 class ParserShortenedCommandNamesTests(unittest.TestCase):
     def testSimpleCommandNameExpansion(self):
@@ -1486,6 +1500,7 @@ class CheckerNestedCommandsCheckingTests(unittest.TestCase):
             self.assertRaises(clap.errors.UnrecognizedOptionError, checker._checksubcommand)
             self.assertRaises(clap.errors.UnrecognizedOptionError, checker.check)
 
+    @unittest.skip('FIXME: maybe provide an option to force users to give operands even to non-top commands?')
     def testFluidRangeInvalidNumberOfOperandsBecauseCommandIsGivenTooFast(self):
         command = getTestCommand().setOperandsRange(no=[1, 4])
         child = clap.mode.RedCommand().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
