@@ -1469,7 +1469,7 @@ class CheckerNestedCommandsCheckingTests(unittest.TestCase):
             self.assertRaises(clap.errors.UnrecognizedCommandError, checker._checksubcommand)
             self.assertRaises(clap.errors.UnrecognizedCommandError, checker.check)
 
-    def testFluiddRangeUnrecognizedOptionInNestedCommand(self):
+    def testFluidRangeUnrecognizedOptionInNestedCommand(self):
         command = getTestCommand().setOperandsRange(no=[1, 4])
         child = clap.mode.RedCommand().addLocalOption(clap.option.Option(short='a', long='answer', arguments=['int']))
         command.addCommand(name='child', command=child)
