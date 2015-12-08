@@ -54,6 +54,8 @@ class RedChecker():
                     i += 1
                     got_types = ', '.join([str(t)[8:-2] for t in types[:n]])
                     item = input[i]
+                    if ':' in atype:
+                        atype = atype.split(':', 1)[1]
                     try:
                         (atype if type(atype) is not str else self._parser._typehandlers[atype])(item)
                     except KeyError:

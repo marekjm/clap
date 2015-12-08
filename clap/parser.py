@@ -312,6 +312,8 @@ class Parser:
         converted = []
         for opt, params in options:
             for i, callback in enumerate(self._command.params(opt)):
+                if type(callback) == str and ':' in callback:
+                    callback = callback.split(':', 1)[1]
                 if type(callback) is str: callback = self._typehandlers[callback]
                 params[i] = callback(params[i])
             converted.append( (opt, params) )
