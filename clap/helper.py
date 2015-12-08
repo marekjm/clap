@@ -80,7 +80,10 @@ def _getoptionlines(command, indent='    ', level=1, colorize=True):
     for scope in ['global', 'local']:
         for o in command.options(group=scope):
             rendered_option = renderOptionHelp(o)
-            lines.append( ('option', indent*(level+1) + rendered_option[0], o) )
+            option_spec_line = indent*(level+1) + rendered_option[0]
+            if rendered_option[1]:
+                option_spec_line += rendered_option[1]
+            lines.append( ('option', option_spec_line, o) )
     lines.append( ('str', '') )
     return lines
 
