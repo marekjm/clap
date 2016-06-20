@@ -1,0 +1,11 @@
+{
+    "options": {
+        "local": [
+            {
+                "long": "verbose",
+                "short": "v",
+                "help": "display verbose output"
+            }
+        ]
+    }
+}
