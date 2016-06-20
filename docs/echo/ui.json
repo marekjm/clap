@@ -1,0 +1,31 @@
+{
+    "options": {
+        "local": [
+            {
+                "long": "uppercase",
+                "short": "u",
+                "help": "uppercase the output",
+                "conflicts": ["--lowercase"]
+            },
+            {
+                "long": "lowercase",
+                "short": "l",
+                "help": "lowercase the output",
+                "conflicts": ["--uppercase"]
+            },
+            {
+                "short": "n",
+                "help": "do not print newline at the end"
+            },
+            {
+                "long": "repeat",
+                "short": "r",
+                "help": "repeat output N times",
+                "arguments": ["int:times"]
+            }
+        ]
+    },
+    "operands": {
+        "no": [1]
+    }
+}
