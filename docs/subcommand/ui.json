@@ -1,0 +1,33 @@
+{
+    "options": {
+        "global": [
+            {
+                "long": "verbose",
+                "short": "v",
+                "help": "display verbose output"
+            }
+        ]
+    },
+    "commands": {
+        "foo": {
+            "options": {
+                "local": [
+                    {
+                        "short": "f",
+                        "help": "a local option in foo subcommand"
+                    }
+                ]
+            }
+        },
+        "bar": {
+            "options": {
+                "local": [
+                    {
+                        "short": "b",
+                        "help": "a local option in bar subcommand"
+                    }
+                ]
+            }
+        }
+    }
+}
