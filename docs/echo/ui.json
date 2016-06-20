@@ -21,7 +21,7 @@
                 "long": "repeat",
                 "short": "r",
                 "help": "repeat output N times",
-                "arguments": ["int:times"]
+                "arguments": ["times:int"]
             }
         ]
     },

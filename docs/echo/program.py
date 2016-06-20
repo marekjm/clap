@@ -49,8 +49,44 @@ except clap.errors.InvalidOperandRangeError as e:
     #
     # In the example program this is triggered by passing no operands.
     print('invalid number of operands: {}'.format(e))
+except clap.errors.InvalidArgumentTypeError as e:
+    # This exception is raised when an option receives an invalid argument.
+    # Run the program and pass an invalid integer to the `--repeat` option to
+    # see what happens.
+    # Example:
+    #
+    #   python program.py -r x foo
+    print('invalid option argument: {}'.format(e))
 except Exception as e:
     print('unhandled exception: {0}: {1}'.format(type(e), e))
 finally:
     if fail: exit(1)
     ui = parser.parse().ui().finalise()
+
+
+# Operands can be accessed using `.operands()` method.
+# Operands are returned as a list of strings.
+# Try running the program as:
+#
+#   python program.py -u foo
+#   python program.py foo
+#   python program.py -- -u foo
+#   python program.py -ul foo
+#   python program.py -- -ul foo
+#   python program.py -r 2 foo
+output = ' '.join(ui.operands())
+
+if '--uppercase' in ui:
+    output = output.upper()
+if '--lowercase' in ui:
+    output = output.lower()
+
+n = 1
+if '--repeat' in ui:
+    # Operands may be accessed using `.get()` method.
+    # It receives either short or long version of the options as input, and
+    # returns value of the operand as output.
+    n = ui.get('-r')
+
+for i in range(n):
+    print(output)
