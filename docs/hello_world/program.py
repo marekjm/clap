@@ -69,9 +69,29 @@ except clap.errors.UnrecognizedOptionError as e:
     # It is triggered when a string that is looking like an option is given as
     # one of the command line arguments, but can't be matched to any valid option.
     print('unrecognized option found: {0}'.format(e))
+except clap.errors.UIDesignError as e:
+    # This exception is raised when RedCLAP detects a badly designed user interface.
+    # There are several reasons for that, e.g. an option requires an unrecognised option
+    # to be passed with it, an option conflicts with another option that requires it, etc.
+    print('misdesigned interface: {0}'.format(e))
 finally:
     if fail: exit(1)
     # Finally, if the input has been deemed valid, parse the command line
     # arguments and return a UI object that can be used later in code
     # to extract information about passed operands, options, and subcommands.
     ui = parser.parse().ui().finalise()
+
+
+# The `X in Y` notation is used to check if an option was given to a command.
+# Both short and long version may be checked, no matter which version of an
+# option has actually been passed on the command line.
+#
+# Try running the program as:
+#
+#   python program.py
+#   python program.py --verbose
+#   python program.py -v
+#
+# to see the difference in results.
+# The last two lines will be the same, the first will display just "Hello World!".
+print(('Hello command line World!' if '--verbose' in ui else 'Hello World!'))

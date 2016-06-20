@@ -14,3 +14,13 @@ Each subdirectory contains at least three files:
 - `README.markdown`: a short description of the example,
 
 ----
+
+# Where's the "Hello World!" example?
+
+There is a "Hello World!" example available, in the `hello_world` directory.
+It has more comment lines than lines of actual code, but explains every basic
+element of setting up a RedCLAP program in detail.
+
+Other examples assume that you are familiar with the "Hello World" and
+are not as heavily commented (except in sections they are designed to
+explain, these *will* be heavily commented).
