@@ -75,5 +75,12 @@ elif str(ui) == 'foo':
     # due to the fact that it is global.
     print('You {}fool!'.format('bloody ' if '--verbose' in ui else ''))
 elif str(ui) == 'bar':
-    # The situation with `--verbose` option in bar command is the same as in foo command.
-    print('Go to a {}bar!'.format('good ' if '--verbose' in ui else ''))
+    # We have to descend here, since yet another subcommand may have been passed.
+    ui = ui.down()
+    if str(ui) == 'bar':
+        # Still in "bar" command.
+        print('Go to a {}bar!'.format('good ' if '--verbose' in ui else ''))
+    elif str(ui) == 'baz':
+        # A more nested subcommand was passed.
+        # The `--verbose` option is still available.
+        print('Go home, you{} drunk!'.format(' are' if '--verbose' in ui else '\'re'))

@@ -27,7 +27,17 @@
                         "help": "a local option in bar subcommand"
                     }
                 ]
+            },
+            "commands": {
+                "baz": {
+                    "operands": {
+                        "no": [0, 0]
+                    }
+                }
             }
         }
+    },
+    "operands": {
+        "no": [0, 0]
     }
 }
