@@ -81,12 +81,23 @@ if '--uppercase' in ui:
 if '--lowercase' in ui:
     output = output.lower()
 
-n = 1
-if '--repeat' in ui:
-    # Operands may be accessed using `.get()` method.
-    # It receives either short or long version of the options as input, and
-    # returns value of the operand as output.
-    n = ui.get('-r')
+# Options may be accessed using `.get()` method.
+# It receives either short or long version of the options as input, and
+# returns value of the operand as output.
+# Later occurences swallow up previous ones, i.e. the following invocation:
+#
+#   python program.py -r 2 -r 4 foo
+#
+# will print 'foo' four times.
+# The operands are returned converted to their requested datatype, which in
+# case of the `--repeat` option is an integer.
+# Datatype is specified in the `"arguments"` key in the option description.
+# The datatype may be preceded by a short descritpion of the argument.
+# See `--repeat` description in `ui.json` file.
+#
+# An optional default value may be given, and will be returned if the option
+# has not been passed on the command line.
+n = ui.get('-r', default=1)
 
 for i in range(n):
     print(output)
