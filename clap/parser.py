@@ -79,7 +79,7 @@ class ParsedUI:
             self._child.finalise()
         return self
 
-    def get(self, key, tuplise=True):
+    def get(self, key, tuplise=True, default=None):
         """Returns arguments passed to an option.
         - options that take no arguments return None,
         - options that are plural AND take no argument return number of times they were passed,
@@ -93,7 +93,7 @@ class ParsedUI:
         direct values for options taking one argumet or less.
         """
         option = self._command.getopt(key)
-        value = self._options[key]
+        value = self._options.get(key, (default,))
         if option.isplural() and not option.params(): return value
         if not option.params(): return None
         if len(option.params()) == 1 and not option.isplural(): return value[0]
