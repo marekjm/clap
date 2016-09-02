@@ -41,7 +41,7 @@ class RedCommand:
         self._commands[name] = command
         return self
 
-    def expandCommandName(self, name):
+    def expandCommandName(self, name, missing=False):
         """Accepts a string and returns a command name it can be expanded to.
         Raises exceptions on ambiguous or unmatched strings.
 
@@ -58,8 +58,10 @@ class RedCommand:
                     candidates = [cmd]
                     break
                 candidates.append(cmd)
-        if not candidates:
+        if not candidates and not missing:
             raise errors.UnrecognizedCommandError(name)
+        elif not candidates and missing:
+            return None
         if len(candidates) > 1:
             raise errors.AmbiguousCommandError('{0}: {1}'.format(name, ', '.join(candidates)))
         return candidates[0]

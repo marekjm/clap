@@ -164,7 +164,7 @@ class RedChecker():
         #   $ program command --foo op0 nestedcommand --bar op0 op1
         #   fatal: expected exactly 2 operands but got 1
         #
-        if (nested and nested[0] in self._parser._command.commands()) and got == 0:
+        if (nested and self._parser._command.expandCommandName(nested[0], missing=True) in self._parser._command.commands()) and got == 0:
             return
 
         fail = False

@@ -3,9 +3,14 @@
 """Unit testing suite for RedCLAP library.
 """
 
+import os
 import shutil
+import sys
 import unittest
 import warnings
+
+# ensure test always fetch CLAP from development directory
+sys.path.insert(0, '.')
 
 import clap
 
@@ -812,6 +817,8 @@ class ParserShortenedCommandNamesTests(unittest.TestCase):
         command.addCommand(name='far', command=clap.mode.RedCommand())
         argv = ['b']
         parser = clap.parser.Parser(command).feed(argv)
+        checker = clap.checker.RedChecker(parser)
+        self.assertIsNone(checker.check())
         ui = parser.parse().ui().down()
         self.assertEqual('bar', str(ui))
         self.assertEqual([], ui.operands())
@@ -834,6 +841,8 @@ class ParserShortenedCommandNamesTests(unittest.TestCase):
         command.addCommand(name='foo', command=clap.mode.RedCommand().addCommand(name='bar', command=clap.mode.RedCommand().addCommand(name='baz', command=clap.mode.RedCommand())))
         argv = ['f', 'b', 'b']
         parser = clap.parser.Parser(command).feed(argv)
+        checker = clap.checker.RedChecker(parser)
+        self.assertIsNone(checker.check())
         ui = parser.parse().ui()
         ui = ui.down()
         self.assertEqual('foo', str(ui))
