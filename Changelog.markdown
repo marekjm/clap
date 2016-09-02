@@ -14,6 +14,58 @@ It's mostly useful for developers who use the CLAP library.
 
 ----
 
+## Version 0.11.0 (2016-09-02)
+
+This long awaited release improves both documentation and code.
+Documentation was expanded with updated examples and README-style articles explaining how to use CLAP.
+
+On the code front, there are several imporvements.
+
+### Shortened command names
+
+From day-one CLAP supported short and long option names.
+People who use a piece of software frequently usually memorise short versions of commonly used options, but
+for a very long time CLAP did not provide a way to shorten the *command* names.
+This mean that even long command names must have been written in full:
+
+```
+~]$ program some-nested command-name that-is-too --verbose --and long-to-type --foo --with spam
+```
+
+Now, the above invocation can be shortened to just:
+
+```
+~]$ program s c t --verbose --and l --foo --with spam
+```
+
+CLAP detects that a mode has nested modes, and automatically expands the shortened command name.
+Expansion fails if the command name is ambiguous, i.e. when more two or more subcommands exist (e.g. `foo` and `far`) and
+both share a common prefix that, and only this prefix was given to CLAP.
+
+
+### Fixed rendering detailed option help
+
+Detailed option help (`program help command subcommand --option`) now renders all help available for requested option.
+
+
+### Better automatically generated help for option arguments
+
+CLAP provides a way to describe individual option arguments, and provide more detailed help messages.
+Use `argument-name:argument-type` syntax when definition option arguments:
+
+```
+{
+    "short": "p",
+    "long": "phone-no",
+    "arguments": ["use +NN.AAABBBCCC format:str"]
+}
+```
+
+
+
+----
+
+
 ## Version 0.10.0-rc.3 (2014-07-)
 
 This release candidate adds two more parameters to the already available palette of
