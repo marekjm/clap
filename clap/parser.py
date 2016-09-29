@@ -81,7 +81,7 @@ class ParsedUI:
 
     def get(self, key, tuplise=True, default=None):
         """Returns arguments passed to an option.
-        - options that take no arguments return None,
+        - options that take no arguments and are not plural return None,
         - options that are plural AND take no argument return number of times they were passed,
         - options that take exactly one argument return it directly,
         - options that take at least two arguments return tuple containing their arguments,
@@ -94,7 +94,9 @@ class ParsedUI:
         """
         option = self._command.getopt(key)
         value = self._options.get(key, (default,))
-        if option.isplural() and not option.params(): return value
+        if option.isplural() and not option.params():
+            # return 0 for not-passed plural options
+            return (value if type(value) is int else 0)
         if not option.params(): return None
         if len(option.params()) == 1 and not option.isplural(): return value[0]
         if tuplise: value = ([tuple(v) for v in value] if option.isplural() else tuple(value))
