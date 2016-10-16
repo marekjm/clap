@@ -99,7 +99,7 @@ class ParsedUI:
             return (value if type(value) is int else 0)
         if not option.params(): return None
         if len(option.params()) == 1 and not option.isplural(): return value[0]
-        if tuplise: value = ([tuple(v) for v in value] if option.isplural() else tuple(value))
+        if tuplise: return ([tuple(v) for v in value if v is not None] if option.isplural() else tuple(value))
         return value
 
     def operands(self):
