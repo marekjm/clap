@@ -18,18 +18,18 @@ with open(path.join(here, 'README.markdown'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='redclap',
+    name='clap-api',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.10.0',
+    version='0.11.0',
 
     description='Powerful and advanced command line interface library',
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/posbit/clap',
+    url='https://github.com/marekjm/clap',
 
     # Author details
     author='Marek Marecki',
@@ -69,7 +69,7 @@ setup(
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:
-      py_modules=["clap"],
+    py_modules=["clap"],
 
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's
