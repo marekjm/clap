@@ -105,7 +105,7 @@ def _getoperandlines(command, name, indent, level, colorize):
         most_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in range(least, most)])
         operands_help = '{} [...{}]'.format(least_help, most_help)
         human_readable = 'between {} and {} operand(s)'.format(least, most)
-    elif least is not None and least == 0 and most is not None:
+    elif least is not None and least == 0 and most is not None and most > 0:
         least_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in range(least)])
         most_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in range(least, most)])
         operands_help = '{} ...{}'.format(least_help, most_help)
