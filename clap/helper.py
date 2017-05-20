@@ -276,11 +276,11 @@ class Helper:
         self._genexamples()
         return self
 
-    def full(self, deep=True):
+    def full(self, deep=True, name=''):
         """Generate full help screen.
         """
         self._genusage()
-        self._lines.extend(self._gencommandlines(command=self._command, deep=deep))
+        self._lines.extend(self._gencommandlines(command=self._command, deep=deep, name = name))
         return self
 
     def render(self):
@@ -368,7 +368,7 @@ class HelpRunner:
                 mode = mode.getCommand(item)
         if not self._displayed:
             helper = Helper(self._program_name, mode, colorize=('--colorize' in ui)).setmaxlen(n=70)
-            print(helper.full(deep=('--verbose' in ui or '--help' in ui)).render())
+            print(helper.full(deep=('--verbose' in ui or '--help' in ui), name=item).render())
             self._displayed = True
 
     def adjust(self, options=None, commands=None, ignorecmds=None):
