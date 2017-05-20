@@ -26,6 +26,8 @@ create rich command line interfaces for Python 3 programs.
 *   ability to load interface from JSON descriptions,
 *   automatic generation of help screens (for `your-tool help` command) with per-mode, per-option, and per-operand descriptions,
     usage examples, and more
+*   support for shortcuts for command names (shortest-unique name is sufficient for CLAP to resolve the command, it is not
+    necessary to write full names)
 
 CLAP is not the most easy to use command line arguments parser for Python, but I am quite confident that it is one
 of the most powerful (if not *the* most powerful) framework for writing command line interfaces.
