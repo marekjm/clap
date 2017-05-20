@@ -96,6 +96,8 @@ class Builder:
         if 'operands' in self._model:
             if 'no' in self._model['operands']: ui.setOperandsRange(no=self._model['operands']['no'])
             if 'with' in self._model['operands']: ui.setAlternativeOperandsRange(no=self._model['operands']['with'])
+            if 'help' in self._model['operands']:
+                ui.setOperandNames(names=self._model['operands']['help'].get('names'))
         commands = (self._model['commands'] if 'commands' in self._model else {})
         for name, nmodel in commands.items(): ui.addCommand(name=name, command=Builder().set(nmodel).build().get())
         ui.propagate()

@@ -15,6 +15,7 @@ class RedCommand:
         self._options = {'local': [], 'global': []}
         self._operands = {'range': {'least': None, 'most': None}, 'types': []}
         self._altoperands = {}
+        self._operand_names = []
         self._commands = {}
         self._doc = {'help': '', 'usage': []}
 
@@ -212,6 +213,34 @@ class RedCommand:
         """Returns operands range.
         """
         return (self._operands['range']['least'], self._operands['range']['most'])
+
+    def getOperandNames(self):
+        """Returns list of operand names if present.
+        """
+        return (self._operands['range']['least'], self._operands['range']['most'])
+
+    def setOperandNames(self, names):
+        """Set operand names to use when generating help screens.
+        Without names the operands will be numbered, with names they will be named.
+        For example:
+
+            # without names
+            <1> <2>...
+
+            # with names
+            <group> <member>...
+
+        Not all operands must be named.
+        Names which are None will be numbered.
+        List of names is automatically expanded to equal "most" operands.
+        Example:
+
+            <1> <foo> <3> <bar> <5> <6>
+        """
+        self._operand_names = names
+
+    def getOperandNames(self):
+        return self._operand_names
 
     def getAlternativeOperandsRange(self, with_option):
         """Returns alternative operands range.
