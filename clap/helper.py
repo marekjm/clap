@@ -90,9 +90,9 @@ def _getoptionlines(command, indent='    ', level=1, colorize=True):
 def _getoperandlines(command, name, indent, level, colorize):
     lines = []
     ln = 'options'
-    if colored is not None and colorize: ln = 'syntax: ' + colored.fg('yellow') + name + colored.attr('reset')
+    if colored is not None and colorize: ln = colored.fg('yellow') + name + colored.attr('reset')
 
-    ln += ' [<option>...] '
+    ln += ' '
 
     least, most = command.getOperandsRange()
     names = { i: each for i, each in enumerate(command.getOperandNames()) }
@@ -124,7 +124,8 @@ def _getoperandlines(command, name, indent, level, colorize):
 
     lines.append( ('str', indent*(level) + ln) )
     if human_readable:
-        lines.append( ('str', indent*(level) + human_readable) )
+        offset_for_human_readable = len(name)+1
+        lines.append( ('str', indent*(level) + ' '*offset_for_human_readable + human_readable) )
     lines.append( ('str', '',) )
 
     return lines
