@@ -35,30 +35,30 @@ def export(command):
 # model of help command that may be inserted into program's main command
 # to ease using the Help Runner
 HELP_COMMAND = {
-            'doc': {
-                'help': 'This command is used to obtain help information about various commands. It accepts any number of operands and can display help about nested commands, but finishes searching as soon as it finds option-looking string.'
+    'doc': {
+        'help': 'This command is used to obtain help information about various commands. It accepts any number of operands and can display help about nested commands, but finishes searching as soon as it finds option-looking string.'
+    },
+    'options': {
+        'local': [
+            {
+                'short': 'u',
+                'long': 'usage',
+                'help': 'display usage information (discards operands)'
             },
-            'options': {
-                'local': [
-                    {
-                        'short': 'u',
-                        'long': 'usage',
-                        'help': 'display usage information (discards operands)'
-                    },
-                    {
-                        'short': 'e',
-                        'long': 'examples',
-                        'help': 'display example invocations (discards operands)'
-                    },
-                    {
-                        'short': 'c',
-                        'long': 'colorize',
-                        'help': 'colorize output (do not use with "less" pager unless you want to see escape sequences, or you can use "less -R" too nicely display them)'
-                    }
-                ]
+            {
+                'short': 'e',
+                'long': 'examples',
+                'help': 'display example invocations (discards operands)'
             },
-            'operands': {'no': [0]}
-        }
+            {
+                'short': 'c',
+                'long': 'colorize',
+                'help': 'colorize output (do not use with "less" pager unless you want to see escape sequences, or you can use "less -R" too nicely display them)'
+            }
+        ]
+    },
+    'operands': {'no': [0]}
+}
 
 
 class Builder:
