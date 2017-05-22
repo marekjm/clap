@@ -90,7 +90,7 @@ class RedChecker():
             if not self._parser._ininput(option): continue
             for n in option['requires']:
                 if not self._parser._command.accepts(n):
-                    raise errors.UIDesignError('\'{0}\' requires unrecognized option \'{1}\''.format(needs, n))
+                    raise errors.UIDesignError('\'{0}\' requires unrecognized option \'{1}\''.format(option, n))
                 n = self._parser._command.getopt(n)
                 if not self._parser._ininput(option=n):
                     needs = self._parser._whichaliasin(option)
