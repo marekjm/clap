@@ -87,6 +87,49 @@ def _getoptionlines(command, indent='    ', level=1, colorize=True):
     lines.append( ('str', '') )
     return lines
 
+def _getoperandlines(command, name, indent, level, colorize):
+    lines = []
+    ln = 'options'
+    if colored is not None and colorize: ln = colored.fg('yellow') + name + colored.attr('reset')
+
+    ln += ' '
+
+    least, most = command.getOperandsRange()
+    names = { i: each for i, each in enumerate(command.getOperandNames()) }
+    operands_help = ''
+    human_readable = ''
+    if least is None and most is None:
+        pass
+    elif least is not None and least > 0 and most is not None:
+        least_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in range(least)])
+        most_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in range(least, most)])
+        operands_help = '{} [...{}]'.format(least_help, most_help)
+        human_readable = 'between {} and {} operand(s)'.format(least, most)
+    elif least is not None and least == 0 and most is not None and most > 0:
+        least_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in range(least)])
+        most_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in range(least, most)])
+        operands_help = '{} ...{}'.format(least_help, most_help)
+        human_readable = 'at most {} operand(s)'.format(most)
+    elif least is not None and most is None:
+        operands_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in range(least)])
+        operands_help += '...'
+        if least == 0:
+            human_readable = 'zero or more operands'
+        else:
+            human_readable = 'at least {} operand(s)'.format(least)
+    if least == 0 and operands_help:
+        operands_help = '[{}]'.format(operands_help)
+
+    ln += operands_help
+
+    lines.append( ('str', indent*(level) + ln) )
+    if human_readable:
+        offset_for_human_readable = len(name)+1
+        lines.append( ('str', indent*(level) + ' '*offset_for_human_readable + human_readable) )
+    lines.append( ('str', '',) )
+
+    return lines
+
 
 def _cleanback(lines):
     """Removes whitespace-only lines from the end of lines list.
@@ -210,6 +253,8 @@ class Helper:
         """
         lines = []
         self._lines.extend(self._gencommandhelp(command, name, level=level))
+        if name:
+            self._lines.extend(_getoperandlines(command, name, indent=self._indent['string'], level=level+1, colorize=self._colorize))
         self._lines.extend(_getoptionlines(command, indent=self._indent['string'], level=level+1, colorize=self._colorize))
         if command.commands():
             ln = 'commands'
@@ -231,11 +276,11 @@ class Helper:
         self._genexamples()
         return self
 
-    def full(self, deep=True):
+    def full(self, deep=True, name=''):
         """Generate full help screen.
         """
         self._genusage()
-        self._lines.extend(self._gencommandlines(command=self._command, deep=deep))
+        self._lines.extend(self._gencommandlines(command=self._command, deep=deep, name = name))
         return self
 
     def render(self):
@@ -323,7 +368,7 @@ class HelpRunner:
                 mode = mode.getCommand(item)
         if not self._displayed:
             helper = Helper(self._program_name, mode, colorize=('--colorize' in ui)).setmaxlen(n=70)
-            print(helper.full(deep=('--verbose' in ui or '--help' in ui)).render())
+            print(helper.full(deep=('--verbose' in ui or '--help' in ui), name=item).render())
             self._displayed = True
 
     def adjust(self, options=None, commands=None, ignorecmds=None):

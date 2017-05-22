@@ -12,11 +12,11 @@ create rich command line interfaces for Python 3 programs.
 
 *   support for single-level and nested modes (with per-mode and global options),
 *   support for grouped short options (`ls -lhR`),
-*   support for long options with or without equal-sign-connected arguments (`--log=./file.log` and `--log ./file.log` areboth correct),
+*   support for long options with or without equal-sign-connected arguments (`--log=./file.log` and `--log ./file.log` are both correct),
 *   support for option aliases (short/long names),
 *   support for typed arguments (`str`, `int`, `float` built-in and other arbitrary types via callbacks),
 *   built-in type checking of option arguments,
-*   support for multiple arguments (e.g. `--point 0 0`),
+*   support for multiple arguments for options (e.g. `--point 0 0`),
 *   checking for missing arguments with options which require them,
 *   checking for conflicting options (eg. `--quiet` must not come with option `--verbose`),
 *   support for options that MUST be passed to the program,
@@ -24,7 +24,15 @@ create rich command line interfaces for Python 3 programs.
 *   support for options *wanted by* other options (e.g. `--which` wants `--this` or `--that` or both),
 *   good set of exceptions with detailed error messages,
 *   ability to load interface from JSON descriptions,
+*   automatic generation of help screens (for `your-tool help` command) with per-mode, per-option, and per-operand descriptions,
+    usage examples, and more
+*   support for shortcuts for command names (shortest-unique name is sufficient for CLAP to resolve the command, it is not
+    necessary to write full names)
 
+CLAP is not the most easy to use command line arguments parser for Python, but I am quite confident that it is one
+of the most powerful (if not *the* most powerful) framework for writing command line interfaces.
+With excellent support for modes, options, and operands, automatic input verification, and help screen generation you
+get a big return on your investment.
 
 ----
 
