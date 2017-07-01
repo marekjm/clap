@@ -1,4 +1,4 @@
-PYTHONVERSION=`python -c 'import sys; print("{}.{}".format(sys.version_info.major, sys.version_info.minor))'`
+PYTHONVERSION=`python3 -c 'import sys; print("{}.{}".format(sys.version_info.major, sys.version_info.minor))'`
 
 .PHONY: tests tests-python2
 
