@@ -1,4 +1,5 @@
 PYTHONVERSION=`python -c 'import sys; print("{}.{}".format(sys.version_info.major, sys.version_info.minor))'`
+PREFIX=/usr/local
 
 .PHONY: tests tests-python2
 
@@ -10,12 +11,12 @@ doc:
 install:
 	make tests
 	make clean
-	mkdir -p /usr/lib/python${PYTHONVERSION}/site-packages/clap
-	cp -v ./clap/*.py /usr/lib/python${PYTHONVERSION}/site-packages/clap/
+	mkdir -p $(PREFIX)/lib/python$(PYTHONVERSION)/site-packages/clap
+	cp -v ./clap/*.py $(PREFIX)/lib/python$(PYTHONVERSION)/site-packages/clap/
 
 local-install: ./clap/*.py
-	mkdir -p ~/.local/lib/python${PYTHONVERSION}/site-packages/clap
-	cp -v ./clap/*.py ~/.local/lib/python${PYTHONVERSION}/site-packages/clap/
+	mkdir -p ~/.local/lib/python$(PYTHONVERSION)/site-packages/clap
+	cp -v ./clap/*.py ~/.local/lib/python$(PYTHONVERSION)/site-packages/clap/
 
 clean:
 	rm -rf ./clap/__pycache__
