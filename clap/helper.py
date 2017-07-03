@@ -103,15 +103,19 @@ def _getoperandlines(command, name, indent, level, colorize):
     elif least is not None and least > 0 and most is not None:
         least_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in range(least)])
         most_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in range(least, most)])
-        operands_help = '{} [...{}]'.format(least_help, most_help)
-        human_readable = 'between {} and {} operand(s)'.format(least, most)
+        operands_help = '{}'.format(least_help)
+        if most_help:
+            operands_help += ' [{}{}]'.format(('...' if (most-least) > 1 else ''), most_help)
+        if least == most:
+            human_readable = 'exactly {} operand(s)'.format(least)
+        else:
+            human_readable = 'between {} and {} operand(s)'.format(least, most)
     elif least is not None and least == 0 and most is not None and most > 0:
-        least_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in range(least)])
         most_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in range(least, most)])
-        operands_help = '{} ...{}'.format(least_help, most_help)
+        operands_help = '...{}'.format(most_help)
         human_readable = 'at most {} operand(s)'.format(most)
     elif least is not None and most is None:
-        operands_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in range(least)])
+        operands_help = ' '.join(['<{}>'.format(names.get(i, i+1)) for i in (range(len(names)) if (names and least == 0) else range(least))])
         operands_help += '...'
         if least == 0:
             human_readable = 'zero or more operands'
