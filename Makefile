@@ -1,5 +1,4 @@
-PYTHONVERSION=`python -c 'import sys; print("{}.{}".format(sys.version_info.major, sys.version_info.minor))'`
-PREFIX=/usr/local
+PYTHONVERSION=`python3 -c 'import sys; print("{}.{}".format(sys.version_info.major, sys.version_info.minor))'`
 
 .PHONY: tests tests-python2
 
