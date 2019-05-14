@@ -1,8 +1,8 @@
 # RedCLAP - Command Line Arguments Parser (Redesigned)
 
-CLAP aims at being powerful and advanced command line interface library for Python 3 language. 
-Having built-in support for modes, optional and obligatory options, 
-options with arguments (with type-checking with arbitrary types) it enables programmers to 
+CLAP aims at being powerful and advanced command line interface library for the Python 3 language. 
+Having built-in support for modes, optional and obligatory options,
+options with arguments (with type-checking with arbitrary types) it enables programmers to
 create rich command line interfaces for Python 3 programs.
 
 
