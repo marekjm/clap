@@ -9,13 +9,13 @@ doc:
 	echo "" > DOC
 	pydoc3 ./clap/* >> DOC
 
-install:
+global-install:
 	make tests
 	make clean
 	mkdir -p $(PREFIX)/lib/python$(PYTHONVERSION)/site-packages/clap
 	cp -v ./clap/*.py $(PREFIX)/lib/python$(PYTHONVERSION)/site-packages/clap/
 
-local-install: ./clap/*.py
+install: ./clap/*.py
 	mkdir -p ~/.local/lib/python$(PYTHONVERSION)/site-packages/clap
 	cp -v ./clap/*.py ~/.local/lib/python$(PYTHONVERSION)/site-packages/clap/
 
