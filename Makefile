@@ -2,6 +2,8 @@ PYTHONVERSION=`python3 -c 'import sys; print("{}.{}".format(sys.version_info.maj
 
 .PHONY: tests tests-python2
 
+version:
+	@echo "$(PYTHONVERSION)"
 
 doc:
 	echo "" > DOC
