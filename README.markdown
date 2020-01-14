@@ -36,10 +36,10 @@ get a big return on your investment.
 
 ----
 
-## Manual
+## Manual and examples
 
-There is a manual which you may be interested in located in `manual/` directory.
-
+See the [Issue](https://git.sr.ht/~maelkum/issue) project which is the flagship
+software for CLAP and uses all features the library offers.
 
 ----
 
