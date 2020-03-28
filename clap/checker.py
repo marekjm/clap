@@ -49,17 +49,18 @@ class RedChecker():
                 if shared.lookslikeopt(input[i+1]) and self._parser._command.accepts(input[i+1]):
                     # no arguments before next option is passed
                     raise errors.MissingArgumentError(opt)
-                expected_types = ', '.join([str(t)[8:-2] for t in types])
+                expected_types = ', '.join(types)
                 for n, atype in enumerate(types):
                     i += 1
-                    got_types = ', '.join([str(t)[8:-2] for t in types[:n]])
+                    got_types = ', '.join(types[:n])
                     item = input[i]
                     if ':' in atype:
-                        atype = atype.split(':', 1)[1]
+                        atype = atype.rsplit(':', 1)[1]
                     try:
                         (atype if type(atype) is not str else self._parser._typehandlers[atype])(item)
                     except KeyError:
-                        raise errors.UIDesignError('missing type handler "{0}" for option: {1}'.format())
+                        raise errors.UIDesignError(
+                            'missing type handler "{0}" for option: {1}'.format(atype, opt))
                     except IndexError:
                         raise errors.MissingArgumentError('{0} requires ({1}) but got only ({2})'.format(opt, expected_types, got_types))
                     except ValueError as e:
