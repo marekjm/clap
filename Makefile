@@ -1,4 +1,5 @@
 PYTHONVERSION=`python3 -c 'import sys; print("{}.{}".format(sys.version_info.major, sys.version_info.minor))'`
+SITE_PACKAGES_PATH=`python -c "import site; print(site.getsitepackages()[0])"`
 
 .PHONY: tests tests-python2
 
@@ -12,12 +13,16 @@ doc:
 global-install:
 	make tests
 	make clean
-	mkdir -p $(PREFIX)/lib/python$(PYTHONVERSION)/site-packages/clap
-	cp -v ./clap/*.py $(PREFIX)/lib/python$(PYTHONVERSION)/site-packages/clap/
+	mkdir $(SITE_PACKAGES_PATH)/clap
+	cp -v ./clap/*.py $(SITE_PACKAGES_PATH)/clap/
 
 install: ./clap/*.py
-	mkdir -p ~/.local/lib/python$(PYTHONVERSION)/site-packages/clap
-	cp -v ./clap/*.py ~/.local/lib/python$(PYTHONVERSION)/site-packages/clap/
+	mkdir $(SITE_PACKAGES_PATH)/clap
+	cp -v ./clap/*.py $(SITE_PACKAGES_PATH)/clap/
+
+uninstall:
+	rm -rf $(SITE_PACKAGES_PATH)/clap
+	make clean
 
 clean:
 	rm -rf ./clap/__pycache__
